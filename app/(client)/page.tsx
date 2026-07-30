@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
+import { MediaProof } from "@/components/scaffold/media-proof";
 import { SurfaceBanner } from "@/components/scaffold/surface-banner";
 import { TokenProof } from "@/components/scaffold/token-proof";
+import { TranslationProof } from "@/components/scaffold/translation-proof";
 import { Button } from "@/components/ui/button";
 
 export default async function HomePage() {
@@ -26,6 +28,8 @@ export default async function HomePage() {
         <p className="text-label text-ink-muted">{t("freshTodayNote")}</p>
       </section>
 
+      <TranslationProof />
+      <MediaProof />
       <TokenProof />
     </>
   );

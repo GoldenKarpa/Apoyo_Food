@@ -7,6 +7,18 @@
     "freshToday": "En la cocina hoy",
     "comingSoon": "Próximamente"
   },
+  "localeToggle": {
+    "ariaLabel": "Idioma"
+  },
+  "translation": {
+    "heading": "Traducción del hilo del pedido",
+    "note": "Se calcula una sola vez al enviar y se guarda en el mensaje — nunca se recalcula al leer. Si el servicio de traducción no responde, se entrega el original sin cambios.",
+    "authoredIn": "Escrito en",
+    "autoTranslated": "Traducido automáticamente",
+    "seeOriginal": "Ver original",
+    "seeTranslation": "Ver traducción",
+    "serviceDown": "El servicio de traducción no estaba disponible al escribir esto — se muestra el original, que es la degradación prevista, no un error."
+  },
   "client": {
     "home": {
       "title": "Descubre",

@@ -7,6 +7,18 @@
     "freshToday": "En la cocina hoy",
     "comingSoon": "Coming soon"
   },
+  "localeToggle": {
+    "ariaLabel": "Language"
+  },
+  "translation": {
+    "heading": "Order-thread translation",
+    "note": "Computed once at send time and stored on the message — never recomputed on read. If the translate service is down, the original is delivered unchanged.",
+    "authoredIn": "Authored in",
+    "autoTranslated": "Translated automatically",
+    "seeOriginal": "See original",
+    "seeTranslation": "See translation",
+    "serviceDown": "Translate service unreachable when this was written — showing the original, which is the intended degrade, not an error."
+  },
   "client": {
     "home": {
       "title": "Discover",

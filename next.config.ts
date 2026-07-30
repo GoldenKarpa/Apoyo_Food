@@ -20,10 +20,15 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   assetPrefix,
   images: {
-    // Media is served from this app's own storage route (Slice 4), never a
-    // remote host — so no remotePatterns. Widths match the Part C variant ladder
-    // (thumb 400 / card 800 / full 1600) so next/image never asks the optimizer
-    // for a size the pipeline didn't produce.
+    // Custom loader (Slice 4): the ingest pipeline already produced thumb/card/
+    // full at fixed sizes, so Next's own optimizer would be redundant work on
+    // every request. The loader instead rewrites the variant suffix on a storage
+    // key to match the requested width, and owns the media base URL — which is
+    // the single thing that changes when local disk becomes R2 + a CDN domain.
+    loader: "custom",
+    loaderFile: "./lib/media/image-loader.ts",
+    // Widths match the Part C variant ladder (thumb 400 / card 800 / full 1600)
+    // so next/image never asks for a size the pipeline didn't produce.
     deviceSizes: [400, 800, 1200, 1600],
     imageSizes: [200, 400],
   },

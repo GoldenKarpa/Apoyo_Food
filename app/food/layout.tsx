@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { LocaleToggle } from "@/components/locale-toggle";
 import { SurfaceBanner } from "@/components/scaffold/surface-banner";
 
 /**
@@ -22,11 +23,16 @@ export default async function FoodSurfaceLayout({ children }: { children: React.
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="border-b border-hairline bg-card">
-        <div className="screen-pad flex min-h-[64px] items-center gap-2">
-          <span className="font-display text-h1 font-semibold text-green">{t("name")}</span>
-          <span className="rounded-pill bg-green-soft px-3 py-1 text-caption font-medium text-ink">
-            /food
-          </span>
+        <div className="screen-pad flex min-h-[64px] items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-display text-h1 font-semibold text-green">{t("name")}</span>
+            <span className="rounded-pill bg-green-soft px-3 py-1 text-caption font-medium text-ink">
+              /food
+            </span>
+          </div>
+          {/* Sellers are Spanish-first, but the toggle is still always visible
+              here — the seller surface merely DEFAULTS to es (i18n/request.ts). */}
+          <LocaleToggle />
         </div>
       </header>
       <main className="screen-pad flex flex-1 flex-col gap-6 py-8">
