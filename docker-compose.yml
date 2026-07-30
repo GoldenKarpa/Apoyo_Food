@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: food
+      POSTGRES_PASSWORD: food_dev_password
+      POSTGRES_DB: apoyo_food_dev
+    ports:
+      # Host port 5434 per BUILD_SLICES.md conventions. Already taken on this
+      # machine: 5432 (Beauty-Salon demo), 5433 (Salon), 5435 (Apparel).
+      # Confirmed free before this file was written.
+      - "5434:5432"
+    volumes:
+      - food_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  food_postgres_data:

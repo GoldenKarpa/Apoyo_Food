@@ -1,0 +1,93 @@
+{
+  "brand": {
+    "name": "Apoyo Food",
+    "tagline": "Comida hecha por creadores independientes en Trinidad y Tobago."
+  },
+  "common": {
+    "freshToday": "En la cocina hoy",
+    "comingSoon": "Próximamente"
+  },
+  "client": {
+    "home": {
+      "title": "Descubre",
+      "intro": "Cocineras, panaderos, reposteros y servicios de catering cerca de ti — comidas por encargo, especiales de fin de semana, bandejas para fiestas y menús festivos.",
+      "browse": "Ver comidas",
+      "freshTodayNote": "El tablero En la cocina hoy llega en el Slice 9; el visor a pantalla completa en el Slice 11."
+    },
+    "browse": {
+      "title": "Explorar",
+      "body": "La cuadrícula de comidas, los filtros y el orden llegan en el Slice 9."
+    },
+    "sellers": {
+      "title": "Vendedores",
+      "body": "El directorio de vendedores y el mapa ilustrado de Trinidad llegan en el Slice 9."
+    },
+    "category": {
+      "title": "Categoría",
+      "body": "Las páginas de categoría llegan en el Slice 9, cuando la taxonomía esté sembrada."
+    },
+    "meal": {
+      "title": "Comida",
+      "body": "El detalle del plato — galería, disponibilidad, tarjeta del vendedor y el botón Solicitar pedido — llega en el Slice 10."
+    },
+    "sellerProfile": {
+      "title": "Perfil del vendedor",
+      "body": "Portada, biografía, zonas, estante de menú y Seguir llegan en el Slice 11."
+    },
+    "search": {
+      "title": "Buscar",
+      "body": "La búsqueda de comidas y vendedores llega en el Slice 9, junto con el registro de eventos de demanda."
+    },
+    "saved": {
+      "title": "Guardados",
+      "body": "Las comidas guardadas llegan en el Slice 10; las colecciones con nombre en la Fase 4."
+    },
+    "orders": {
+      "title": "Mis pedidos",
+      "body": "El historial de pedidos y el hilo de conversación llegan en los Slices 17 y 18."
+    },
+    "account": {
+      "title": "Cuenta",
+      "body": "Los ajustes de la cuenta llegan con la identidad compartida en el Slice 3."
+    },
+    "login": {
+      "title": "Iniciar sesión",
+      "body": "El inicio de sesión se envía al emisor central (portal-web) — se conecta en el Slice 3. Explorar nunca requiere una cuenta; solo se pide iniciar sesión al confirmar algo."
+    },
+    "register": {
+      "title": "Crear una cuenta",
+      "body": "El registro se envía al emisor central (portal-web) — se conecta en el Slice 3."
+    }
+  },
+  "seller": {
+    "dashboard": {
+      "title": "Panel del vendedor",
+      "body": "Aquí estarán tus pedidos, tus publicaciones, tus entradas de En la cocina hoy y tu perfil. La incorporación llega en el Slice 13, las publicaciones en el Slice 14 y las herramientas de En la cocina hoy en el Slice 15."
+    },
+    "admin": {
+      "title": "Administración de Food",
+      "body": "La cola de aprobación de vendedores, la retirada de publicaciones, la recepción de reportes y el gestor de categorías llegan en el Slice 16, dentro del panel de administración compartido de Apoyo."
+    },
+    "login": {
+      "title": "Acceso para vendedores",
+      "body": "Los vendedores entran con la misma cuenta del ecosistema — se conecta en el Slice 3."
+    }
+  },
+  "scaffold": {
+    "heading": "Andamiaje del Slice 1",
+    "note": "Esta página y la prueba de tokens tienen fecha de caducidad — el Slice 7 elimina ambas cuando llegue la biblioteca de componentes Sobremesa.",
+    "surface": "Superficie",
+    "locale": "Idioma",
+    "host": "Host",
+    "tokensHeading": "Tokens Sobremesa",
+    "surfaces": "Superficies",
+    "accentsText": "Acentos — seguros como texto (corregidos)",
+    "accentsVivid": "Acentos — solo relleno, texto en tinta",
+    "vividNote": "La tinta sobre green/teal/terracotta-vivid mide 3.10–3.80:1 — solo para texto grande o en negrita e iconos. gold-vivid (6.55:1) es seguro en cualquier tamaño, por eso lleva las etiquetas de estado.",
+    "accentsSoft": "Tintes suaves — texto en tinta",
+    "typeScale": "Escala tipográfica",
+    "shapes": "Forma, elevación, movimiento",
+    "priceExample": "Tratamiento del precio",
+    "handExample": "Etiqueta manuscrita — solo para títulos de sección"
+  }
+}

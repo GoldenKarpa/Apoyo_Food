@@ -1,0 +1,93 @@
+{
+  "brand": {
+    "name": "Apoyo Food",
+    "tagline": "Food made by independent creators in Trinidad & Tobago."
+  },
+  "common": {
+    "freshToday": "En la cocina hoy",
+    "comingSoon": "Coming soon"
+  },
+  "client": {
+    "home": {
+      "title": "Discover",
+      "intro": "Home cooks, bakers, dessert makers and caterers near you — meals by pre-order, weekend specials, party trays and holiday menus.",
+      "browse": "Browse meals",
+      "freshTodayNote": "The Fresh Today board arrives in Slice 9; the full-screen viewer in Slice 11."
+    },
+    "browse": {
+      "title": "Browse",
+      "body": "The meals grid, filter sheets and sort arrive in Slice 9."
+    },
+    "sellers": {
+      "title": "Sellers",
+      "body": "The seller directory and the illustrated Trinidad region map arrive in Slice 9."
+    },
+    "category": {
+      "title": "Category",
+      "body": "Category landing pages arrive in Slice 9, once the taxonomy is seeded."
+    },
+    "meal": {
+      "title": "Meal",
+      "body": "Listing detail — gallery, availability, seller card and the Request order CTA — arrives in Slice 10."
+    },
+    "sellerProfile": {
+      "title": "Seller profile",
+      "body": "Cover, bio, areas, Menu shelf and Follow arrive in Slice 11."
+    },
+    "search": {
+      "title": "Search",
+      "body": "Search across meals and sellers arrives in Slice 9, with demand-event logging from the same slice."
+    },
+    "saved": {
+      "title": "Saved",
+      "body": "Saved meals arrive in Slice 10; named collections in Phase 4."
+    },
+    "orders": {
+      "title": "My orders",
+      "body": "Order history and the order thread arrive in Slices 17 and 18."
+    },
+    "account": {
+      "title": "Account",
+      "body": "Account settings arrive with the shared identity wiring in Slice 3."
+    },
+    "login": {
+      "title": "Sign in",
+      "body": "Sign-in posts to the central issuer (portal-web) — wired in Slice 3. Browsing never requires an account; you are only asked to sign in when you commit to something."
+    },
+    "register": {
+      "title": "Create an account",
+      "body": "Registration posts to the central issuer (portal-web) — wired in Slice 3."
+    }
+  },
+  "seller": {
+    "dashboard": {
+      "title": "Seller dashboard",
+      "body": "Your order inbox, listings, Fresh Today posts and profile will live here. Onboarding arrives in Slice 13, listings in Slice 14, Fresh Today tools in Slice 15."
+    },
+    "admin": {
+      "title": "Food administration",
+      "body": "The seller approval queue, listing takedowns, report intake and the category manager arrive in Slice 16, composed into the shared Apoyo admin shell."
+    },
+    "login": {
+      "title": "Seller sign-in",
+      "body": "Sellers sign in with the same ecosystem account — wired in Slice 3."
+    }
+  },
+  "scaffold": {
+    "heading": "Slice 1 scaffold",
+    "note": "This page and the token proof below are scaffolding with a scheduled death — Slice 7 deletes both when the real Sobremesa component library lands.",
+    "surface": "Surface",
+    "locale": "Locale",
+    "host": "Host",
+    "tokensHeading": "Sobremesa tokens",
+    "surfaces": "Surfaces",
+    "accentsText": "Accents — text-safe (corrected)",
+    "accentsVivid": "Accents — fill-only, ink on top",
+    "vividNote": "Ink on green/teal/terracotta-vivid measures 3.10–3.80:1 — large or bold text and icons only. gold-vivid (6.55:1) is safe at any size, which is why it carries the status chips.",
+    "accentsSoft": "Soft tints — ink on top",
+    "typeScale": "Type scale",
+    "shapes": "Shape, elevation, motion",
+    "priceExample": "Price treatment",
+    "handExample": "Handwritten section label — section labels only"
+  }
+}

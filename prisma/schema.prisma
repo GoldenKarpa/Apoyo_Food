@@ -1,0 +1,18 @@
+// Datasource/generator stub only — Slice 2 writes the real Part D schema.
+// It exists now so `prisma generate` and the db:* npm scripts are valid from
+// Slice 1 onward.
+//
+// ⚠ Slice 2 convention note, recorded here so it isn't missed: this schema
+// follows the Apoyo-Demia / portal-web casing convention (`@map("snake_case")`
+// columns, `@@map("plural_snake_case")` tables), NOT Salon's — Salon has zero
+// @map in its entire schema and is the wrong template to copy from.
+// (Apparel BUILD_SLICES.md Slice 2 notes.)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

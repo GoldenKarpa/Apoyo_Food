@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * "Sobremesa" palette — Apoyo_Food_Architecture.md Part F3 is the authority.
+ *
+ * ⚠ THE ACCENTS BELOW ARE THE CORRECTED VALUES, NOT THE EMERGENT SPEC'S.
+ * Part F3 was amended after a WCAG audit found all five Emergent accents
+ * unreadable as text: `gold` #DDA24A measured 1.76:1 on `sunken` (bar 4.5),
+ * `teal` 3.04:1, `terracotta` 3.16:1, and even `green` — the spec's own
+ * non-negotiable anchor for navigation and every primary button — only 3.72:1.
+ * The fix moved LIGHTNESS ONLY; hue and saturation are untouched, so each
+ * accent stays the same colour family, deepened. A future session must not
+ * restore the Emergent hexes as text colours. All 40 pairings below were
+ * re-measured directly (WCAG 2.1 relative luminance, computed not estimated)
+ * at Slice 1 before being written here; the doc's table reproduced exactly.
+ *
+ * Declared as space-separated RGB channels so Tailwind opacity modifiers work
+ * (see tailwind.config.ts). The Part F3 hex sits beside each triple; if these
+ * ever disagree, the hex is what Part F3 says and wins.
+ *
+ * There is deliberately no `.dark` block: Sobremesa is a single warm light
+ * theme. A dark mode would need its own palette pass, not an inversion.
+ */
+@layer base {
+  :root {
+    /* Surfaces — unchanged from the Emergent spec */
+    --cream-bg: 244 238 225; /* #F4EEE1 */
+    --card: 252 248 239; /* #FCF8EF */
+    --sunken: 235 227 211; /* #EBE3D3 */
+    --hairline: 226 216 196; /* #E2D8C4 */
+
+    /* Ink — unchanged.
+     * ⚠ `ink-muted` clears 4.5 on cream-bg (4.83) and card (5.26) but measures
+     * 4.37 on `sunken` — the one documented gap in the system. Use full `ink`
+     * for body text on sunken surfaces (inputs, sunken cards). */
+    --ink: 43 40 32; /* #2B2820 */
+    --ink-muted: 111 103 90; /* #6F675A */
+
+    /*
+     * Accents — TEXT-SAFE form (corrected). Each clears 4.5:1 as text on all
+     * three surfaces AND on its own -soft tint, and equally as a fill behind a
+     * `card`-cream label (WCAG contrast is symmetric in its two inputs, so
+     * those are the same numeric check). Measured vs sunken / cream-bg / card:
+     */
+    --green: 83 109 70; /* #536D46 — 4.52 / 4.98 / 5.44 — was #5E7B4F. THE ANCHOR:
+                         * navigation, active tab, primary buttons, default CTAs,
+                         * on every screen. Non-negotiable (Part F3). */
+    --teal: 61 109 104; /* #3D6D68 — 4.59 / 5.07 / 5.53 — was #4E8C86.
+                         * Fresh Today freshness dot, follow actions,
+                         * verification checks, region-map selection. */
+    --gold: 137 92 26; /* #895C1A — 4.56 / 5.03 / 5.49 — was #DDA24A.
+                        * ⚠ THE BIGGEST VISIBLE CHANGE the audit produced: a deep
+                        * amber rather than a bright honey (the original was
+                        * furthest from compliant, at 1.76:1). Open question 6 in
+                        * the arch doc flags this for a deliberate look. The
+                        * bright marigold the mockups show survives as
+                        * `gold-vivid` below, which is where status chips and
+                        * availability stamps actually use it. */
+    --terracotta: 154 76 54; /* #9A4C36 — 4.76 / 5.25 / 5.72 — was #C0654A.
+                              * PRICE TEXT EVERYWHERE (the family tie back to
+                              * Apparel's clay). */
+    --error: 165 74 58; /* #A54A3A — 4.52 / 4.99 / 5.44 — was #B2503F */
+
+    /*
+     * Accents — FILL-ONLY form. These ARE the Emergent originals, retained
+     * rather than discarded, exactly as Apparel retained its `clay-muted`.
+     * ⚠ INK on top, always — never a cream/white label, and never used AS a
+     * text colour. This is what renders the vivid market-stamp pills and status
+     * chips the mockups intend, while staying accessible. Ink-on-fill measured:
+     */
+    --green-vivid: 94 123 79; /* #5E7B4F — ink 3.10 (large/bold labels + icons) */
+    --teal-vivid: 78 140 134; /* #4E8C86 — ink 3.80 (large/bold labels + icons) */
+    --gold-vivid: 221 162 74; /* #DDA24A — ink 6.55 — the best of the four, and
+                               * therefore the right fill for a status chip with
+                               * dark lettering ("Pendiente", "Por encargo") */
+    --terracotta-vivid: 192 101 74; /* #C0654A — ink 3.64 (large/bold + icons) */
+
+    /* Soft tints — backgrounds carrying INK text. Unaffected by the audit:
+     * ink on any of them measures 10.97–11.98:1. */
+    --green-soft: 228 234 220; /* #E4EADC */
+    --teal-soft: 220 232 229; /* #DCE8E5 */
+    --gold-soft: 245 230 201; /* #F5E6C9 */
+    --terracotta-soft: 240 218 209; /* #F0DAD1 */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-hairline;
+  }
+
+  body {
+    @apply bg-cream-bg text-ink;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Part F3: headings use the warm display serif; body/UI stays Inter. */
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+
+  /*
+   * Part F3 accessibility: visible focus everywhere, never a bare outline:none.
+   * The anchor `green` doubles as the focus indicator — at 4.52–5.44:1 against
+   * all three surfaces it clears the 3:1 non-text bar comfortably, so unlike
+   * Apparel (whose accent needed a darker variant for this) no separate ring
+   * token is required.
+   */
+  :focus-visible {
+    @apply outline-none ring-2 ring-green ring-offset-2 ring-offset-cream-bg;
+  }
+}
+
+@layer utilities {
+  /*
+   * Shared ecosystem layout: 16px screen padding on mobile, 24px from 768px up,
+   * capped at the 1200px content width. Every page shell uses this instead of
+   * re-deriving the numbers.
+   */
+  .screen-pad {
+    @apply mx-auto w-full max-w-content px-screen md:px-screen-md;
+  }
+
+  /*
+   * Part F3 accessibility: tap targets >= 44px. Applied to interactive elements
+   * whose visual size is smaller than their required hit area.
+   */
+  .tap-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /*
+   * Part F3 imagery ratios. Meals are 4:3 (abundance/table energy — the
+   * deliberate divergence from Apparel's 4:5 single-garment lock); seller covers
+   * 16:9; avatars and Fresh Today thumbnails 1:1. Photos are cropped to these
+   * at ingest too (Slice 4) — these are the presentation half of the same rule,
+   * so a mis-sized image still can't break the grid rhythm.
+   */
+  .aspect-meal {
+    aspect-ratio: 4 / 3;
+  }
+  .aspect-cover {
+    aspect-ratio: 16 / 9;
+  }
+  .aspect-thumb {
+    aspect-ratio: 1 / 1;
+  }
+}
