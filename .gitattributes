@@ -1,0 +1,10 @@
+# deploy.sh runs on the Linux VPS via `bash` — CRLF line endings break the
+# shebang ("bad interpreter: /usr/bin/env bash^M") and can break commands inside
+# the script too. Force LF regardless of any contributor's core.autocrlf, so an
+# edit from a Windows editor with different line-ending settings can't silently
+# corrupt the file before it is ever run for real.
+#
+# Ecosystem ruling E4 (APOYO_ECOSYSTEM.md): "add it the moment any vertical
+# introduces its FIRST .sh file — don't wait to hit the failure once first."
+# This slice is that moment for Food.
+*.sh text eol=lf

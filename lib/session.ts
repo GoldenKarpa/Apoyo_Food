@@ -51,12 +51,41 @@ export interface SessionMembership {
 }
 
 export async function getFoodSession(): Promise<FoodSession | null> {
-  const token = await getToken({
-    req: { headers: await headers() },
-    secret: process.env.AUTH_SECRET,
-    // Must mirror portal-web's `isSecure` exactly — see the note above.
-    secureCookie: process.env.NODE_ENV === "production",
-  });
+  let token: Awaited<ReturnType<typeof getToken>> = null;
+  try {
+    token = await getToken({
+      req: { headers: await headers() },
+      secret: process.env.AUTH_SECRET,
+      // Must mirror portal-web's `isSecure` exactly — see the note above.
+      secureCookie: process.env.NODE_ENV === "production",
+    });
+  } catch (err) {
+    // ⚠ Defensive, and deliberately proportionate. `getToken` is documented to
+    // RETURN null on a token it can't read, so a throw here would be a bug in
+    // the dependency rather than a normal outcome — but this function runs on
+    // essentially every request, so an uncaught throw would 500 the entire
+    // surface rather than degrading one signed-out request.
+    //
+    // Context (checked at Slice 6's deploy, 2026-07-30): `npm audit` reports two
+    // CRITICAL advisories in `@auth/core` via our pinned next-auth
+    // 5.0.0-beta.31, one of which is literally "getToken() throws an uncaught
+    // exception on malformed Bearer authorization headers"
+    // (GHSA-xmf8-cvqr-rfgj). That path genuinely exists in the installed source
+    // (`@auth/core/jwt.js:92-94` reads the header and splits on " "), but it was
+    // NOT reproducible against this app — six malformed Bearer shapes and four
+    // garbage/empty session cookies all returned 200 with nothing logged,
+    // against a production build. So this catch is insurance against a vector
+    // that testing could not trigger, not a fix for an observed failure.
+    //
+    // ⚠ Do NOT "fix" the advisory by bumping next-auth in THIS app alone. The
+    // beta.31 pin is JWT wire-format compatibility with the issuer and every
+    // other vertical, not a dependency preference — `npm audit fix --force`
+    // would move Food to beta.32 on its own and risk breaking cross-app session
+    // decode, which is the entire auth model. Moving off beta.31 is an
+    // ecosystem-wide, lockstep decision.
+    console.error("[session] getToken threw — treating as signed out", err);
+    return null;
+  }
   if (!token) return null;
 
   const userId = (token.id as string | undefined) ?? token.sub;
