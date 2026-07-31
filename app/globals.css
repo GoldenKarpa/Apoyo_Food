@@ -149,4 +149,42 @@
   .aspect-thumb {
     aspect-ratio: 1 / 1;
   }
+
+  /*
+   * Horizontal rails (`components/ui/rail.tsx`). The scrollbar is hidden
+   * because the affordance is the peeking next card, not a bar — Part F3's
+   * rails are a phone-first pattern and desktop scrollbars over a cream card
+   * grid read as chrome. Done in CSS rather than by adding a Tailwind plugin
+   * for two declarations.
+   *
+   * ⚠ Hiding the scrollbar removes a *visual* affordance, not a functional one:
+   * `rail.tsx` makes the region focusable and labelled so it stays keyboard
+   * reachable, which Part F3 requires of Fresh Today content specifically.
+   */
+  .rail-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .rail-scroll::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/*
+ * Part F3 motion is 200-300ms ease-out everywhere — small, and therefore easy
+ * to make unconditional by mistake. Viewers who ask their OS for reduced motion
+ * get the end state immediately instead: the blur-up still resolves, the card
+ * still arrives, the sheet still opens, none of it moves. Written as a global
+ * rule rather than per-component `motion-reduce:` variants so a component added
+ * in a later slice inherits it without having to remember.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

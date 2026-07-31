@@ -1,11 +1,84 @@
 {
   "brand": {
     "name": "Apoyo Food",
+    "nameFirst": "Apoyo",
+    "nameSecond": "Food",
     "tagline": "Food made by independent creators in Trinidad & Tobago."
   },
   "common": {
     "freshToday": "En la cocina hoy",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "close": "Close"
+  },
+  "nav": {
+    "primary": "Main navigation",
+    "items": {
+      "home": "Home",
+      "browse": "Browse",
+      "orders": "Orders",
+      "saved": "Saved",
+      "account": "Account"
+    }
+  },
+  "footer": {
+    "legal": "Apoyo Food is part of the Apoyo ecosystem. Cooks keep their own kitchens, prices and customers."
+  },
+  "comingSoon": {
+    "badge": "Coming soon",
+    "acknowledge": "Got it",
+    "phaseNote": "Planned for phase {phase} of the build.",
+    "features": {
+      "becomeSeller": {
+        "action": "Sell your food",
+        "title": "Cook and sell on Apoyo Food",
+        "description": "Home cooks, bakers and caterers will be able to set up a kitchen here — profile, service areas, languages, menu and photos — and start taking orders. Registration opens once seller onboarding is built, so nobody signs up for a form that cannot be finished."
+      },
+      "requestOrder": {
+        "action": "Request order",
+        "title": "Requesting an order",
+        "description": "You will pick items and quantities, choose pickup, delivery or a meet-up, and propose a date and time that fits the cook's availability. Nothing is charged here: the cook confirms first, and payment happens between the two of you."
+      },
+      "buyerOrders": {
+        "action": "My orders",
+        "title": "Your orders",
+        "description": "Every request you make will live here with its status — waiting on the cook, accepted, ready, completed — along with the agreed price and the conversation thread for the details."
+      },
+      "messageSeller": {
+        "action": "Message the cook",
+        "title": "Talking to a cook",
+        "description": "Messaging is built into an order rather than sitting on a profile, and it translates itself between English and Spanish. That is on purpose: it keeps pickup addresses and phone numbers out of public pages and inside a conversation that only starts once a cook has accepted your request."
+      },
+      "buyerAccount": {
+        "action": "Account",
+        "title": "Your account",
+        "description": "Saved addresses, your language, notification settings and your Apoyo profile will live here. You can browse the whole marketplace without an account — you are only asked to sign in when you commit to something."
+      }
+    }
+  },
+  "filters": {
+    "open": "Filters",
+    "title": "Filter meals",
+    "description": "Narrow the list down. Your choices apply when you tap Show results.",
+    "apply": "Show results",
+    "clear": "Clear all",
+    "groups": {
+      "category": "Category",
+      "area": "Area",
+      "price": "Price",
+      "dietary": "Dietary",
+      "availability": "Availability",
+      "sort": "Sort by"
+    }
+  },
+  "availability": {
+    "today": "Available today",
+    "weekend": "Weekends",
+    "preorder": "Pre-order · 2 days",
+    "holidays": "Holidays only"
+  },
+  "price": {
+    "startingAt": "From",
+    "onRequest": "Price on request"
   },
   "localeToggle": {
     "ariaLabel": "Language"
@@ -18,6 +91,57 @@
     "seeOriginal": "See original",
     "seeTranslation": "See translation",
     "serviceDown": "Translate service unreachable when this was written — showing the original, which is the intended degrade, not an error."
+  },
+  "styleGuide": {
+    "title": "Sobremesa components",
+    "intro": "Every primitive from the component library, rendered against dummy data. This page is a build tool, not a storefront page — it is deliberately unlinked, and it is what scripts/verify-a11y.mjs drives at two widths in both locales.",
+    "sections": {
+      "comingSoon": "Coming-soon stubs",
+      "buttons": "Buttons",
+      "chips": "Chips & status",
+      "availability": "Availability stamps",
+      "mealCards": "Meal cards",
+      "freshToday": "Fresh Today board",
+      "sellerCards": "Seller cards",
+      "categoryCards": "Category cards",
+      "sectionHeaders": "Section headers",
+      "skeletons": "Skeletons",
+      "filterSheet": "Filter sheet",
+      "translated": "Bilingual text",
+      "typography": "Type scale & palette"
+    },
+    "notes": {
+      "everyStub": "Every key in lib/coming-soon.ts, rendered. Each trigger stamps data-coming-soon on itself so a later audit can check the stub inventory against a rendered page.",
+      "media": "The photos below are synthetic, but they are pushed through the real Slice 4 ingest pipeline — variants, EXIF strip and blur placeholder — and served by the real storage driver, so the blur-up is the production path rather than a mock.",
+      "availability": "Part F3 asks for ink on a -vivid fill. Only gold-vivid clears AA at this size (6.55:1); green-vivid measures 3.10, terracotta-vivid 3.64, teal-vivid 3.80. Stamps therefore use the text-safe accent — a cream label on the accent fill (5.44-5.72:1), or the accent on its own soft tint for the large market stamp (4.52-4.72:1).",
+      "freshToday": "Rounded-rectangular cards, never circular rings. Teal freshness dot, the availability window on the card, and seen/unseen as a border treatment.",
+      "skeletons": "Never a spinner on a browse surface — skeletons plus blur-up only.",
+      "rail": "Snap-scrolling, full-bleed on mobile, and focusable so it is reachable without gestures."
+    },
+    "samples": {
+      "mealOne": "Pastelón y empanadas caseras",
+      "mealTwo": "Torta de tres leches",
+      "mealThree": "Batido tropical de mango",
+      "mealFour": "Costillas BBQ con provisión",
+      "sellerName": "Cocina de Abuela",
+      "sellerFollowers": "128 followers",
+      "verified": "Verified cook",
+      "freshDot": "Posted to Fresh Today",
+      "areaOne": "San Fernando",
+      "areaTwo": "Central",
+      "specialtyOne": "Venezuelan",
+      "specialtyTwo": "Baking",
+      "categoryOne": "Dinner",
+      "categoryTwo": "Desserts",
+      "categoryThree": "Juices & Smoothies",
+      "categoryFour": "Holiday Specials",
+      "categoryCount": "18 meals",
+      "sectionTitle": "Available this weekend",
+      "sectionNote": "Computed from each listing's availability windows, in Trinidad time.",
+      "seeAll": "See all",
+      "original": "Hice pastelón esta mañana con plátano bien maduro; queda listo para recoger después de las tres.",
+      "translated": "I made pastelón this morning with really ripe plantain; it will be ready for pickup after three."
+    }
   },
   "client": {
     "home": {

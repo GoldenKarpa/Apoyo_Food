@@ -1,24 +1,27 @@
-import { getTranslations } from "next-intl/server";
+import { BottomNav } from "@/components/chrome/bottom-nav";
+import { SiteFooter } from "@/components/chrome/site-footer";
+import { SiteHeader } from "@/components/chrome/site-header";
 
-import { LocaleToggle } from "@/components/locale-toggle";
-
-// Client marketplace shell — food.apoyolime.com. Deliberately minimal: Slice 7
-// builds the real chrome (bottom tab bar, ES/EN toggle pill top-right, section
-// headers) on top of the Sobremesa component library. This is enough structure
-// for the Slice 1 placeholders to sit in something token-styled.
-export default async function ClientLayout({ children }: { children: React.ReactNode }) {
-  const t = await getTranslations("brand");
-
+/**
+ * Client marketplace shell — food.apoyolime.com.
+ *
+ * Slice 7 replaced Slice 1's inline header with the real Sobremesa chrome:
+ * `<SiteHeader>` (wordmark + locale pill + the ≥768px nav row) and
+ * `<BottomNav>` (the phone tab bar, hidden from 768px). Both read the same
+ * `components/chrome/nav-config.ts`, so the two widths can never offer
+ * different navigation.
+ *
+ * `pb-24 md:pb-0` on the main column keeps the last row of content clear of the
+ * sticky tab bar on a phone — without it a card's bottom edge sits underneath
+ * the bar and looks clipped at exactly the scroll position where a viewer stops.
+ */
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b border-hairline bg-card">
-        <div className="screen-pad flex min-h-[64px] items-center justify-between gap-4">
-          <span className="font-display text-h1 font-semibold text-green">{t("name")}</span>
-          {/* Part F3: top-right, always visible — bilingual as brand. */}
-          <LocaleToggle />
-        </div>
-      </header>
-      <main className="screen-pad flex flex-1 flex-col gap-6 py-8">{children}</main>
+      <SiteHeader />
+      <main className="screen-pad flex flex-1 flex-col gap-8 py-8 pb-24 md:pb-8">{children}</main>
+      <SiteFooter />
+      <BottomNav />
     </div>
   );
 }

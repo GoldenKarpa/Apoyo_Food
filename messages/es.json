@@ -1,11 +1,84 @@
 {
   "brand": {
     "name": "Apoyo Food",
+    "nameFirst": "Apoyo",
+    "nameSecond": "Food",
     "tagline": "Comida hecha por creadores independientes en Trinidad y Tobago."
   },
   "common": {
     "freshToday": "En la cocina hoy",
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "close": "Cerrar"
+  },
+  "nav": {
+    "primary": "Navegación principal",
+    "items": {
+      "home": "Inicio",
+      "browse": "Explorar",
+      "orders": "Pedidos",
+      "saved": "Guardados",
+      "account": "Perfil"
+    }
+  },
+  "footer": {
+    "legal": "Apoyo Food forma parte del ecosistema Apoyo. Cada cocinero mantiene su cocina, sus precios y su clientela."
+  },
+  "comingSoon": {
+    "badge": "Próximamente",
+    "acknowledge": "Entendido",
+    "phaseNote": "Previsto para la fase {phase} de la construcción.",
+    "features": {
+      "becomeSeller": {
+        "action": "Vende tu comida",
+        "title": "Cocina y vende en Apoyo Food",
+        "description": "Cocineras, panaderos y servicios de catering podrán abrir su cocina aquí — perfil, zonas de servicio, idiomas, menú y fotos — y empezar a recibir pedidos. El registro se abrirá cuando esté lista la incorporación de vendedores, para que nadie se inscriba en un formulario que no puede terminar."
+      },
+      "requestOrder": {
+        "action": "Solicitar pedido",
+        "title": "Solicitar un pedido",
+        "description": "Elegirás platos y cantidades, escogerás recogida, entrega o punto de encuentro, y propondrás una fecha y hora que encaje con la disponibilidad del cocinero. Aquí no se cobra nada: primero confirma el cocinero, y el pago ocurre entre ustedes dos."
+      },
+      "buyerOrders": {
+        "action": "Mis pedidos",
+        "title": "Tus pedidos",
+        "description": "Cada solicitud que hagas vivirá aquí con su estado — esperando al cocinero, aceptado, listo, completado — junto al precio acordado y el hilo de conversación para los detalles."
+      },
+      "messageSeller": {
+        "action": "Escribir al cocinero",
+        "title": "Hablar con un cocinero",
+        "description": "La mensajería vive dentro de un pedido y no en el perfil, y se traduce sola entre español e inglés. Es a propósito: mantiene las direcciones de recogida y los teléfonos fuera de las páginas públicas y dentro de una conversación que solo empieza cuando el cocinero acepta tu solicitud."
+      },
+      "buyerAccount": {
+        "action": "Perfil",
+        "title": "Tu cuenta",
+        "description": "Aquí vivirán tus direcciones guardadas, tu idioma, los avisos y tu perfil de Apoyo. Puedes explorar todo el mercado sin cuenta — solo se te pide iniciar sesión cuando confirmas algo."
+      }
+    }
+  },
+  "filters": {
+    "open": "Filtros",
+    "title": "Filtrar comidas",
+    "description": "Reduce la lista. Tus opciones se aplican al tocar Ver resultados.",
+    "apply": "Ver resultados",
+    "clear": "Borrar todo",
+    "groups": {
+      "category": "Categoría",
+      "area": "Zona",
+      "price": "Precio",
+      "dietary": "Dieta",
+      "availability": "Disponibilidad",
+      "sort": "Ordenar por"
+    }
+  },
+  "availability": {
+    "today": "Disponible hoy",
+    "weekend": "Fin de semana",
+    "preorder": "Por encargo · 2 días",
+    "holidays": "Solo festivos"
+  },
+  "price": {
+    "startingAt": "Desde",
+    "onRequest": "Precio a consultar"
   },
   "localeToggle": {
     "ariaLabel": "Idioma"
@@ -18,6 +91,57 @@
     "seeOriginal": "Ver original",
     "seeTranslation": "Ver traducción",
     "serviceDown": "El servicio de traducción no estaba disponible al escribir esto — se muestra el original, que es la degradación prevista, no un error."
+  },
+  "styleGuide": {
+    "title": "Componentes Sobremesa",
+    "intro": "Cada primitiva de la biblioteca de componentes, con datos de muestra. Esta página es una herramienta de construcción, no una página de la tienda — está deliberadamente sin enlazar, y es la que recorre scripts/verify-a11y.mjs en dos anchos y en los dos idiomas.",
+    "sections": {
+      "comingSoon": "Botones de «próximamente»",
+      "buttons": "Botones",
+      "chips": "Etiquetas y estados",
+      "availability": "Sellos de disponibilidad",
+      "mealCards": "Tarjetas de comida",
+      "freshToday": "Tablero En la cocina hoy",
+      "sellerCards": "Tarjetas de vendedor",
+      "categoryCards": "Tarjetas de categoría",
+      "sectionHeaders": "Títulos de sección",
+      "skeletons": "Esqueletos de carga",
+      "filterSheet": "Panel de filtros",
+      "translated": "Texto bilingüe",
+      "typography": "Escala tipográfica y paleta"
+    },
+    "notes": {
+      "everyStub": "Cada clave de lib/coming-soon.ts, renderizada. Cada disparador se marca con data-coming-soon para que una auditoría posterior pueda comprobar el inventario de stubs sobre una página ya renderizada.",
+      "media": "Las fotos de abajo son sintéticas, pero pasan por la tubería de ingesta real del Slice 4 — variantes, borrado de EXIF y marcador borroso — y las sirve el driver de almacenamiento real, así que el desenfoque inicial es el camino de producción y no una simulación.",
+      "availability": "La Parte F3 pide tinta sobre un relleno -vivid. Solo gold-vivid alcanza AA a este tamaño (6.55:1); green-vivid mide 3.10, terracotta-vivid 3.64 y teal-vivid 3.80. Por eso los sellos usan el acento seguro como texto — etiqueta crema sobre el relleno del acento (5.44-5.72:1), o el acento sobre su propio tinte suave en el sello grande (4.52-4.72:1).",
+      "freshToday": "Tarjetas rectangulares redondeadas, nunca aros circulares. Punto de frescura teal, la ventana de disponibilidad en la propia tarjeta, y visto/no visto como tratamiento del borde.",
+      "skeletons": "Nunca un spinner en las superficies de exploración — solo esqueletos y desenfoque inicial.",
+      "rail": "Desplazamiento con anclaje, a sangre completa en móvil, y enfocable para que sea alcanzable sin gestos."
+    },
+    "samples": {
+      "mealOne": "Pastelón y empanadas caseras",
+      "mealTwo": "Torta de tres leches",
+      "mealThree": "Batido tropical de mango",
+      "mealFour": "Costillas BBQ con provisión",
+      "sellerName": "Cocina de Abuela",
+      "sellerFollowers": "128 seguidores",
+      "verified": "Cocinero verificado",
+      "freshDot": "Publicó en En la cocina hoy",
+      "areaOne": "San Fernando",
+      "areaTwo": "Centro",
+      "specialtyOne": "Venezolana",
+      "specialtyTwo": "Repostería",
+      "categoryOne": "Cena",
+      "categoryTwo": "Postres",
+      "categoryThree": "Jugos y batidos",
+      "categoryFour": "Especiales festivos",
+      "categoryCount": "18 comidas",
+      "sectionTitle": "Disponible este fin de semana",
+      "sectionNote": "Se calcula a partir de las ventanas de disponibilidad de cada publicación, en hora de Trinidad.",
+      "seeAll": "Ver todo",
+      "original": "Hice pastelón esta mañana con plátano bien maduro; queda listo para recoger después de las tres.",
+      "translated": "I made pastelón this morning with really ripe plantain; it will be ready for pickup after three."
+    }
   },
   "client": {
     "home": {

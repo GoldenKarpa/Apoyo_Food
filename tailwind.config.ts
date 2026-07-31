@@ -173,11 +173,28 @@ const config: Config = {
           from: { opacity: "1" },
           to: { opacity: "0" },
         },
+        // The >=768px form of the same overlay: a centred card that fades and
+        // scales rather than sliding from an edge it is nowhere near. Both
+        // halves exist for the Presence reason above.
+        "modal-in": {
+          from: { opacity: "0", transform: "translate(-50%, -50%) scale(0.97)" },
+          to: { opacity: "1", transform: "translate(-50%, -50%) scale(1)" },
+        },
+        "modal-out": {
+          from: { opacity: "1", transform: "translate(-50%, -50%) scale(1)" },
+          to: { opacity: "0", transform: "translate(-50%, -50%) scale(0.97)" },
+        },
         // Blur-up image reveal (Part F3): the LQIP placeholder resolves into the
         // real photo. Never a spinner on a browse surface.
         "blur-up": {
           from: { opacity: "0", filter: "blur(12px)" },
           to: { opacity: "1", filter: "blur(0)" },
+        },
+        // Part F3's card fade: a card arrives, it does not pop. Paired with the
+        // blur-up above, this is the whole of the browse-surface motion budget.
+        "card-in": {
+          from: { opacity: "0", transform: "translateY(6px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
         },
       },
       animation: {
@@ -185,7 +202,10 @@ const config: Config = {
         "sheet-down": "sheet-down 200ms cubic-bezier(0.16, 1, 0.3, 1)",
         "fade-in": "fade-in 250ms cubic-bezier(0.16, 1, 0.3, 1)",
         "fade-out": "fade-out 200ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "modal-in": "modal-in 250ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "modal-out": "modal-out 200ms cubic-bezier(0.16, 1, 0.3, 1)",
         "blur-up": "blur-up 300ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "card-in": "card-in 250ms cubic-bezier(0.16, 1, 0.3, 1) both",
       },
     },
   },
