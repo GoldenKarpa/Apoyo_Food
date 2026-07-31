@@ -102,9 +102,7 @@ export async function MediaProof() {
                 blurDataUrl={entry.blurDataUrl}
                 sizes="(min-width: 768px) 25vw, 50vw"
               />
-              <figcaption className="text-caption text-ink-muted">
-                {entry.label} · {entry.width}×{entry.height}
-              </figcaption>
+              <figcaption className="text-caption text-ink-muted">{entry.label}</figcaption>
             </figure>
           ))}
         </div>

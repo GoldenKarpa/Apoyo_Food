@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { assertImageUploadValid, type AllowedImageType } from "./validate";
+import { assertImageUploadValid } from "./validate";
 import { newMediaId, writeMediaVariant, type MediaCategory } from "@/lib/storage";
 
 /**
@@ -67,9 +67,6 @@ export async function ingestImage(
   options: IngestImageOptions,
 ): Promise<IngestImageResult> {
   assertImageUploadValid(buffer, declaredMimeType);
-  // Narrowed by the assertion above; bound so the type is used meaningfully.
-  const _mimeType: AllowedImageType = declaredMimeType;
-  void _mimeType;
 
   const rotated = await sharp(buffer).rotate().toBuffer();
   const mediaId = newMediaId();
@@ -155,14 +152,26 @@ const STORY_VARIANTS: readonly VariantSpec[] = [
   { suffix: "full", width: 1600, height: 2000 },
 ];
 
-/** The four-column shape every photo-bearing model in Part D stores. */
+/**
+ * EXACTLY the four columns every photo-bearing model in Part D stores — no more.
+ *
+ * ⚠ That exactness is the point, and it was a Phase-0 review fix. This type
+ * previously also carried `width`/`height`, which **no table has columns for**,
+ * so the natural call site —
+ *   `prisma.foodListingPhoto.create({ data: { listingId, ...await ingestMealPhoto(...) } })`
+ * — would have thrown at runtime on unknown fields, in the exact slice most
+ * likely to write it that way (Slice 14). Keeping this shape congruent with the
+ * schema makes the spread correct by construction instead of a trap.
+ *
+ * Dimensions are still available on `IngestImageResult` for anything that
+ * genuinely needs them. Nothing persisted does: `<FoodImage>` locks the aspect
+ * ratio in CSS and uses `fill`, so intrinsic dimensions would be dead columns.
+ */
 export interface PhotoVariantPaths {
   pathThumb: string;
   pathCard: string;
   pathFull: string;
   blurDataUrl: string;
-  width: number;
-  height: number;
 }
 
 function toPhotoPaths(result: IngestImageResult): PhotoVariantPaths {
@@ -171,8 +180,6 @@ function toPhotoPaths(result: IngestImageResult): PhotoVariantPaths {
     pathCard: result.variants.card.key,
     pathFull: result.variants.full.key,
     blurDataUrl: result.blurDataUrl,
-    width: result.width,
-    height: result.height,
   };
 }
 

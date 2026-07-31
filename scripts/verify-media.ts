@@ -216,7 +216,19 @@ async function main() {
   for (const file of allFiles) {
     const contents = await fs.readFile(file);
     if (contents.equals(original)) originalFound = true;
-    if (!file.endsWith(".webp")) nonWebp = file;
+
+    // ⚠ Scope the "everything here is pipeline output" check to the CATEGORY
+    // directories, not the whole uploads root. The root legitimately holds
+    // other things: the Slice 4 and Slice 5 scaffolds cache `_media-proof.json`
+    // and `_translation-proof.json` beside the media dirs. Checking the whole
+    // tree made this assertion fail for a completely unrelated reason once both
+    // scaffolds had been exercised — a brittle proxy for the real invariant,
+    // which is only ever about what the STORAGE MODULE writes. Those root files
+    // are unreachable through the serve route anyway: `safeStorageKey` demands a
+    // `<category>/<file>` shape, so a one-segment key is rejected.
+    const relative = path.relative(uploadsBase, file);
+    const insideCategoryDir = relative.includes(path.sep);
+    if (insideCategoryDir && !file.endsWith(".webp")) nonWebp = file;
   }
   assert("the uploaded buffer appears nowhere on disk, byte-for-byte", !originalFound);
   assert("every file in the uploads tree is a pipeline-produced .webp", nonWebp === null, { nonWebp });

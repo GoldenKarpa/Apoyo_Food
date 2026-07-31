@@ -47,6 +47,12 @@ function ecosystemHeaders(): HeadersInit {
 
 const TTL_MS = 60_000;
 const ttlCache = new Map<string, { memberships: EcosystemMembership[]; expiresAt: number }>();
+/**
+ * In-flight requests, so N concurrent callers for the same user share one fetch.
+ * This replaces what React's `cache()` used to provide here — see the note on
+ * `getMemberships` for why that wrapper had to go.
+ */
+const inFlight = new Map<string, Promise<EcosystemMembership[]>>();
 
 async function fetchMemberships(userId: string): Promise<EcosystemMembership[]> {
   const res = await fetch(ecosystemUrl(`/users/${userId}/memberships`), {
@@ -61,25 +67,53 @@ async function fetchMemberships(userId: string): Promise<EcosystemMembership[]> 
 }
 
 /**
- * Two caching layers, matching Salon and Apparel: React's per-request dedup
- * wraps a 60s cross-request TTL cache keyed by userId, so repeated reads across
- * nearby requests don't all round-trip. Writes bust the entry (see
- * `createMembership`), so a read immediately after a write is correct rather
- * than 60s stale.
+ * A 60s TTL cache keyed by userId, plus in-flight deduplication. This is the
+ * AUTHORITATIVE membership read — the JWT's embedded `memberships` claim is a
+ * fast path that goes stale (see lib/session.ts); never authorize off that one.
  *
- * This is the AUTHORITATIVE membership read. The JWT's embedded `memberships`
- * claim is a fast path that goes stale (see lib/session.ts) — never authorize
- * off that one.
+ * ⚠ **This was deliberately UN-wrapped from React's `cache()` in the Phase-0
+ * review, and it must not be re-wrapped.** Salon and Apparel both wrap the
+ * equivalent function, and the combination is subtly broken: `cache()` memoizes
+ * per REQUEST, and `ttlCache.delete()` in `createMembership` cannot reach that
+ * memo. So within a single request the sequence
+ *
+ *     read -> [] , mint (FOOD, PROVIDER) , read -> STILL []
+ *
+ * returns a stale empty list — which is precisely Slice 13's shape (onboarding
+ * submit mints the membership, then the dashboard guard re-reads it in the same
+ * request). It is the same class of failure as trusting the stale JWT claim,
+ * which `requireFoodSeller` exists to avoid.
+ *
+ * Worth knowing how this got missed: Slice 3's `verify-ecosystem.ts` asserts
+ * "a read straight after a write is fresh, not 60s stale" and PASSES — but it
+ * runs in a plain Node script, where `cache()` has no request scope and simply
+ * calls through. The assertion never exercised the memoized path.
+ *
+ * The `inFlight` map below recovers the only thing `cache()` was actually
+ * buying (concurrent callers sharing one fetch) without tying correctness to a
+ * request scope this module cannot see or invalidate.
  */
-export const getMemberships = cache(async (userId: string): Promise<EcosystemMembership[]> => {
+export async function getMemberships(userId: string): Promise<EcosystemMembership[]> {
   const cached = ttlCache.get(userId);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.memberships;
   }
-  const memberships = await fetchMemberships(userId);
-  ttlCache.set(userId, { memberships, expiresAt: Date.now() + TTL_MS });
-  return memberships;
-});
+
+  const existing = inFlight.get(userId);
+  if (existing) return existing;
+
+  const pending = fetchMemberships(userId)
+    .then((memberships) => {
+      ttlCache.set(userId, { memberships, expiresAt: Date.now() + TTL_MS });
+      return memberships;
+    })
+    .finally(() => {
+      inFlight.delete(userId);
+    });
+
+  inFlight.set(userId, pending);
+  return pending;
+}
 
 export async function createMembership(input: {
   userId: string;
@@ -94,8 +128,11 @@ export async function createMembership(input: {
   if (!res.ok) {
     throw new Error(`ecosystem membership create failed: ${res.status}`);
   }
-  // Bust the TTL cache so a read immediately after this write sees it.
+  // Bust the cache so a read immediately after this write is fresh. Both maps:
+  // dropping only the TTL entry would let an in-flight read that started BEFORE
+  // this write resolve afterwards and repopulate the cache with pre-write data.
   ttlCache.delete(input.userId);
+  inFlight.delete(input.userId);
 }
 
 /**

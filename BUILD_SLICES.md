@@ -301,6 +301,163 @@ Read: `VPS_DIRECTORY_MAP.md` (full — recipe section, non-root PM2 war story, n
 
 **Done when:** `https://food.apoyolime.com` serves the styled placeholder over SSL, both with and without a trailing slash on the bare root; production sign-in against the live issuer (portal-web) works; `portal.apoyolime.com/food` reachable and host-gated.
 
+**Implementation notes (done 2026-07-30):** ✅ **Phase 0 exit — Food is live on the VPS.**
+
+Executed live end to end, guided one command-batch at a time (no SSH from sessions —
+`VPS_DIRECTORY_MAP.md`), every step confirmed by real pasted terminal output before the next mutating
+one. Full transcript and real values: `DEPLOYMENT.md` (gitignored).
+
+**Local artifacts, built and validated before any VPS command:**
+- `deploy.sh` — diff-aware redeploy (E5): skip `npm ci` unless the lockfile moved, always run
+  `migrate deploy` (idempotent, catches drift a file-diff would miss), warn-not-block env-var check,
+  restart `food-web`. Run as root **unwrapped** (E6). No `food-sweep` line — that arrives with
+  Slice 15/19. `bash -n` clean, LF-only confirmed, and the env-check block was dry-run standalone.
+- `.gitattributes` (`*.sh text eol=lf`) at Food's first `.sh` file, per E4.
+- **The `/food` trailing-slash behaviour was verified against Food's own production build before any
+  nginx was written**, rather than assumed to transfer from Apparel: `/food/` → 308 → `/food`,
+  `/food/admin/` → 308 → `/food/admin`. That is what makes the paired exact-match + prefix nginx
+  locations necessary.
+
+**⚠ THE FINDING OF THIS SLICE — PM2 ran the app on the wrong Node, and it did not look like that at
+all.** After a clean migrate/build/seed, `/` returned **500** while `/browse`, `/search`, `/login`
+and `/api/health` all returned **200**. The error log said `SyntaxError: Unexpected token 'with'`.
+Ruled out permissions (`user CAN write` to `UPLOADS_BASE_PATH`) and sharp (loaded fine, libvips
+8.18.3). **Root cause: `pm2 start npm …` without `--interpreter` runs the app under `/usr/bin/node`
+v18.19.1, while the app was `npm ci`'d and built under nvm v22.23.1.** Node 18 cannot parse ES2025
+import attributes, so *only* the routes whose module graph contains that syntax fail — which presents
+convincingly as a bug in one page rather than a runtime mismatch. Fix: `pm2 delete` + `pm2 start
+node_modules/.bin/next --interpreter /home/user/.nvm/versions/node/v22.23.1/bin/node -- start -p 3012
+-H 127.0.0.1`; delete-and-start because the interpreter is frozen at process creation.
+- ⚠ **`apparel-web` has the identical unpinned mismatch** and is healthy only because no Apparel route
+  has tripped it yet. Flagged to the user for the concurrent session.
+- Also: **`pm2 start npm` is strictly worse than `pm2 start .../node_modules/.bin/next`** — pinning
+  the interpreter on `npm` doesn't govern the child npm spawns, which resolves `node` from PATH.
+- Written up as ecosystem ruling **E10** (`APOYO_ECOSYSTEM.md`), plus `VPS_DIRECTORY_MAP.md` and a
+  full `VPS_INVENTORY.md` refresh — that file was stale since 2026-07-14 and still described PM2 as a
+  single root daemon, which E2 had already superseded.
+
+**Three more ecosystem-wide findings, all recorded in E10:**
+1. **E8 #3 had only ever been applied to Portal's two processes.** Audited live: `apoyo-portal`
+   (:3010) and `apoyo-portal-web` (:3011) bind `127.0.0.1`; **`demiadoll-web` (:3000), `salon-web`
+   (:3003) and `apparel-web` (:3013) all bind `*`** — reachable from the public internet, bypassing
+   nginx. `food-web` was deployed correctly on `127.0.0.1`, verified before `pm2 save`.
+2. **Hestia proxy templates carry no `client_max_body_size`**, so nginx's 1 MB default would 413 every
+   photo upload while the app's own `MAX_UPLOAD_MB=10` looks correctly set. Food's template sets
+   `12m`. ⚠ Apparel's has none and Apparel has an upload route.
+3. **`systemctl reload nginx` is graceful — wait 2-3s before asserting with `curl`.** An immediate
+   `curl` returned Hestia's static 404 page for `/api/health`, then correct JSON on every later
+   attempt with no config change. I initially read this as a routing failure and said so; it was a
+   worker-cycle race. Sleep after a reload.
+
+**Deploy specifics:** the Hestia domain **already existed** (created the same morning, SSL already
+issued, empty scaffolded `private/`), so `v-add-web-domain` was skipped — the benign version of the
+trap Apparel hit. DB `apoyo_food_prod` / role `food_app`, password `openssl rand -hex 24` so
+`DATABASE_URL` needed no percent-encoding. `unaccent` + `pg_trgm` created as superuser **before** the
+first `migrate deploy`, exactly as Slice 2's migration header warned. Media lives at
+`private/uploads`, a **sibling** of the checkout, so a redeploy can never touch it. `AUTH_SECRET` was
+copied machine-to-machine from portal-web's `.env` and verified **by length only** — it never entered
+the session transcript.
+
+**All done-when criteria met:** `https://food.apoyolime.com/` 200 over SSL with `/food` correctly
+404 (host-gating working in production); `portal.apoyolime.com/food` 200 and **proven to serve Food's
+own dashboard** — `<title>Apoyo Food</title>`, `<html lang="es">`, "Panel del vendedor" — rather than
+the portal app returning a 200 of its own, which a status-code-only check would not have caught;
+`/food/` → 308 as designed; every sibling domain untouched; `deploy.sh` re-run genuinely idempotent
+with the interpreter still node 22 and `unstable restarts 0`; unauthenticated `/api/account/session`
+→ `{"session":null}`; 12 categories seeded in prod.
+
+**Deliberately outstanding:** the **live browser sign-in** check (needs a real portal-web session —
+handed to the user, with the caveat that `ecosystem` will report an error and `guards.seller` will be
+closed, both expected); the **`food-app` ecosystem token**, deferred to Slice 13 exactly as Apparel
+deferred its own; and a second spaced-out `user-pm2 list` health check.
+
+Files created: `deploy.sh`, `.gitattributes`, `DEPLOYMENT.md` (gitignored). Modified:
+`lib/session.ts` (defensive `getToken` guard — see below), `BUILD_SLICES.md`.
+
+**Unrelated but found during this slice — two CRITICAL npm advisories.** `npm ci` on the VPS reported
+`2 critical`, where Slice 1 had recorded none; I had not re-audited after Slices 3-5 added
+`next-auth`, `sharp` and `piexifjs`. Both criticals are `@auth/core` via the pinned
+`next-auth@5.0.0-beta.31`. Of its three advisories, two are issuer-side (email normalisation, OAuth
+PKCE cookie binding) and do not apply to Food, which has neither email flows nor OAuth providers. The
+third — *"`getToken()` throws an uncaught exception on malformed Bearer authorization headers"*
+(GHSA-xmf8-cvqr-rfgj) — is on Food's hot path. The vulnerable code genuinely exists in the installed
+source (`@auth/core/jwt.js:92-94`), but **it was not reproducible**: six malformed Bearer shapes and
+four garbage/empty session cookies all returned 200 against a production build with nothing logged.
+`lib/session.ts` now wraps `getToken` in a try/catch returning null, as proportionate insurance —
+`getFoodSession` runs on nearly every request, so an uncaught throw would 500 the whole surface rather
+than degrade one signed-out request. ⚠ **`next-auth` was deliberately NOT bumped**: the beta.31 pin is
+JWT wire-format compatibility with the issuer and every other vertical, so moving off it is an
+ecosystem-wide lockstep decision, not Food's to make unilaterally. Escalated to the user. Note the
+real exposure is portal-web's, which is both the actual issuer and still on the floating `"beta"` tag.
+
+---
+
+## Phase 0 code review (2026-07-31) — 6 findings, all patched
+
+Reviewed slices 1-6 against the running production build and the live site rather than by reading
+for style. Recorded here because three of the findings change conventions later slices must follow.
+
+**1. `formatTtd` rendered a different price format per locale.** It passed the viewer's UI locale to
+`Intl.NumberFormat`, so `es` produced `$1250 TTD` (no separator at four digits) and `$12.500 TTD`
+(dot grouping) against `en`'s `$1,250` / `$12,500` — neither matching the spec's `$X,XXX TTD`, and
+`$12.500` reads as twelve-point-five to an English speaker on a site where the language toggle is one
+tap away. **Fixed: the number format is pinned to `en-TT` and no longer takes a locale parameter at
+all.** User's call, and the right one — TTD is Trinidad's currency and the Spanish-speaking sellers
+and buyers this serves are transacting in Trinidad. ⚠ Apparel's `lib/money.ts` has the identical bug.
+
+**2. `PhotoVariantPaths` carried `width`/`height`, which no table has columns for.** The natural
+Slice 14 call site — `prisma.foodListingPhoto.create({ data: { listingId, ...await ingestMealPhoto(…) } })`
+— would have thrown at runtime on unknown fields. **Fixed by making the preset return type EXACTLY
+the four DB columns**, so the spread is correct by construction; dimensions remain on
+`IngestImageResult` for anything that needs them. Nothing persisted does — `<FoodImage>` locks aspect
+in CSS and uses `fill`, so intrinsic dimensions would be dead columns. No migration needed.
+
+**3. ⚠ `getMemberships` is no longer wrapped in React's `cache()` — do not re-wrap it.** `cache()`
+memoizes per REQUEST, and `createMembership`'s `ttlCache.delete()` cannot reach that memo, so within
+one request `read → [] , mint (FOOD, PROVIDER) , read → still []`. That is exactly Slice 13's shape
+(onboarding submit mints the membership, the dashboard guard re-reads it in the same request) and the
+same class of failure as trusting the stale JWT claim that `requireFoodSeller` exists to avoid.
+Replaced with the TTL map plus an explicit in-flight promise map, which recovers the only thing
+`cache()` was buying (concurrent callers sharing one fetch) without tying correctness to a request
+scope this module cannot invalidate. ⚠ **Salon and Apparel both still wrap theirs.**
+- Worth knowing how it was missed: Slice 3's `verify-ecosystem.ts` asserts "a read straight after a
+  write is fresh" and **passes** — but it runs in a plain Node script where `cache()` has no request
+  scope and simply calls through. The assertion never exercised the memoized path. A test can pass
+  for the wrong reason.
+
+**4. `/api/media/upload` had no rate limit** — any authenticated user could fill the disk 10 MB at a
+time, and ecosystem registration is open, so "authenticated" is a low bar. **Fixed with a new
+reusable `lib/rate-limit.ts`** (fixed-window, per user AND per IP, limiting both request count and
+total bytes; 429 + `Retry-After`). Deliberately not deferred on "no real users" grounds — the site is
+publicly reachable. ⚠ **Slices 17/18 must reuse this module** for order creation, messages, Fresh
+Today posts, follows and demand-event ingestion, all of which Part G requires limits on.
+- A bug in the first draft of the fix, caught before commit: `checkRateLimit` incremented the count
+  on every call, so charging bytes in a second call billed one upload as two requests and silently
+  halved the limit. Hence the explicit `countRequest` flag rather than a `bytes` positional.
+
+**5. Dead code removed** — `lib/media/ingest.ts` had a `const _mimeType … void _mimeType` block whose
+only purpose was to "use" a type the assertion above it had already narrowed.
+
+**6. A brittle assertion in `verify-media.ts`, found by the fixes themselves.** It asserted "every
+file in the uploads tree is a pipeline-produced `.webp`" — but Slice 5's translation proof
+legitimately caches `_translation-proof.json` in the same root, so the check failed for a completely
+unrelated reason once both scaffolds had run (57/58). Scoped to the CATEGORY directories, which is
+where the storage module actually writes, preserving the real invariant. Those root files were never
+reachable through the serve route anyway: `safeStorageKey` demands a `<category>/<file>` shape.
+
+**Verified clean, tested rather than assumed:** 9 live traversal/info-disclosure probes (encoded and
+double-encoded, `.env`, `deploy.sh`, `prisma/schema.prisma`) all 404; all six security headers present
+at the live edge incl. HSTS preload; no source maps in prod; host gating holds in production;
+`x-food-surface` cannot be spoofed (middleware overwrites); `NEXT_LOCALE` cannot traverse into
+`messages/`; money arithmetic exact from 1 cent to $89,999,999.99. Post-fix regression: **58 + 49 + 28
+assertions across the three suites, 0 failures**, plus 16 new ones for the fixes; tsc/lint/build clean.
+
+**⚠ Structural gap, not yet addressed: there is no `npm test`.** All verification lives in four
+manual scripts (~150 assertions) that nothing runs automatically. Fine so far — but **Slice 14
+explicitly requires unit tests for `lib/availability.ts`** ("this feeds every discovery badge and
+filter; get it right once") and there is no harness to put them in. portal-web already uses vitest.
+Stand one up at Slice 14 rather than improvising then.
+
 ---
 
 ## Phase 1 — The buyer demo (the polished surface)
