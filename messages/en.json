@@ -94,11 +94,26 @@
     "holidays": "Holidays only",
     "seasonal": "In season now",
     "unavailable": "Ask the cook",
-    "preorderShort": "Pre-order"
+    "preorderShort": "Pre-order",
+    "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    "everyDay": "Every day",
+    "weekdaysOnly": "Weekdays",
+    "seasonWindow": "{from} – {to}"
   },
   "price": {
     "startingAt": "From",
     "onRequest": "Price on request"
+  },
+  "occasionTags": {
+    "christmas": "Christmas",
+    "birthday": "Birthday",
+    "divali": "Divali"
+  },
+  "save": {
+    "save": "Save",
+    "unsave": "Unsave",
+    "saveFailed": "Couldn't save — try again",
+    "signInToSave": "Sign in to save meals"
   },
   "localeToggle": {
     "ariaLabel": "Language"
@@ -191,7 +206,8 @@
     },
     "meal": {
       "title": "Meal",
-      "body": "The full listing — gallery, availability, seller card and the Request order CTA — arrives in Slice 10."
+      "about": "About this dish",
+      "feeds": "Serves {count}"
     },
     "sellerProfile": {
       "title": "Seller profile",
@@ -211,7 +227,12 @@
     },
     "saved": {
       "title": "Saved",
-      "body": "Saved meals arrive in Slice 10; named collections in Phase 4."
+      "count": "{count, plural, one {# saved meal} other {# saved meals}}",
+      "signedOutTitle": "Sign in to save meals",
+      "signedOutBody": "Tap the heart on any meal to save it here for later — you'll need to sign in first. Browsing never requires an account; saving is the first thing that does.",
+      "emptyTitle": "Nothing saved yet",
+      "emptyBody": "Tap the heart on any meal to keep it here for later.",
+      "emptyAction": "Browse meals"
     },
     "orders": {
       "title": "My orders",
@@ -247,6 +268,10 @@
       "followers": "{count, plural, one {# follower} other {# followers}}",
       "seasonal": "In season now",
       "seasonalNote": "Holiday menus and seasonal specials, shown only while they are actually open.",
+      "moreFromSeller": "More from this seller",
+      "similarIn": "Similar in {category}",
+      "popularArea": "Popular near you",
+      "popularInArea": "Popular in {area}",
       "areaNames": {
         "central": "Central",
         "east_west_corridor": "East–West Corridor",

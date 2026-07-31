@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { ListingGrid } from "@/components/listing-grid";
 import { SectionHeader } from "@/components/ui/section-header";
 import { activeFilterCount, browseListings, parseFilters } from "@/lib/browse";
+import { getFoodSession } from "@/lib/session";
 import { FilterBar } from "./filter-bar";
 
 export const metadata: Metadata = { title: "Browse" };
@@ -24,9 +25,10 @@ export default async function BrowsePage({
   const params = await searchParams;
   const filters = parseFilters(params);
 
-  const [t, { listings, total }] = await Promise.all([
+  const [t, { listings, total }, session] = await Promise.all([
     getTranslations("client.browse"),
     browseListings(filters, { take: 48 }),
+    getFoodSession(),
   ]);
 
   const filterCount = activeFilterCount(filters);
@@ -42,7 +44,7 @@ export default async function BrowsePage({
       <FilterBar filters={filters} />
 
       {listings.length > 0 ? (
-        <ListingGrid listings={listings} priorityCount={4} />
+        <ListingGrid listings={listings} priorityCount={4} session={session} />
       ) : (
         /* The empty state is a designed surface, not an oversight — Part E3
            calls a zero-result browse "unmet demand", and Phase 8's requests

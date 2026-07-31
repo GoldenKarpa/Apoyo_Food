@@ -21,6 +21,7 @@
     "verify:translation": "tsx scripts/verify-translation.ts",
     "verify:a11y": "node scripts/verify-a11y.mjs",
     "verify:discovery": "tsx scripts/verify-discovery.ts",
+    "verify:saves": "tsx scripts/verify-saves.ts",
     "icons:generate": "node scripts/generate-icons.mjs"
   },
   "dependencies": {

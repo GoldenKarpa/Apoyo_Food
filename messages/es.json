@@ -94,11 +94,26 @@
     "holidays": "Solo festivos",
     "seasonal": "En temporada",
     "unavailable": "Consulta al cocinero",
-    "preorderShort": "Por encargo"
+    "preorderShort": "Por encargo",
+    "days": ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+    "everyDay": "Todos los días",
+    "weekdaysOnly": "Días laborables",
+    "seasonWindow": "{from} – {to}"
   },
   "price": {
     "startingAt": "Desde",
     "onRequest": "Precio a consultar"
+  },
+  "occasionTags": {
+    "christmas": "Navidad",
+    "birthday": "Cumpleaños",
+    "divali": "Divali"
+  },
+  "save": {
+    "save": "Guardar",
+    "unsave": "Quitar de guardados",
+    "saveFailed": "No se pudo guardar — intenta de nuevo",
+    "signInToSave": "Inicia sesión para guardar"
   },
   "localeToggle": {
     "ariaLabel": "Idioma"
@@ -191,7 +206,8 @@
     },
     "meal": {
       "title": "Comida",
-      "body": "La ficha completa — galería, disponibilidad, tarjeta del vendedor y el botón Solicitar pedido — llega en el Slice 10."
+      "about": "Sobre este plato",
+      "feeds": "Rinde para {count}"
     },
     "sellerProfile": {
       "title": "Perfil del vendedor",
@@ -211,7 +227,12 @@
     },
     "saved": {
       "title": "Guardados",
-      "body": "Las comidas guardadas llegan en el Slice 10; las colecciones con nombre en la Fase 4."
+      "count": "{count, plural, one {# comida guardada} other {# comidas guardadas}}",
+      "signedOutTitle": "Inicia sesión para guardar comidas",
+      "signedOutBody": "Toca el corazón en cualquier comida para guardarla aquí — primero debes iniciar sesión. Explorar nunca requiere una cuenta; guardar es lo primero que sí.",
+      "emptyTitle": "Todavía no has guardado nada",
+      "emptyBody": "Toca el corazón en cualquier comida para guardarla aquí.",
+      "emptyAction": "Explorar comidas"
     },
     "orders": {
       "title": "Mis pedidos",
@@ -247,6 +268,10 @@
       "followers": "{count, plural, one {# seguidor} other {# seguidores}}",
       "seasonal": "En temporada",
       "seasonalNote": "Menús festivos y especiales de temporada, visibles solo mientras están abiertos.",
+      "moreFromSeller": "Más de este vendedor",
+      "similarIn": "Similares en {category}",
+      "popularArea": "Popular cerca de ti",
+      "popularInArea": "Popular en {area}",
       "areaNames": {
         "central": "Centro",
         "east_west_corridor": "Corredor Este–Oeste",

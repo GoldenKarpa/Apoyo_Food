@@ -90,7 +90,7 @@ export default async function SearchPage({
       {results.listings.length > 0 && (
         <section className="flex flex-col gap-4">
           <SectionHeader title={t("meals", { count: results.listings.length })} />
-          <ListingGrid listings={results.listings} priorityCount={4} />
+          <ListingGrid listings={results.listings} priorityCount={4} session={session} />
         </section>
       )}
 

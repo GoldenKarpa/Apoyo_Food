@@ -300,6 +300,57 @@ export async function seasonalListings(limit = 8, now = new Date()) {
   return withAvailability(rows, now);
 }
 
+/**
+ * `/meals/[slug]`'s "More from this seller" rail (Slice 10, Part E4 Phase 1).
+ *
+ * A scalar `sellerId` equality, not a second `seller` key merged onto
+ * `DISCOVERABLE` — the Slice 9 finding about two `seller` keys silently
+ * overwriting each other (and dropping the ACTIVE-status check) only applies
+ * to nested relation filters, but the same instinct applies here: don't touch
+ * how `DISCOVERABLE`'s own `seller` clause is shaped.
+ */
+export async function moreFromSeller(
+  sellerId: string,
+  excludeListingId: string,
+  limit = 8,
+  now = new Date(),
+) {
+  const rows = await prisma.foodListing.findMany({
+    where: { ...DISCOVERABLE, sellerId, id: { not: excludeListingId } },
+    select: CARD_SELECT,
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+  return withAvailability(rows, now);
+}
+
+/**
+ * `/meals/[slug]`'s "Similar in {category}" rail (Slice 10, Part E4 Phase 1).
+ *
+ * Anchored on the listing's PRIMARY category only (the page picks
+ * `categories[0]`, sorted by `FoodCategory.sortOrder`) — matching "Similar in
+ * Desserts" with a candidate set that also pulls in Lunch because a dish
+ * happens to carry both tags would read as wrong, not generous.
+ */
+export async function similarInCategory(
+  categoryId: string,
+  excludeListingId: string,
+  limit = 8,
+  now = new Date(),
+) {
+  const rows = await prisma.foodListing.findMany({
+    where: {
+      ...DISCOVERABLE,
+      id: { not: excludeListingId },
+      categories: { some: { categoryId } },
+    },
+    select: CARD_SELECT,
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+  return withAvailability(rows, now);
+}
+
 /** How many ACTIVE sellers each area holds — the directory's area counts. */
 export async function sellerCountsByArea(): Promise<Record<string, number>> {
   const sellers = await prisma.foodSeller.findMany({

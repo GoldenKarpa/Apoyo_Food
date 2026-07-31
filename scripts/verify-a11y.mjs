@@ -75,6 +75,11 @@ const PAGES = [
   // The zero-result state is a designed surface (Part E3), so it is audited
   // like any other rather than assumed to inherit the populated one's contrast.
   "/search?q=zzzznothing",
+  // Slice 10 — a real, multi-photo, multi-category, ACTIVE-seller listing from
+  // the demo seed, and the signed-out /saved state (no session cookie is set
+  // anywhere in this script, so this is genuinely the anonymous render).
+  "/meals/pastelon-de-platano",
+  "/saved",
   "/style-guide",
   "/food",
 ];
@@ -427,6 +432,45 @@ async function run() {
             `${label}: filter applies on Apply`,
             summary,
           );
+        }
+
+        // ── Slice 10: the listing detail page's own content and CTA ──
+        if (route === "/meals/pastelon-de-platano") {
+          const body = await page.evaluate(() => document.body.innerText);
+          check(!body.includes("€"), `${label}: no euro sign`);
+          check(body.includes("TTD"), `${label}: price renders in TTD`);
+
+          const galleryImgs = await page.evaluate(() =>
+            Array.from(document.querySelectorAll("img")).filter((i) =>
+              (i.currentSrc || i.src).includes("/api/media/"),
+            ),
+          );
+          check(galleryImgs.length >= 2, `${label}: gallery renders real photos`, `${galleryImgs.length} imgs`);
+
+          const sellerLink = await page
+            .locator(`a[href="/sellers/cocina-de-abuela"]`)
+            .first()
+            .isVisible()
+            .catch(() => false);
+          check(sellerLink, `${label}: seller row links to /sellers/[slug]`);
+
+          // The sticky CTA — a real, page-specific trigger, not only the
+          // style-guide's demo of the same registry key.
+          const cta = page.locator('[data-coming-soon="requestOrder"]').locator("visible=true").first();
+          check(await cta.isVisible().catch(() => false), `${label}: sticky "Request order" CTA visible`);
+          await cta.click();
+          await page.waitForSelector('[role="dialog"]', { state: "visible" });
+          await settleAnimations(page);
+          const dialogText = await page.evaluate(
+            () => document.querySelector('[role="dialog"]')?.innerText.trim() ?? "",
+          );
+          check(
+            dialogText.length > 40 && !/comingSoon\.features\./.test(dialogText),
+            `${label}: CTA opens the real, localized requestOrder sheet`,
+            dialogText.slice(0, 120),
+          );
+          await page.keyboard.press("Escape");
+          await page.waitForSelector('[role="dialog"]', { state: "detached" });
         }
 
         check(

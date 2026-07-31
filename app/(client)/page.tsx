@@ -20,6 +20,7 @@ import {
   trendingListings,
 } from "@/lib/discovery";
 import { AREA_COOKIE, isRegionKey } from "@/lib/regions";
+import { getFoodSession } from "@/lib/session";
 
 /**
  * Home — architecture Part E1's composed sections, in its own order.
@@ -48,7 +49,7 @@ export default async function HomePage() {
   const areaCookie = cookieStore.get(AREA_COOKIE)?.value;
   const area: RegionKey | null = isRegionKey(areaCookie) ? areaCookie : null;
 
-  const [locale, t, ts, fresh, soon, categories, newest, trending, nearby, seasonal] =
+  const [locale, t, ts, fresh, soon, categories, newest, trending, nearby, seasonal, session] =
     await Promise.all([
       getLocale(),
       getTranslations("client.home"),
@@ -60,6 +61,7 @@ export default async function HomePage() {
       trendingListings(),
       sellersInArea(area),
       seasonalListings(),
+      getFoodSession(),
     ]);
 
   return (
@@ -85,7 +87,7 @@ export default async function HomePage() {
       {seasonal.length > 0 && (
         <section className="flex flex-col gap-4">
           <SectionHeader title={ts("seasonal")} note={ts("seasonalNote")} />
-          <ListingRail listings={seasonal} label={ts("seasonal")} />
+          <ListingRail listings={seasonal} label={ts("seasonal")} session={session} />
         </section>
       )}
 
@@ -97,7 +99,7 @@ export default async function HomePage() {
             note={ts("availableSoonNote")}
             action={{ href: "/browse?availability=today", label: ts("seeAll") }}
           />
-          <ListingRail listings={soon} label={ts("availableSoon")} />
+          <ListingRail listings={soon} label={ts("availableSoon")} session={session} />
         </section>
       )}
 
@@ -129,7 +131,7 @@ export default async function HomePage() {
             title={ts("newest")}
             action={{ href: "/browse?sort=newest", label: ts("seeAll") }}
           />
-          <ListingRail listings={newest} label={ts("newest")} />
+          <ListingRail listings={newest} label={ts("newest")} session={session} />
         </section>
       )}
 
@@ -141,7 +143,7 @@ export default async function HomePage() {
             note={ts("trendingNote")}
             action={{ href: "/browse?sort=popular", label: ts("seeAll") }}
           />
-          <ListingRail listings={trending} label={ts("trending")} />
+          <ListingRail listings={trending} label={ts("trending")} session={session} />
         </section>
       )}
 

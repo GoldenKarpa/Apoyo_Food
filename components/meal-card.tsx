@@ -6,6 +6,7 @@ import {
   AvailabilityStamp,
   type AvailabilityTone,
 } from "@/components/ui/availability-stamp";
+import { SaveButton } from "@/components/ui/save-button";
 import { formatCentsTtd } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +32,16 @@ import { cn } from "@/lib/utils";
  * restructures them, which is exactly how Apparel's equivalent slice broke
  * hydration on every page carrying a stub. Slice 11's seller profile is reached
  * from the profile page, not from inside a meal card.
+ *
+ * ── Why the save heart is a SIBLING of the link, not a child of it (Slice 10) ──
+ * `<button>` is interactive content and the HTML spec excludes interactive
+ * content from `<a>` — the same nesting rule the seller name already respects,
+ * just tripped by a different element. So the outer `<div>` carries the card's
+ * border/padding/animation (and `relative`, for the heart's absolute
+ * positioning); the `<Link>` inside is `display: contents` — no box of its own,
+ * so its children still lay out directly in the parent flex column and the
+ * whole photo+text area stays one click target — and `<SaveButton>` sits beside
+ * it, positioned over the photo's corner.
  *
  * ── Motion ──
  * Blur-up on the photo (via `<FoodImage>`, never a spinner) plus a card fade-in
@@ -64,6 +75,8 @@ export interface MealCardProps {
   priority?: boolean;
   sizes?: string;
   className?: string;
+  /** Slice 10's save heart. Omitted entirely renders no heart at all. */
+  save?: { listingId: string; initialSaved: boolean; authenticated: boolean };
 }
 
 function PriceLine({
@@ -101,67 +114,78 @@ export function MealCard({
   priority = false,
   sizes = "(min-width: 768px) 25vw, 50vw",
   className,
+  save,
 }: MealCardProps) {
   return (
-    <Link
-      href={href}
+    <div
       className={cn(
-        "group flex animate-card-in flex-col gap-3 rounded-card border border-hairline bg-card p-3 shadow-soft",
+        "group relative flex animate-card-in flex-col gap-3 rounded-card border border-hairline bg-card p-3 shadow-soft",
         "transition-[transform,box-shadow] duration-200 ease-soft md:hover:-translate-y-0.5",
         className,
       )}
     >
-      {photo ? (
-        <FoodImage
-          src={photo.src}
-          alt={photoAlt ?? title}
-          aspect="meal"
-          blurDataUrl={photo.blurDataUrl}
-          sizes={sizes}
-          priority={priority}
-        />
-      ) : (
-        // No photo is a real state (a seller mid-onboarding, Slice 13). A
-        // sunken frame at the right ratio holds the grid rhythm; an empty div
-        // would collapse the card.
-        <div aria-hidden className="aspect-meal w-full rounded-image bg-sunken" />
-      )}
-
-      <div className="flex flex-col gap-2 px-1 pb-1">
-        {/* Clamped to two lines so a long Spanish title cannot break the grid's
-            rhythm — Part F3 budgets ~30% expansion. */}
-        <h3 className="line-clamp-2 font-display text-h2 font-semibold text-ink">{title}</h3>
-
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <PriceLine
-            priceCents={priceCents}
-            priceMode={priceMode}
-            startingAtLabel={startingAtLabel}
-            quoteLabel={quoteLabel}
+      <Link href={href} className="contents">
+        {photo ? (
+          <FoodImage
+            src={photo.src}
+            alt={photoAlt ?? title}
+            aspect="meal"
+            blurDataUrl={photo.blurDataUrl}
+            sizes={sizes}
+            priority={priority}
           />
-          {availability && (
-            <AvailabilityStamp tone={availability.tone}>{availability.label}</AvailabilityStamp>
+        ) : (
+          // No photo is a real state (a seller mid-onboarding, Slice 13). A
+          // sunken frame at the right ratio holds the grid rhythm; an empty div
+          // would collapse the card.
+          <div aria-hidden className="aspect-meal w-full rounded-image bg-sunken" />
+        )}
+
+        <div className="flex flex-col gap-2 px-1 pb-1">
+          {/* Clamped to two lines so a long Spanish title cannot break the
+              grid's rhythm — Part F3 budgets ~30% expansion. */}
+          <h3 className="line-clamp-2 font-display text-h2 font-semibold text-ink">{title}</h3>
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <PriceLine
+              priceCents={priceCents}
+              priceMode={priceMode}
+              startingAtLabel={startingAtLabel}
+              quoteLabel={quoteLabel}
+            />
+            {availability && (
+              <AvailabilityStamp tone={availability.tone}>{availability.label}</AvailabilityStamp>
+            )}
+          </div>
+
+          {seller && (
+            <div className="flex items-center gap-2 pt-1">
+              {seller.avatar ? (
+                <FoodImage
+                  src={seller.avatar.src}
+                  alt=""
+                  aspect="thumb"
+                  blurDataUrl={seller.avatar.blurDataUrl}
+                  sizes="24px"
+                  className="h-6 w-6 shrink-0 rounded-pill"
+                />
+              ) : (
+                <span aria-hidden className="h-6 w-6 shrink-0 rounded-pill bg-green-soft" />
+              )}
+              <span className="truncate text-caption text-ink-muted">{seller.name}</span>
+            </div>
           )}
         </div>
+      </Link>
 
-        {seller && (
-          <div className="flex items-center gap-2 pt-1">
-            {seller.avatar ? (
-              <FoodImage
-                src={seller.avatar.src}
-                alt=""
-                aspect="thumb"
-                blurDataUrl={seller.avatar.blurDataUrl}
-                sizes="24px"
-                className="h-6 w-6 shrink-0 rounded-pill"
-              />
-            ) : (
-              <span aria-hidden className="h-6 w-6 shrink-0 rounded-pill bg-green-soft" />
-            )}
-            <span className="truncate text-caption text-ink-muted">{seller.name}</span>
-          </div>
-        )}
-      </div>
-    </Link>
+      {save && (
+        <SaveButton
+          listingId={save.listingId}
+          initialSaved={save.initialSaved}
+          authenticated={save.authenticated}
+          className="absolute right-4 top-4"
+        />
+      )}
+    </div>
   );
 }

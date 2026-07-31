@@ -7,6 +7,7 @@ import { CategoryChip } from "@/components/ui/chip";
 import { SectionHeader } from "@/components/ui/section-header";
 import { browseListings, parseFilters } from "@/lib/browse";
 import { prisma } from "@/lib/prisma";
+import { getFoodSession } from "@/lib/session";
 
 export async function generateMetadata({
   params,
@@ -46,10 +47,11 @@ export default async function CategoryPage({
   // The slug always wins over anything in the URL — this route IS the filter.
   const filters = { ...parseFilters(query), categories: [slug] };
 
-  const [locale, t, { listings, total }] = await Promise.all([
+  const [locale, t, { listings, total }, session] = await Promise.all([
     getLocale(),
     getTranslations("client.category"),
     browseListings(filters, { take: 48 }),
+    getFoodSession(),
   ]);
 
   const name = locale === "es" ? category.nameEs : category.nameEn;
@@ -62,7 +64,7 @@ export default async function CategoryPage({
       </div>
 
       {listings.length > 0 ? (
-        <ListingGrid listings={listings} priorityCount={4} />
+        <ListingGrid listings={listings} priorityCount={4} session={session} />
       ) : (
         <div className="flex flex-col items-start gap-3 rounded-card border border-hairline bg-card p-8">
           <h2 className="font-display text-h1 font-semibold text-ink">{t("emptyTitle")}</h2>
