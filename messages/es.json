@@ -115,6 +115,15 @@
     "saveFailed": "No se pudo guardar — intenta de nuevo",
     "signInToSave": "Inicia sesión para guardar"
   },
+  "fulfillmentModes": {
+    "PICKUP": "Recogida",
+    "SELLER_DELIVERY": "Entrega",
+    "MEETUP": "Punto de encuentro"
+  },
+  "stories": {
+    "close": "Cerrar",
+    "viewDish": "Ver {title} →"
+  },
   "localeToggle": {
     "ariaLabel": "Idioma"
   },
@@ -210,8 +219,14 @@
       "feeds": "Rinde para {count}"
     },
     "sellerProfile": {
-      "title": "Perfil del vendedor",
-      "body": "Portada, biografía, zonas, estante de menú y Seguir llegan en el Slice 11."
+      "follow": "Seguir",
+      "following": "Siguiendo",
+      "followFailed": "No se pudo seguir — intenta de nuevo",
+      "signInToFollow": "Inicia sesión para seguir",
+      "menuShelf": "Estante de menú",
+      "listings": "{count, plural, one {# comida} other {# comidas}}",
+      "emptyListings": "Todavía no hay nada en el menú.",
+      "gallery": "Galería"
     },
     "search": {
       "title": "Buscar",
@@ -272,6 +287,7 @@
       "similarIn": "Similares en {category}",
       "popularArea": "Popular cerca de ti",
       "popularInArea": "Popular en {area}",
+      "following": "De cocineros que sigues",
       "areaNames": {
         "central": "Centro",
         "east_west_corridor": "Corredor Este–Oeste",

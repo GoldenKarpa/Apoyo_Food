@@ -13,6 +13,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import {
   availableSoon,
   categoryCards,
+  followedSellersListings,
   freshTodayEntries,
   newestListings,
   seasonalListings,
@@ -21,17 +22,19 @@ import {
 } from "@/lib/discovery";
 import { AREA_COOKIE, isRegionKey } from "@/lib/regions";
 import { getFoodSession } from "@/lib/session";
+import { seenStoryIds } from "@/lib/stories";
 
 /**
  * Home — architecture Part E1's composed sections, in its own order.
  *
  * 1 Fresh Today rail · 2 available this weekend/today · 3 browse by category ·
- * 4 new this week · 5 trending · 6 sellers near you · 8 seasonal.
+ * 4 new this week · 5 trending · 6 sellers near you · 7 from sellers you
+ * follow · 8 seasonal.
  *
- * Section 7 ("from sellers you follow") is deliberately absent: it requires a
- * signed-in viewer with follows, and Slice 11 owns follows. Rendering an empty
- * "from sellers you follow" heading to every anonymous visitor would be worse
- * than not having it.
+ * Section 7 goes live in Slice 11: signed-in AND following ≥1, exactly as
+ * Part E1 asks. Slice 9 deliberately left it out entirely rather than render
+ * an empty heading to every anonymous visitor — same reasoning, applied here
+ * to "following nobody yet" for a signed-in viewer too.
  *
  * ── Why every section is its own await, fired together ──
  * Part E1's whole point is that each section is "a named, cacheable query" — so
@@ -49,20 +52,24 @@ export default async function HomePage() {
   const areaCookie = cookieStore.get(AREA_COOKIE)?.value;
   const area: RegionKey | null = isRegionKey(areaCookie) ? areaCookie : null;
 
-  const [locale, t, ts, fresh, soon, categories, newest, trending, nearby, seasonal, session] =
+  const session = await getFoodSession();
+
+  const [locale, t, ts, fresh, soon, categories, newest, trending, nearby, seasonal, following] =
     await Promise.all([
       getLocale(),
       getTranslations("client.home"),
       getTranslations("client.sections"),
-      freshTodayEntries(),
+      freshTodayEntries(12, session?.userId ?? null),
       availableSoon(),
       categoryCards(),
       newestListings(),
       trendingListings(),
       sellersInArea(area),
       seasonalListings(),
-      getFoodSession(),
+      session ? followedSellersListings(session.userId) : Promise.resolve([]),
     ]);
+
+  const seenIds = session ? await seenStoryIds(session.userId, fresh.map((entry) => entry.id)) : new Set<string>();
 
   return (
     <>
@@ -80,7 +87,7 @@ export default async function HomePage() {
       </section>
 
       {/* 1 — Fresh Today */}
-      <FreshTodayRail entries={fresh} />
+      <FreshTodayRail entries={fresh} seenIds={seenIds} />
 
       {/* 8 — Seasonal, shown only while an occasion window is genuinely open,
           so it disappears on its own in February. */}
@@ -180,6 +187,14 @@ export default async function HomePage() {
               />
             ))}
           </Rail>
+        </section>
+      )}
+
+      {/* 7 — From sellers you follow */}
+      {following.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <SectionHeader title={ts("following")} />
+          <ListingRail listings={following} label={ts("following")} session={session} />
         </section>
       )}
     </>

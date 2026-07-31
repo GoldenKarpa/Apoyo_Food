@@ -115,6 +115,15 @@
     "saveFailed": "Couldn't save — try again",
     "signInToSave": "Sign in to save meals"
   },
+  "fulfillmentModes": {
+    "PICKUP": "Pickup",
+    "SELLER_DELIVERY": "Delivery",
+    "MEETUP": "Meet-up"
+  },
+  "stories": {
+    "close": "Close",
+    "viewDish": "View {title} →"
+  },
   "localeToggle": {
     "ariaLabel": "Language"
   },
@@ -210,8 +219,14 @@
       "feeds": "Serves {count}"
     },
     "sellerProfile": {
-      "title": "Seller profile",
-      "body": "Cover, bio, areas, Menu shelf and Follow arrive in Slice 11."
+      "follow": "Follow",
+      "following": "Following",
+      "followFailed": "Couldn't follow — try again",
+      "signInToFollow": "Sign in to follow",
+      "menuShelf": "Menu shelf",
+      "listings": "{count, plural, one {# meal} other {# meals}}",
+      "emptyListings": "Nothing on the menu right now.",
+      "gallery": "Gallery"
     },
     "search": {
       "title": "Search",
@@ -272,6 +287,7 @@
       "similarIn": "Similar in {category}",
       "popularArea": "Popular near you",
       "popularInArea": "Popular in {area}",
+      "following": "From sellers you follow",
       "areaNames": {
         "central": "Central",
         "east_west_corridor": "East–West Corridor",

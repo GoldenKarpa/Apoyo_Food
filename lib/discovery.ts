@@ -1,7 +1,9 @@
 import type { Prisma, RegionKey } from "@prisma/client";
 
 import { localDay, summarizeAvailability, weekdayBitmask, addDays } from "@/lib/availability";
+import { followedSellerIds } from "@/lib/follows";
 import { prisma } from "@/lib/prisma";
+import { seenStoryIds } from "@/lib/stories";
 
 /**
  * Composed discovery sections — architecture Part E1.
@@ -112,9 +114,18 @@ function masksContaining(weekday: number): number[] {
 // Part E1's home sections
 // ---------------------------------------------------------------------------
 
-/** Section 1 — the Fresh Today rail. Followed sellers first, then recent. */
-export async function freshTodayEntries(limit = 12) {
-  return prisma.foodStory.findMany({
+/**
+ * Section 1 — the Fresh Today rail (Part E1: "followed sellers first (unseen
+ * first), then recently-active sellers").
+ *
+ * ⚠ Slice 11: re-sorted in Node, not in the query. The DB orders by recency,
+ * over-fetching to `limit * 3` so a followed seller's older post isn't cut off
+ * by the initial `createdAt` window before the followed/unseen re-sort even
+ * runs — with only 13 active stories total in the seed this never actually
+ * trims anything today, but it is the correct shape for when it does.
+ */
+export async function freshTodayEntries(limit = 12, userId: string | null = null) {
+  const rows = await prisma.foodStory.findMany({
     where: {
       expiresAt: { gt: new Date() },
       seller: { status: "ACTIVE" },
@@ -125,12 +136,31 @@ export async function freshTodayEntries(limit = 12) {
       pathCard: true,
       blurDataUrl: true,
       createdAt: true,
-      seller: { select: { slug: true, displayName: true } },
+      seller: { select: { id: true, slug: true, displayName: true } },
       linkedListing: { select: { slug: true, availabilityWindows: true } },
     },
     orderBy: [{ createdAt: "desc" }],
-    take: limit,
+    take: limit * 3,
   });
+
+  if (!userId) return rows.slice(0, limit);
+
+  const [followed, seen] = await Promise.all([
+    followedSellerIds(userId),
+    seenStoryIds(userId, rows.map((r) => r.id)),
+  ]);
+
+  const sorted = [...rows].sort((a, b) => {
+    const aFollowed = followed.has(a.seller.id) ? 1 : 0;
+    const bFollowed = followed.has(b.seller.id) ? 1 : 0;
+    if (aFollowed !== bFollowed) return bFollowed - aFollowed;
+    const aUnseen = seen.has(a.id) ? 0 : 1;
+    const bUnseen = seen.has(b.id) ? 0 : 1;
+    if (aUnseen !== bUnseen) return bUnseen - aUnseen;
+    return b.createdAt.getTime() - a.createdAt.getTime();
+  });
+
+  return sorted.slice(0, limit);
 }
 
 /** Section 2 — available today / this weekend, computed from windows. */
@@ -258,6 +288,25 @@ export async function sellersInArea(area: RegionKey | null, limit = 8) {
     orderBy: [{ lastStoryAt: { sort: "desc", nulls: "last" } }, { followerCount: "desc" }],
     take: limit,
   });
+}
+
+/**
+ * Section 7 — "from sellers you follow" (Part E1: "signed-in, following ≥1").
+ *
+ * Slice 9 deliberately left this section out of the home page entirely rather
+ * than render an empty heading to every anonymous visitor — "Section 7 …is
+ * deliberately absent. It needs a signed-in viewer with follows, and Slice 11
+ * owns follows." This is that function; the home page only renders the
+ * section when both a session exists AND this returns something.
+ */
+export async function followedSellersListings(userId: string, limit = 8, now = new Date()) {
+  const rows = await prisma.foodListing.findMany({
+    where: { ...DISCOVERABLE, seller: { status: "ACTIVE", followers: { some: { userId } } } },
+    select: CARD_SELECT,
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+  return withAvailability(rows, now);
 }
 
 export const SELLER_CARD_SELECT = {

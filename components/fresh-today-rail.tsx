@@ -24,9 +24,10 @@ import type { freshTodayEntries } from "@/lib/discovery";
  * linked listing it falls back to the posting time, which is the only honest
  * thing left to say.
  *
- * Seen/unseen is a **card border**, never a ring (Part E2). Slice 11 supplies
- * the real state from `FoodStoryView`; until then everything renders unseen,
- * which is correct for an anonymous visitor who has genuinely seen none of it.
+ * Seen/unseen is a **card border**, never a ring (Part E2). `seenIds` is real
+ * `FoodStoryView` state as of Slice 11; an anonymous visitor still gets an
+ * empty set (correct — they have genuinely seen none of it) rather than a
+ * query that runs for nothing.
  */
 export async function FreshTodayRail({
   entries,
@@ -59,10 +60,7 @@ export async function FreshTodayRail({
           return (
             <FreshTodayCard
               key={entry.id}
-              // Slice 11 builds the full-screen viewer at this route; until
-              // then the link resolves to the seller's profile stub, which is
-              // a real page rather than a dead href.
-              href={`/sellers/${entry.seller.slug}`}
+              href={`/stories/${entry.seller.slug}`}
               sellerName={entry.seller.displayName}
               photo={{ src: entry.pathCard, blurDataUrl: entry.blurDataUrl }}
               photoAlt={entry.caption ?? entry.seller.displayName}

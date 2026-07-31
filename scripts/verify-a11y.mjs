@@ -80,6 +80,11 @@ const PAGES = [
   // anywhere in this script, so this is genuinely the anonymous render).
   "/meals/pastelon-de-platano",
   "/saved",
+  // Slice 11 — a real ACTIVE seller with a Menu shelf highlight, active
+  // listings and a gallery, and the full-screen Fresh Today viewer for the
+  // same seller (they have an active story — confirmed against the seed).
+  "/sellers/cocina-de-abuela",
+  "/stories/cocina-de-abuela",
   "/style-guide",
   "/food",
 ];
@@ -471,6 +476,40 @@ async function run() {
           );
           await page.keyboard.press("Escape");
           await page.waitForSelector('[role="dialog"]', { state: "detached" });
+        }
+
+        // ── Slice 11: the seller profile's own content ──
+        if (route === "/sellers/cocina-de-abuela") {
+          const followBtn = page.getByRole("button", { name: /follow|seguir/i }).first();
+          check(await followBtn.isVisible().catch(() => false), `${label}: Follow button visible`);
+
+          const menuShelfLinks = await page.locator(`a[href="/stories/cocina-de-abuela"]`).count();
+          check(menuShelfLinks > 0, `${label}: Menu shelf renders at least one card linking to the viewer`);
+
+          const galleryImgs = await page.evaluate(() =>
+            Array.from(document.querySelectorAll("img")).filter((i) =>
+              (i.currentSrc || i.src).includes("/api/media/"),
+            ),
+          );
+          check(galleryImgs.length >= 4, `${label}: cover/avatar/menu-shelf/listing photos all real`, `${galleryImgs.length} imgs`);
+
+          const body = await page.evaluate(() => document.body.innerText);
+          check(!body.includes("€"), `${label}: no euro sign`);
+        }
+
+        // ── Slice 11: the Fresh Today viewer's own mechanics ──
+        if (route === "/stories/cocina-de-abuela") {
+          const closeBtn = page.getByRole("button", { name: /close|cerrar/i }).first();
+          check(await closeBtn.isVisible().catch(() => false), `${label}: close button visible`);
+
+          const bars = await page.locator('div.fixed.inset-0 >> div.h-1.flex-1').count();
+          check(bars > 0, `${label}: progress bar segments rendered (${bars})`);
+
+          const storyImg = await page.evaluate(() => {
+            const img = document.querySelector('div.fixed.inset-0 img');
+            return img ? (img.currentSrc || img.src) : null;
+          });
+          check(!!storyImg && storyImg.includes("/api/media/"), `${label}: story photo served by the real storage route`);
         }
 
         check(

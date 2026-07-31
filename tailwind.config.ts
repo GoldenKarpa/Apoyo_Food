@@ -196,6 +196,17 @@ const config: Config = {
           from: { opacity: "0", transform: "translateY(6px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
+        // The Fresh Today viewer's progress-bar fill (Slice 11). ⚠ Cosmetic
+        // ONLY — the slide-advance timer is a plain `setTimeout` in JS, never
+        // this animation's `onAnimationEnd`. globals.css forces EVERY
+        // animation-duration to 0.01ms under `prefers-reduced-motion`, which
+        // would otherwise rapid-fire through an entire story in a few
+        // milliseconds — a real bug this decoupling exists to avoid, not a
+        // hypothetical one.
+        "story-progress": {
+          from: { width: "0%" },
+          to: { width: "100%" },
+        },
       },
       animation: {
         "sheet-up": "sheet-up 250ms cubic-bezier(0.16, 1, 0.3, 1)",
@@ -206,6 +217,7 @@ const config: Config = {
         "modal-out": "modal-out 200ms cubic-bezier(0.16, 1, 0.3, 1)",
         "blur-up": "blur-up 300ms cubic-bezier(0.16, 1, 0.3, 1)",
         "card-in": "card-in 250ms cubic-bezier(0.16, 1, 0.3, 1) both",
+        "story-progress": "story-progress linear forwards",
       },
     },
   },
