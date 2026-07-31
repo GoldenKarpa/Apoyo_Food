@@ -68,13 +68,33 @@
       "dietary": "Dieta",
       "availability": "Disponibilidad",
       "sort": "Ordenar por"
+    },
+    "sortOptions": {
+      "newest": "Más recientes",
+      "popular": "Más guardados",
+      "price-asc": "Precio: de menor a mayor",
+      "price-desc": "Precio: de mayor a menor"
+    },
+    "priceBands": {
+      "under-50": "Menos de $50",
+      "50-150": "$50–$150",
+      "150-300": "$150–$300",
+      "over-300": "Más de $300"
+    },
+    "dietaryTags": {
+      "vegetarian": "Vegetariano",
+      "vegan": "Vegano",
+      "gluten-free": "Sin gluten"
     }
   },
   "availability": {
     "today": "Disponible hoy",
     "weekend": "Fin de semana",
-    "preorder": "Por encargo · 2 días",
-    "holidays": "Solo festivos"
+    "preorder": "Por encargo · {days} días",
+    "holidays": "Solo festivos",
+    "seasonal": "En temporada",
+    "unavailable": "Consulta al cocinero",
+    "preorderShort": "Por encargo"
   },
   "price": {
     "startingAt": "Desde",
@@ -148,23 +168,30 @@
       "title": "Descubre",
       "intro": "Cocineras, panaderos, reposteros y servicios de catering cerca de ti — comidas por encargo, especiales de fin de semana, bandejas para fiestas y menús festivos.",
       "browse": "Ver comidas",
-      "freshTodayNote": "El tablero En la cocina hoy llega en el Slice 9; el visor a pantalla completa en el Slice 11."
+      "browseSellers": "Ver cocineros"
     },
     "browse": {
       "title": "Explorar",
-      "body": "La cuadrícula de comidas, los filtros y el orden llegan en el Slice 9."
+      "results": "{count, plural, one {# comida} other {# comidas}}",
+      "resultsFiltered": "{count, plural, =0 {Ninguna comida coincide} one {# comida coincide} other {# comidas coinciden}} con tus filtros",
+      "emptyTitle": "Nada coincide con esos filtros",
+      "emptyBody": "Prueba ampliando la zona o el precio, o quita un filtro. Cada búsqueda sin resultados queda registrada — así los cocineros descubren qué busca la gente cerca de ellos."
     },
     "sellers": {
-      "title": "Vendedores",
-      "body": "El directorio de vendedores y el mapa ilustrado de Trinidad llegan en el Slice 9."
+      "title": "Cocineros",
+      "results": "{count, plural, one {# cocinero} other {# cocineros}}",
+      "emptyTitle": "Todavía no hay cocineros en esa zona",
+      "emptyBody": "Elige otra zona en el mapa, o mira a todos."
     },
     "category": {
       "title": "Categoría",
-      "body": "Las páginas de categoría llegan en el Slice 9, cuando la taxonomía esté sembrada."
+      "results": "{count, plural, one {# comida} other {# comidas}}",
+      "emptyTitle": "Todavía no hay nada aquí",
+      "emptyBody": "Ningún cocinero ha publicado en esta categoría cerca de ti. Prueba con otra."
     },
     "meal": {
       "title": "Comida",
-      "body": "El detalle del plato — galería, disponibilidad, tarjeta del vendedor y el botón Solicitar pedido — llega en el Slice 10."
+      "body": "La ficha completa — galería, disponibilidad, tarjeta del vendedor y el botón Solicitar pedido — llega en el Slice 10."
     },
     "sellerProfile": {
       "title": "Perfil del vendedor",
@@ -172,7 +199,15 @@
     },
     "search": {
       "title": "Buscar",
-      "body": "La búsqueda de comidas y vendedores llega en el Slice 9, junto con el registro de eventos de demanda."
+      "label": "Buscar comidas y cocineros",
+      "placeholder": "Pastelón, doubles, black cake…",
+      "submit": "Buscar",
+      "prompt": "Busca por plato, ingrediente o cocinero.",
+      "meals": "{count, plural, one {# comida} other {# comidas}}",
+      "sellersTab": "{count, plural, one {# cocinero} other {# cocineros}}",
+      "emptyTitle": "No se encontró nada para «{query}»",
+      "emptyBody": "Todavía nadie cerca ofrece eso. Registramos cada búsqueda sin resultados — así es exactamente como los cocineros descubren qué quiere la gente a su alrededor.",
+      "emptyAction": "Ver todo"
     },
     "saved": {
       "title": "Guardados",
@@ -193,6 +228,49 @@
     "register": {
       "title": "Crear una cuenta",
       "body": "El registro se envía al emisor central (portal-web) — se conecta en el Slice 3."
+    },
+    "sections": {
+      "freshTodayNote": "Lo que están cocinando cerca de ti ahora mismo.",
+      "postedToday": "Publicado hoy",
+      "freshDot": "Publicó en En la cocina hoy",
+      "seeAll": "Ver todo",
+      "availableSoon": "Disponible hoy y este fin de semana",
+      "availableSoonNote": "Se calcula a partir de las ventanas de disponibilidad, en hora de Trinidad.",
+      "categories": "Explora por categoría",
+      "mealCount": "{count, plural, one {# comida} other {# comidas}}",
+      "newest": "Nuevo esta semana",
+      "trending": "Lo más visto",
+      "trendingNote": "Lo que la gente ha estado mirando en las últimas dos semanas.",
+      "sellers": "Cocineros cerca de ti",
+      "nearYouIn": "Cocineros en {area}",
+      "nearYouNote": "Elige tu zona en el directorio y te acompaña por todo el sitio.",
+      "followers": "{count, plural, one {# seguidor} other {# seguidores}}",
+      "seasonal": "En temporada",
+      "seasonalNote": "Menús festivos y especiales de temporada, visibles solo mientras están abiertos.",
+      "areaNames": {
+        "central": "Centro",
+        "east_west_corridor": "Corredor Este–Oeste",
+        "north_east": "Noreste",
+        "north_west": "Noroeste",
+        "south_central": "Centro Sur",
+        "south_east": "Sureste",
+        "south_west": "Suroeste",
+        "tobago": "Tobago"
+      },
+      "categoryNames": {
+        "baked-goods": "Panadería y repostería",
+        "bbq-grill": "Parrilla y BBQ",
+        "breakfast": "Desayuno",
+        "catering": "Catering",
+        "desserts": "Postres",
+        "dinner": "Cena",
+        "drinks": "Bebidas",
+        "holiday-specials": "Especiales festivos",
+        "juices-smoothies": "Jugos y batidos",
+        "lunch": "Almuerzo",
+        "snacks": "Meriendas",
+        "vegetarian-vegan": "Vegetariano y vegano"
+      }
     }
   },
   "seller": {
@@ -225,5 +303,15 @@
     "shapes": "Forma, elevación, movimiento",
     "priceExample": "Tratamiento del precio",
     "handExample": "Etiqueta manuscrita — solo para títulos de sección"
+  },
+  "regions": {
+    "central": "Centro",
+    "east_west_corridor": "Corredor Este–Oeste",
+    "north_east": "Noreste",
+    "north_west": "Noroeste",
+    "south_central": "Centro Sur",
+    "south_east": "Sureste",
+    "south_west": "Suroeste",
+    "tobago": "Tobago"
   }
 }

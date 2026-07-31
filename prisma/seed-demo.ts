@@ -32,6 +32,7 @@ import { PrismaClient, type Prisma } from "@prisma/client";
 import sharp from "sharp";
 
 import {
+  ingestCategoryHero,
   ingestMealPhoto,
   ingestSellerAvatar,
   ingestSellerCover,
@@ -401,6 +402,57 @@ async function seedFreshToday(spec: SellerSpec, ownerId: string) {
 }
 
 /**
+ * Category hero imagery.
+ *
+ * ⚠ Written to `FoodCategory.heroImage`, which is **taxonomy, not seed data** —
+ * so unlike everything else in this file these rows are NOT `seed-` prefixed and
+ * `db:seed:demo:clear` deliberately does not remove them. The column is left as
+ * a plain storage key rather than a variant set because Part D declares it a
+ * single `heroImage`, and a category hero is decorative chrome rather than
+ * user-uploaded content.
+ *
+ * Added after looking at the rendered home page: Part E1 section 3 asks for
+ * "category cards with hero imagery", and the cards were shipping as flat tinted
+ * blocks because nothing had ever populated the column.
+ */
+async function seedCategoryHeroes() {
+  const categories = await prisma.foodCategory.findMany({
+    where: { heroImage: null },
+    select: { id: true, slug: true },
+  });
+
+  for (const category of categories) {
+    const rng = rngFor(`category:${category.slug}`);
+    // Reuse the dish vocabulary a category actually contains, so the hero looks
+    // like the category rather than like generic food.
+    const terms = CATEGORY_PHOTO_TERMS[category.slug] ?? [category.slug.replace(/-/g, " ")];
+    const paths = await ingestCategoryHero(
+      (await fetchSeedPhoto({ ref: `category-${category.slug}`, terms }, rng)).buffer,
+      "image/jpeg",
+    );
+    await prisma.foodCategory.update({
+      where: { id: category.id },
+      data: { heroImage: paths.pathCard },
+    });
+  }
+}
+
+const CATEGORY_PHOTO_TERMS: Record<string, string[]> = {
+  breakfast: ["breakfast", "toast"],
+  lunch: ["chicken", "rice"],
+  dinner: ["beef", "stew"],
+  snacks: ["fritter", "pastry"],
+  desserts: ["dessert", "cake"],
+  "baked-goods": ["bread", "pastry"],
+  "bbq-grill": ["barbecue", "ribs"],
+  drinks: ["drink", "punch"],
+  "juices-smoothies": ["smoothie", "juice"],
+  "vegetarian-vegan": ["vegetarian", "vegan"],
+  catering: ["platter", "buffet"],
+  "holiday-specials": ["christmas cake", "fruit cake"],
+};
+
+/**
  * Follows and saves.
  *
  * Neither is in Slice 8's brief, and both are here deliberately: a profile
@@ -519,6 +571,7 @@ async function seed() {
     console.log(`  ✔ ${spec.displayName.padEnd(28)} ${spec.listings.length} listings`);
   }
 
+  await seedCategoryHeroes();
   await seedEngagement();
 
   const counts = {

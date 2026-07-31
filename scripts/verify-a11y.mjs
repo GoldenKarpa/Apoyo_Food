@@ -50,11 +50,34 @@ const WIDTHS = [
 const LOCALES = ["en", "es"];
 
 /**
+ * A route turned into a legal filename.
+ *
+ * ⚠ Windows rejects `?`, `:`, `*` and friends in filenames, so `/search?q=…`
+ * killed the whole audit mid-run with an ENOENT that reads like a missing
+ * directory rather than an illegal name. Only surfaced once a route with a
+ * query string was added to PAGES.
+ */
+function slugForFile(route) {
+  return route.replace(/[/?=&:*"<>|]+/g, "_") || "_root";
+}
+
+/**
  * `/food` is included even though Phase 2 is where the seller surface gets its
  * design budget: an accessibility floor is not an aesthetic, and that surface
  * shares these tokens and this locale pill.
  */
-const PAGES = ["/", "/browse", "/style-guide", "/food"];
+const PAGES = [
+  "/",
+  "/browse",
+  "/browse/sellers",
+  "/categories/desserts",
+  "/search?q=pastelon",
+  // The zero-result state is a designed surface (Part E3), so it is audited
+  // like any other rather than assumed to inherit the populated one's contrast.
+  "/search?q=zzzznothing",
+  "/style-guide",
+  "/food",
+];
 
 let passes = 0;
 const failures = [];
@@ -295,7 +318,7 @@ async function run() {
 
         if (SHOTS) {
           await page.screenshot({
-            path: path.join(SHOTS, `${locale}-${viewport.name}${route.replace(/\//g, "_")}.png`),
+            path: path.join(SHOTS, `${locale}-${viewport.name}${slugForFile(route)}.png`),
             fullPage: true,
           });
         }
@@ -423,32 +446,114 @@ async function run() {
     const page = await context.newPage();
     await page.goto(`${BASE}/style-guide`, { waitUntil: "networkidle" });
 
+    // ── Mobile image performance on the discovery surfaces ──
+    // Slice 9's done-when asks for "Lighthouse mobile perf sane on hero/card
+    // images". Rather than quote a Lighthouse score (which folds in a dozen
+    // things this slice does not control), this measures the thing the score
+    // would actually be complaining about: how many bytes of imagery a phone
+    // downloads for the home page, and whether the loader is serving the right
+    // VARIANT for each slot rather than the full-size file everywhere.
+    {
+      const perfContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+      const perfPage = await perfContext.newPage();
+      const images = [];
+      // ⚠ **Measure the BODY, not the `content-length` header.** The media route
+      // streams its response and sets no content-length, so the first version of
+      // this block summed a column of zeros and cheerfully asserted "0KB is
+      // under 2.5MB" — a check that could never fail, on the one page it exists
+      // to protect. Caught by re-measuring independently rather than by any
+      // assertion, which is the recurring lesson of this whole slice.
+      const pending = [];
+      perfPage.on("response", (response) => {
+        const type = response.headers()["content-type"] ?? "";
+        if (!type.startsWith("image/")) return;
+        pending.push(
+          response
+            .body()
+            .then((buf) => images.push({ url: response.url(), size: buf.length }))
+            .catch(() => {}),
+        );
+      });
+      await perfPage.goto(`${BASE}/`, { waitUntil: "networkidle" });
+      await Promise.all(pending);
+
+      const total = images.reduce((sum, i) => sum + i.size, 0);
+      check(total > 0, "perf: image payload was actually measured (not a vacuous zero)", `${total} bytes`);
+      const largest = images.reduce((max, i) => Math.max(max, i.size), 0);
+      check(
+        total < 2_500_000,
+        `perf: home page image payload under 2.5MB on a 390px viewport (${Math.round(total / 1024)}KB across ${images.length} images)`,
+        `${Math.round(total / 1024)}KB`,
+      );
+      check(
+        largest < 400_000,
+        `perf: no single image over 400KB (largest ${Math.round(largest / 1024)}KB)`,
+      );
+      // ⚠ The real failure this guards against: shipping `-full` (1600px) files
+      // into 150px rail slots. That is invisible on a laptop and ruinous on
+      // Trinidad mobile data, which is exactly who this is for.
+      const fullVariants = images.filter((i) => /-full\.webp/.test(i.url));
+      check(
+        fullVariants.length === 0,
+        `perf: no 1600px -full variant is served to a phone (${fullVariants.length})`,
+        fullVariants.map((i) => i.url.slice(-40)).join(" | "),
+      );
+      const lazy = await perfPage.evaluate(() =>
+        Array.from(document.querySelectorAll("img")).filter((i) => i.loading === "lazy").length,
+      );
+      check(lazy > 0, `perf: below-the-fold images are lazy (${lazy})`);
+      await perfContext.close();
+    }
+
     // ── Anti-vacuity: prove the contrast detector still detects ──
-    // The `sr-only` exclusion added to `isVisible` is exactly the kind of
-    // filter that can quietly turn a passing audit into a no-op. So inject two
-    // elements with the SAME failing colours (ink on green-vivid at caption
-    // size, 3.10:1) — one visible, one screen-reader-only — and assert the
-    // audit reports the first and ignores the second. A run where the detector
-    // has been neutered fails here instead of reporting 0 failures.
+    // The `sr-only` exclusion in `isVisible` is exactly the kind of filter that
+    // can quietly turn a passing audit into a no-op. So inject two elements
+    // with the SAME failing colours (ink on green-vivid at caption size,
+    // 3.10:1) — one visible, one screen-reader-only — and assert the audit
+    // reports the first and ignores the second.
+    //
+    // ⚠ **The colours are INLINE STYLES, not Tailwind classes, and that is the
+    // whole point of this note.** The first version used
+    // `className="bg-green-vivid text-ink text-caption"` and passed — until
+    // Slice 8 deleted `components/scaffold/token-proof.tsx`, which turned out to
+    // be the only file in the repo still *mentioning* `bg-green-vivid`. Tailwind
+    // stopped emitting the class, the injected control rendered on plain cream
+    // at 12.7:1, and the self-test reported "0 failures detected" — i.e. the
+    // guard against a vacuous audit had itself gone vacuous, and it said so.
+    // A control that depends on the build emitting a class is not a control.
     const control = await page.evaluate(
       ([auditSource]) => {
         const audit = new Function(`return (${auditSource})`)();
         const make = (cls) => {
           const el = document.createElement("span");
-          el.className = `${cls} bg-green-vivid text-ink text-caption`;
+          el.className = cls;
           el.textContent = "CONTRAST CONTROL";
+          // green-vivid #5E7B4F behind ink #2B2820 — 3.10:1, measured at Slice 1.
+          el.style.backgroundColor = "rgb(94, 123, 79)";
+          el.style.color = "rgb(43, 40, 32)";
+          el.style.fontSize = "12px";
+          el.style.fontWeight = "400";
           document.body.appendChild(el);
           return el;
         };
-        const visible = make("inline-block px-3 py-1");
+        const visible = make("inline-block");
         const hidden = make("sr-only");
         const report = audit();
         visible.remove();
         hidden.remove();
         const hits = report.textNodes.filter((n) => n.text.includes("CONTRAST CONTROL"));
-        return { measured: hits.length, failing: hits.filter((n) => n.ratio < n.required).length };
+        return {
+          measured: hits.length,
+          failing: hits.filter((n) => n.ratio < n.required).length,
+          ratio: hits[0]?.ratio ?? null,
+        };
       },
       [auditInPage.toString()],
+    );
+    check(
+      control.ratio !== null && Math.abs(control.ratio - 3.1) < 0.15,
+      `self-test: the control really is the 3.10:1 pairing it claims to be`,
+      `measured ${control.ratio}:1`,
     );
     check(
       control.measured === 1,

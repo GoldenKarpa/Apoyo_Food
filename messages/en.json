@@ -68,13 +68,33 @@
       "dietary": "Dietary",
       "availability": "Availability",
       "sort": "Sort by"
+    },
+    "sortOptions": {
+      "newest": "Newest",
+      "popular": "Most saved",
+      "price-asc": "Price: low to high",
+      "price-desc": "Price: high to low"
+    },
+    "priceBands": {
+      "under-50": "Under $50",
+      "50-150": "$50–$150",
+      "150-300": "$150–$300",
+      "over-300": "Over $300"
+    },
+    "dietaryTags": {
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "gluten-free": "Gluten free"
     }
   },
   "availability": {
     "today": "Available today",
     "weekend": "Weekends",
-    "preorder": "Pre-order · 2 days",
-    "holidays": "Holidays only"
+    "preorder": "Pre-order · {days} days",
+    "holidays": "Holidays only",
+    "seasonal": "In season now",
+    "unavailable": "Ask the cook",
+    "preorderShort": "Pre-order"
   },
   "price": {
     "startingAt": "From",
@@ -148,23 +168,30 @@
       "title": "Discover",
       "intro": "Home cooks, bakers, dessert makers and caterers near you — meals by pre-order, weekend specials, party trays and holiday menus.",
       "browse": "Browse meals",
-      "freshTodayNote": "The Fresh Today board arrives in Slice 9; the full-screen viewer in Slice 11."
+      "browseSellers": "Browse cooks"
     },
     "browse": {
       "title": "Browse",
-      "body": "The meals grid, filter sheets and sort arrive in Slice 9."
+      "results": "{count, plural, one {# meal} other {# meals}}",
+      "resultsFiltered": "{count, plural, =0 {No meals match} one {# meal matches} other {# meals match}} your filters",
+      "emptyTitle": "Nothing matches those filters",
+      "emptyBody": "Try widening the area or the price, or clear a filter. Every search that finds nothing is recorded — it is how cooks learn what people near them are looking for."
     },
     "sellers": {
-      "title": "Sellers",
-      "body": "The seller directory and the illustrated Trinidad region map arrive in Slice 9."
+      "title": "Cooks",
+      "results": "{count, plural, one {# cook} other {# cooks}}",
+      "emptyTitle": "No cooks in that area yet",
+      "emptyBody": "Pick another area on the map, or browse everyone."
     },
     "category": {
       "title": "Category",
-      "body": "Category landing pages arrive in Slice 9, once the taxonomy is seeded."
+      "results": "{count, plural, one {# meal} other {# meals}}",
+      "emptyTitle": "Nothing here yet",
+      "emptyBody": "No cook has listed anything in this category near you. Try another category."
     },
     "meal": {
       "title": "Meal",
-      "body": "Listing detail — gallery, availability, seller card and the Request order CTA — arrives in Slice 10."
+      "body": "The full listing — gallery, availability, seller card and the Request order CTA — arrives in Slice 10."
     },
     "sellerProfile": {
       "title": "Seller profile",
@@ -172,7 +199,15 @@
     },
     "search": {
       "title": "Search",
-      "body": "Search across meals and sellers arrives in Slice 9, with demand-event logging from the same slice."
+      "label": "Search meals and cooks",
+      "placeholder": "Pastelón, doubles, black cake…",
+      "submit": "Search",
+      "prompt": "Search by dish, ingredient or cook.",
+      "meals": "{count, plural, one {# meal} other {# meals}}",
+      "sellersTab": "{count, plural, one {# cook} other {# cooks}}",
+      "emptyTitle": "Nothing found for “{query}”",
+      "emptyBody": "Nobody nearby is listing that yet. We record every search that finds nothing — it is exactly how cooks discover what people around them want.",
+      "emptyAction": "Browse everything"
     },
     "saved": {
       "title": "Saved",
@@ -193,6 +228,49 @@
     "register": {
       "title": "Create an account",
       "body": "Registration posts to the central issuer (portal-web) — wired in Slice 3."
+    },
+    "sections": {
+      "freshTodayNote": "What cooks near you have going right now.",
+      "postedToday": "Posted today",
+      "freshDot": "Posted to Fresh Today",
+      "seeAll": "See all",
+      "availableSoon": "Available today & this weekend",
+      "availableSoonNote": "Computed from each listing's availability windows, in Trinidad time.",
+      "categories": "Explore by category",
+      "mealCount": "{count, plural, one {# meal} other {# meals}}",
+      "newest": "New this week",
+      "trending": "Trending now",
+      "trendingNote": "What people have been looking at over the last two weeks.",
+      "sellers": "Cooks near you",
+      "nearYouIn": "Cooks in {area}",
+      "nearYouNote": "Pick your area on the cook directory and it follows you around the site.",
+      "followers": "{count, plural, one {# follower} other {# followers}}",
+      "seasonal": "In season now",
+      "seasonalNote": "Holiday menus and seasonal specials, shown only while they are actually open.",
+      "areaNames": {
+        "central": "Central",
+        "east_west_corridor": "East–West Corridor",
+        "north_east": "North East",
+        "north_west": "North West",
+        "south_central": "South Central",
+        "south_east": "South East",
+        "south_west": "South West",
+        "tobago": "Tobago"
+      },
+      "categoryNames": {
+        "baked-goods": "Baked Goods",
+        "bbq-grill": "BBQ & Grill",
+        "breakfast": "Breakfast",
+        "catering": "Catering",
+        "desserts": "Desserts",
+        "dinner": "Dinner",
+        "drinks": "Drinks",
+        "holiday-specials": "Holiday Specials",
+        "juices-smoothies": "Juices & Smoothies",
+        "lunch": "Lunch",
+        "snacks": "Snacks",
+        "vegetarian-vegan": "Vegetarian & Vegan"
+      }
     }
   },
   "seller": {
@@ -225,5 +303,15 @@
     "shapes": "Shape, elevation, motion",
     "priceExample": "Price treatment",
     "handExample": "Handwritten section label — section labels only"
+  },
+  "regions": {
+    "central": "Central",
+    "east_west_corridor": "East–West Corridor",
+    "north_east": "North East",
+    "north_west": "North West",
+    "south_central": "South Central",
+    "south_east": "South East",
+    "south_west": "South West",
+    "tobago": "Tobago"
   }
 }
