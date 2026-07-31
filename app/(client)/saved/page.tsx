@@ -9,7 +9,10 @@ import { CARD_SELECT, DISCOVERABLE, withAvailability } from "@/lib/discovery";
 import { prisma } from "@/lib/prisma";
 import { getFoodSession } from "@/lib/session";
 
-export const metadata: Metadata = { title: "Saved" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("client.saved");
+  return { title: t("title") };
+}
 
 /**
  * `/saved` (Slice 10, Part F1's sitemap: "Saves (Phase 4: collections)").

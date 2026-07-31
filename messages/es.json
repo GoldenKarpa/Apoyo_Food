@@ -257,6 +257,10 @@
       "title": "Cuenta",
       "body": "Los ajustes de la cuenta llegan con la identidad compartida en el Slice 3."
     },
+    "offline": {
+      "title": "Estás sin conexión",
+      "body": "No hay conexión ahora mismo — las páginas que ya visitaste siguen aquí. Todo lo demás necesita que vuelvas a estar en línea."
+    },
     "login": {
       "title": "Iniciar sesión",
       "body": "El inicio de sesión se envía al emisor central (portal-web) — se conecta en el Slice 3. Explorar nunca requiere una cuenta; solo se pide iniciar sesión al confirmar algo."

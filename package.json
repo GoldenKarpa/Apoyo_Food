@@ -23,6 +23,7 @@
     "verify:discovery": "tsx scripts/verify-discovery.ts",
     "verify:saves": "tsx scripts/verify-saves.ts",
     "verify:follows": "tsx scripts/verify-follows.ts",
+    "verify:pwa": "node scripts/verify-pwa.mjs",
     "icons:generate": "node scripts/generate-icons.mjs"
   },
   "dependencies": {

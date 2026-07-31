@@ -71,7 +71,9 @@ export function CategoryCard({
       )}
 
       <div className={cn("flex flex-col gap-0.5 px-4 py-3", accent.fill)}>
-        <h3 className="font-display text-h2 font-semibold">{name}</h3>
+        {/* `<h2>`, not `<h3>` — same Slice 12 heading-order fix as
+            `<MealCard>`; see that component's own note. */}
+        <h2 className="font-display text-h2 font-semibold">{name}</h2>
         {countLabel && (
           // Inherits the band's `card`-cream from the accent fill — deliberately
           // not `ink-muted`, which has no measured pairing against any accent.

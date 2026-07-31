@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -42,6 +43,19 @@ const WINDOW_TONE: Record<AvailabilityType, AvailabilityTone> = {
 function formatIsoDate(iso: string, locale: string): string {
   const date = new Date(`${iso}T00:00:00.000Z`);
   return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", timeZone: "UTC" }).format(date);
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const listing = await prisma.foodListing.findFirst({
+    where: { slug, ...DISCOVERABLE },
+    select: { title: true },
+  });
+  return { title: listing?.title ?? "Apoyo Food" };
 }
 
 export default async function MealDetailPage({ params }: { params: Promise<{ slug: string }> }) {

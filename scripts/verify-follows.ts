@@ -242,8 +242,15 @@ async function run() {
 
   await prisma.foodDemandEvent.deleteMany({ where: { kind: { in: ["FOLLOW", "STORY_VIEW"] }, sellerId: seller.id } });
 
-  // Final cleanup.
+  // ⚠ Final cleanup — RECOUNTS `followerCount` after deleting the leftover
+  // row, exactly like `toggleFollowSeller` itself does. A plain `deleteMany`
+  // here left the seed's real seller `followerCount` permanently off by one
+  // on disk after every run — caught by `verify-seed.ts`'s own cross-check,
+  // not by this script (which has no assertion on the seller's counter after
+  // this point to catch its own drift). Do not revert to a bare deleteMany.
   await prisma.foodFollow.deleteMany({ where: { userId } });
+  const finalCount = await prisma.foodFollow.count({ where: { sellerId: seller.id } });
+  await prisma.foodSeller.update({ where: { id: seller.id }, data: { followerCount: finalCount } });
 
   console.log(`\n${passes} pass, ${failures.length} fail`);
   if (failures.length) {

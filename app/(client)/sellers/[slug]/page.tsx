@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Bike, Handshake, ShoppingBag, type LucideIcon } from "lucide-react";
@@ -32,6 +33,19 @@ const FULFILLMENT_ICONS: Record<FulfillmentMode, LucideIcon> = {
   SELLER_DELIVERY: Bike,
   MEETUP: Handshake,
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const seller = await prisma.foodSeller.findFirst({
+    where: { slug, status: "ACTIVE" },
+    select: { displayName: true },
+  });
+  return { title: seller?.displayName ?? "Apoyo Food" };
+}
 
 export default async function SellerProfilePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

@@ -15,11 +15,12 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const [locale, category] = await Promise.all([
+  const [locale, t, category] = await Promise.all([
     getLocale(),
+    getTranslations("client.category"),
     prisma.foodCategory.findUnique({ where: { slug }, select: { nameEn: true, nameEs: true } }),
   ]);
-  return { title: category ? (locale === "es" ? category.nameEs : category.nameEn) : "Category" };
+  return { title: category ? (locale === "es" ? category.nameEs : category.nameEn) : t("title") };
 }
 
 /**

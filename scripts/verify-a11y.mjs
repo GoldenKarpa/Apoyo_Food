@@ -85,6 +85,10 @@ const PAGES = [
   // same seller (they have an active story — confirmed against the seed).
   "/sellers/cocina-de-abuela",
   "/stories/cocina-de-abuela",
+  // Slice 12 — the service worker's offline navigation fallback. Real
+  // functional offline behaviour is `verify-pwa.mjs`'s job; this only checks
+  // the page's own contrast/tap-targets/locale like every other route here.
+  "/offline",
   "/style-guide",
   "/food",
 ];

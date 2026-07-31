@@ -9,7 +9,10 @@ import { prisma } from "@/lib/prisma";
 import { isRegionKey } from "@/lib/regions";
 import { AreaPicker } from "./area-picker";
 
-export const metadata: Metadata = { title: "Sellers" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("client.sellers");
+  return { title: t("title") };
+}
 
 /**
  * `/browse/sellers` — the seller directory (Part E1's "sellers directory

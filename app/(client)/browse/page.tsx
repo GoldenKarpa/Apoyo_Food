@@ -7,7 +7,10 @@ import { activeFilterCount, browseListings, parseFilters } from "@/lib/browse";
 import { getFoodSession } from "@/lib/session";
 import { FilterBar } from "./filter-bar";
 
-export const metadata: Metadata = { title: "Browse" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("client.browse");
+  return { title: t("title") };
+}
 
 /**
  * `/browse` — the meals grid with filters (architecture Part E1's browse

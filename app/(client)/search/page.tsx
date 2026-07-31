@@ -14,7 +14,10 @@ import { AREA_COOKIE, isRegionKey } from "@/lib/regions";
 import { getFoodSession } from "@/lib/session";
 import { SearchForm } from "./search-form";
 
-export const metadata: Metadata = { title: "Search" };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("client.search");
+  return { title: t("title") };
+}
 
 /**
  * `/search` — meals and sellers (architecture Part E3, Part F1's sitemap).

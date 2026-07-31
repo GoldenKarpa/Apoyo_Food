@@ -143,8 +143,16 @@ export function MealCard({
 
         <div className="flex flex-col gap-2 px-1 pb-1">
           {/* Clamped to two lines so a long Spanish title cannot break the
-              grid's rhythm — Part F3 budgets ~30% expansion. */}
-          <h3 className="line-clamp-2 font-display text-h2 font-semibold text-ink">{title}</h3>
+              grid's rhythm — Part F3 budgets ~30% expansion.
+              ⚠ Slice 12: `<h2>`, not `<h3>` — every real page composing this
+              card sits it directly under either a page `<h1>` (`/browse`,
+              `/saved`, `/categories/[slug]`) or an `<h2>` `<SectionHeader>`
+              rail label (home, search, the meal-detail rec rails), and an
+              `<h3>` skipped a level in the first group. Lighthouse's own
+              `heading-order` audit caught it on `/browse`; `text-h2` in the
+              className is the unrelated TYPE-SCALE token (font-size), not the
+              semantic level — the two happen to share a name. */}
+          <h2 className="line-clamp-2 font-display text-h2 font-semibold text-ink">{title}</h2>
 
           <div className="flex flex-wrap items-center justify-between gap-2">
             <PriceLine

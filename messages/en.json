@@ -257,6 +257,10 @@
       "title": "Account",
       "body": "Account settings arrive with the shared identity wiring in Slice 3."
     },
+    "offline": {
+      "title": "You're offline",
+      "body": "No connection right now — pages you've already visited are still here. Everything else needs you back online."
+    },
     "login": {
       "title": "Sign in",
       "body": "Sign-in posts to the central issuer (portal-web) — wired in Slice 3. Browsing never requires an account; you are only asked to sign in when you commit to something."

@@ -120,7 +120,9 @@ export function SellerCard({
 
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <div className="flex items-center gap-1.5">
-              <h3 className="truncate font-display text-h2 font-semibold text-ink">{name}</h3>
+              {/* `<h2>`, not `<h3>` — same Slice 12 heading-order fix as
+                  `<MealCard>`; see that component's own note. */}
+              <h2 className="truncate font-display text-h2 font-semibold text-ink">{name}</h2>
               {verified && (
                 <span className="shrink-0 text-teal">
                   <BadgeCheck aria-hidden className="h-4 w-4" />

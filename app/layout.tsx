@@ -50,7 +50,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // ⚠ Slice 12: `maximumScale: 1` blocked pinch-zoom entirely — a real WCAG
+  // 1.4.4 (Resize Text) violation caught by Lighthouse's accessibility audit,
+  // not a stylistic call. A low-vision viewer must be able to zoom past
+  // 100%; Part F3's own "accessibility: WCAG AA" line means this too, not
+  // only contrast. No `maximumScale` at all is the correct fix, not a higher
+  // number — any cap still overrides the user's own zoom setting.
   themeColor: "#536D46", // --green, the Part F3 anchor
 };
 
