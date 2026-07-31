@@ -31,3 +31,6 @@ yarn-error.log*
 # Deployment runbook — kept local only, filled in with real VPS values as it is
 # used, never pushed (same convention as Salon and Apparel)
 DEPLOYMENT.md
+
+# Demo-seed photo cache — downloaded on first `npm run db:seed:demo`, never committed.
+seed-assets/
