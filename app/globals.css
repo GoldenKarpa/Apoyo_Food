@@ -64,6 +64,24 @@
     --error: 165 74 58; /* #A54A3A — 4.52 / 4.99 / 5.44 — was #B2503F */
 
     /*
+     * Accents — PRESSED/HOVER form, added at Slice 13 after a measured failure.
+     *
+     * ⚠ A filled button's hover state used to be `bg-green/90`, i.e. the accent
+     * at 90% alpha. On this palette that composites the accent with the CREAM
+     * page beneath it, which LIGHTENS the fill and drops the cream label to
+     * **4.46:1** — below AA, on the most-used control in the app, in the state
+     * a pointer user sees every time they reach for it. Measured by
+     * `verify-a11y.mjs`, not reasoned about: rgb(99 122 86) is exactly
+     * 0.9×green + 0.1×card.
+     *
+     * These darken instead. Cream on them measures 6.83 (green) and 6.90
+     * (error) — better than the resting state, which is the right direction for
+     * a hover to move. Never use them as text colours or resting fills.
+     */
+    --green-deep: 71 93 60; /* #475D3C — cream label 6.83 */
+    --error-deep: 140 63 49; /* #8C3F31 — cream label 6.90 */
+
+    /*
      * Accents — FILL-ONLY form. These ARE the Emergent originals, retained
      * rather than discarded, exactly as Apparel retained its `clay-muted`.
      * ⚠ INK on top, always — never a cream/white label, and never used AS a

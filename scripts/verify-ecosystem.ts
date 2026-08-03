@@ -71,9 +71,16 @@ async function main() {
   const config = await getProviderRegistrationConfig();
   assert("config endpoint reachable and returns all four keys", Object.keys(config).length === 4, config);
   assert("…FOOD key is present (portal-web's SelectableVertical lists it)", "FOOD" in config, config);
+  // ⚠ This assertion INVERTED at Slice 13, and that is the point of it. Slice 3
+  // seeded the row `false` because Food had no onboarding to send anyone to;
+  // Slice 13 built onboarding and shipped
+  // `Apoyo-Demia/prisma/migrations/20260802220000_enable_food_registration_config`
+  // to flip it. If this reads false again, either that migration has not been
+  // applied to the database under test or something has turned the CTA back off
+  // — both worth failing on rather than quietly tolerating.
   assert(
-    "…FOOD reads false — seeded off, because onboarding lands in Slice 13",
-    config.FOOD === false,
+    "…FOOD reads TRUE — flipped by Food's Slice 13, now that onboarding exists",
+    config.FOOD === true,
     config,
   );
   assert("…and the pre-existing verticals are untouched by this slice", config.SALON === true, config);

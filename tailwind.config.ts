@@ -45,6 +45,11 @@ const config: Config = {
         // ⚠ INK on top, always. Never a cream/white label, never used AS a text
         // colour. This is what renders the vivid availability stamps and status
         // chips the mockups intend (Part F3).
+        // Hover/pressed fills. Darker than the resting accent on purpose —
+        // see the note in globals.css; an alpha-based hover lightens against
+        // the cream page and fails AA.
+        "green-deep": "rgb(var(--green-deep) / <alpha-value>)",
+        "error-deep": "rgb(var(--error-deep) / <alpha-value>)",
         "green-vivid": "rgb(var(--green-vivid) / <alpha-value>)",
         "teal-vivid": "rgb(var(--teal-vivid) / <alpha-value>)",
         "gold-vivid": "rgb(var(--gold-vivid) / <alpha-value>)",

@@ -24,7 +24,9 @@
     "verify:saves": "tsx scripts/verify-saves.ts",
     "verify:follows": "tsx scripts/verify-follows.ts",
     "verify:pwa": "node scripts/verify-pwa.mjs",
-    "icons:generate": "node scripts/generate-icons.mjs"
+    "icons:generate": "node scripts/generate-icons.mjs",
+    "verify:seller": "tsx scripts/verify-seller.ts",
+    "verify:onboarding": "node scripts/verify-onboarding.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

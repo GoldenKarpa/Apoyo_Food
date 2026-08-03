@@ -1,7 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { ChefHat, MessageSquare, Receipt, User, UtensilsCrossed, type LucideIcon } from "lucide-react";
+import {
+  BarChart3,
+  Camera,
+  ChefHat,
+  MessageSquare,
+  Receipt,
+  User,
+  UtensilsCrossed,
+  type LucideIcon,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import {
@@ -40,6 +49,8 @@ const ICONS: Record<FeatureIcon, LucideIcon> = {
   receipt: Receipt,
   user: User,
   chefHat: ChefHat,
+  camera: Camera,
+  chart: BarChart3,
 };
 
 /**

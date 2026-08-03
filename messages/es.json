@@ -21,18 +21,15 @@
     }
   },
   "footer": {
-    "legal": "Apoyo Food forma parte del ecosistema Apoyo. Cada cocinero mantiene su cocina, sus precios y su clientela."
+    "legal": "Apoyo Food forma parte del ecosistema Apoyo. Cada cocinero mantiene su cocina, sus precios y su clientela.",
+    "becomeSeller": "Vende tu comida",
+    "sellingClosed": "El registro de vendedores abre pronto."
   },
   "comingSoon": {
     "badge": "Próximamente",
     "acknowledge": "Entendido",
     "phaseNote": "Previsto para la fase {phase} de la construcción.",
     "features": {
-      "becomeSeller": {
-        "action": "Vende tu comida",
-        "title": "Cocina y vende en Apoyo Food",
-        "description": "Cocineras, panaderos y servicios de catering podrán abrir su cocina aquí — perfil, zonas de servicio, idiomas, menú y fotos — y empezar a recibir pedidos. El registro se abrirá cuando esté lista la incorporación de vendedores, para que nadie se inscriba en un formulario que no puede terminar."
-      },
       "requestOrder": {
         "action": "Solicitar pedido",
         "title": "Solicitar un pedido",
@@ -52,6 +49,26 @@
         "action": "Perfil",
         "title": "Tu cuenta",
         "description": "Aquí vivirán tus direcciones guardadas, tu idioma, los avisos y tu perfil de Apoyo. Puedes explorar todo el mercado sin cuenta — solo se te pide iniciar sesión cuando confirmas algo."
+      },
+      "sellerListings": {
+        "action": "Añadir un plato",
+        "title": "Tus platos",
+        "description": "Cada plato tiene su propia página: fotos, cuánto cuesta (precio fijo, precio desde, o a consultar), para cuántas personas es, etiquetas dietéticas y cuándo está disponible: un horario semanal fijo, un plazo de encargo previo, o un rango de fechas para una temporada."
+      },
+      "sellerStories": {
+        "action": "Publicar lo de hoy",
+        "title": "En la cocina hoy",
+        "description": "Publica en pocos toques lo que salió hoy de tu cocina: una foto, una línea sobre ella y, si quieres, el plato al que pertenece. Aparece arriba en la página de inicio para quienes te siguen y desaparece solo."
+      },
+      "sellerOrders": {
+        "action": "Bandeja de pedidos",
+        "title": "Pedidos de los compradores",
+        "description": "Las solicitudes llegan aquí con qué se pidió, para cuándo y cómo se quiere recibir. Aceptas — fijando el precio si el plato es a consultar — o rechazas, y la conversación con los detalles se abre en cuanto aceptas."
+      },
+      "sellerInsights": {
+        "action": "Estadísticas",
+        "title": "Qué está buscando la gente",
+        "description": "Qué buscaron los compradores de tus zonas, qué buscaron sin encontrar nada, y cuáles de tus platos se miran y se guardan. Apoyo Food lo viene registrando desde que abrió el mercado, así que cuando esto llegue ya tendrá historia dentro."
       }
     }
   },
@@ -95,7 +112,15 @@
     "seasonal": "En temporada",
     "unavailable": "Consulta al cocinero",
     "preorderShort": "Por encargo",
-    "days": ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+    "days": [
+      "dom",
+      "lun",
+      "mar",
+      "mié",
+      "jue",
+      "vie",
+      "sáb"
+    ],
     "everyDay": "Todos los días",
     "weekdaysOnly": "Días laborables",
     "seasonWindow": "{from} – {to}"
@@ -321,7 +346,10 @@
   "seller": {
     "dashboard": {
       "title": "Panel del vendedor",
-      "body": "Aquí estarán tus pedidos, tus publicaciones, tus entradas de En la cocina hoy y tu perfil. La incorporación llega en el Slice 13, las publicaciones en el Slice 14 y las herramientas de En la cocina hoy en el Slice 15."
+      "body": "Aquí están tus pedidos, tus platos, tus publicaciones de En la cocina hoy y tu perfil.",
+      "continueSetup": "Seguir configurando",
+      "editProfile": "Editar perfil",
+      "viewPublic": "Ver perfil público"
     },
     "admin": {
       "title": "Administración de Food",
@@ -330,6 +358,192 @@
     "login": {
       "title": "Acceso para vendedores",
       "body": "Los vendedores entran con la misma cuenta del ecosistema — se conecta en el Slice 3."
+    },
+    "nav": {
+      "label": "Panel del vendedor",
+      "items": {
+        "dashboard": "Panel",
+        "profile": "Perfil",
+        "listings": "Platos",
+        "stories": "En la cocina hoy",
+        "orders": "Pedidos"
+      }
+    },
+    "signedOut": {
+      "title": "Inicia sesión para entrar a tu cocina",
+      "body": "El panel del vendedor necesita una cuenta de Apoyo. Inicia sesión en cualquier sitio de Apoyo con la cuenta que ya usas y vuelve a esta página: la misma sesión funciona en todo el ecosistema."
+    },
+    "become": {
+      "title": "Vende tu comida en Apoyo",
+      "body": "Cocineras, cocineros, reposteros y servicios de catering montan aquí su cocina: un perfil con tus zonas de servicio, los idiomas en los que cocinas y hablas, tus especialidades y tus fotos. Registrarte es un solo campo. Todo lo demás se puede terminar después.",
+      "cta": "Empezar a vender",
+      "closed": "El registro de vendedores todavía no está abierto. Aparecerá aquí en cuanto lo esté."
+    },
+    "status": {
+      "pending": {
+        "label": "En revisión",
+        "body": "Tu cocina existe y puedes completarla, pero todavía no la ven los compradores: un administrador de Apoyo revisa las cocinas nuevas antes de que aparezcan en el mercado. Mientras tanto no hay nada bloqueado; sigue completando tu perfil, y cuanto más completo esté, más rápida será la revisión."
+      },
+      "active": {
+        "label": "Publicada",
+        "body": "Tu cocina está publicada en el mercado. Los compradores pueden encontrarte al explorar, al buscar y en el directorio de cocinas."
+      },
+      "suspended": {
+        "label": "Suspendida",
+        "body": "Tu cocina está oculta del mercado. Aquí puedes seguir editándolo todo; escribe a Apoyo si crees que es un error."
+      }
+    },
+    "onboarding": {
+      "title": "Monta tu cocina",
+      "intro": "Un solo campo para empezar. Todo lo demás — fotos, tu historia, zonas de servicio, idiomas, especialidades y cómo entregas la comida — viene después, paso a paso, y puedes parar y volver cuando quieras.",
+      "displayNameLabel": "¿Cómo se llama tu cocina?",
+      "displayNamePlaceholder": "Cocina de Abuela",
+      "displayNameHint": "Es el nombre que ven los compradores. Tu dirección web se crea a partir de él una sola vez y no cambia después, aunque más adelante cambies el nombre.",
+      "submit": "Crear mi cocina",
+      "submitting": "Creando…",
+      "back": "Volver al panel",
+      "privacyTitle": "Sobre tu dirección",
+      "privacyBody": "Apoyo Food nunca muestra ni guarda la dirección de tu casa. Los compradores ven las zonas en las que sirves, nada más preciso que eso. Dónde recoger un pedido es algo que compartes tú, en la conversación de ese pedido, después de haberlo aceptado. A las fotos se les quitan los datos de ubicación ocultos en cuanto las subes."
+    },
+    "setup": {
+      "title": "Completa tu perfil",
+      "intro": "Cada paso se guarda solo y cada paso se puede saltar. Vuelve cuando quieras: esta página retoma donde lo dejaste.",
+      "stepOf": "Paso {position} de {total}",
+      "percentComplete": "{percent}% completado",
+      "stepDone": "(hecho)",
+      "stepTodo": "(pendiente)",
+      "continue": "Continuar",
+      "saving": "Guardando…",
+      "skip": "Saltar por ahora",
+      "toDashboard": "Volver al panel",
+      "toEditor": "Editarlo todo de una vez",
+      "steps": {
+        "photo": {
+          "title": "Foto de perfil",
+          "body": "Una foto tuya, de tu cocina o de tu plato más conocido. Es la imagen redonda pequeña que los compradores ven junto a tu nombre en todo el sitio."
+        },
+        "cover": {
+          "title": "Foto de portada",
+          "body": "La imagen ancha de la parte de arriba de tu perfil. Una mesa servida, una bandeja, algo en proceso: algo que muestre cómo se siente comer lo que haces."
+        },
+        "bio": {
+          "title": "Tu historia",
+          "body": "Quién cocina aquí y por qué vale la pena pedirte. Escríbelo en el idioma que hablas de verdad; a quien lea en el otro se le traduce automáticamente donde hace falta."
+        },
+        "areas": {
+          "title": "Zonas de servicio",
+          "body": "Dónde puedes entregar, quedar o recibir a quien recoge, de forma realista. Hasta tres. Es la única ubicación que Apoyo Food muestra públicamente."
+        },
+        "languages": {
+          "title": "Idiomas",
+          "body": "En qué idiomas se te puede escribir. Los compradores lo ven antes de pedir, y los mensajes de los pedidos se traducen solos en ambos sentidos."
+        },
+        "specialties": {
+          "title": "Especialidades",
+          "body": "Los platos por los que te conocen. Ayudan a que te encuentren al buscar, escritos como de verdad los escribe la gente de aquí."
+        },
+        "fulfillment": {
+          "title": "Cómo entregas la comida",
+          "body": "Marca todas las opciones que estés dispuesto a ofrecer. Puedes cambiarlo cuando quieras, y los detalles de cada pedido se acuerdan en su conversación."
+        },
+        "gallery": {
+          "title": "Galería de fotos",
+          "body": "Algunas fotos de trabajos anteriores, en tu perfil debajo de tus platos. Es opcional, pero es lo que convence a quien nunca te ha pedido nada."
+        }
+      }
+    },
+    "profile": {
+      "title": "Tu perfil",
+      "intro": "Todo lo que ven los compradores. Cada sección se guarda por su cuenta.",
+      "publicUrl": "Tu dirección pública: /sellers/{slug}",
+      "guidedSetup": "Recorrerlo paso a paso",
+      "nameSection": "Nombre de la cocina",
+      "save": "Guardar",
+      "saved": "Guardado"
+    },
+    "fields": {
+      "bioLabel": "Tu historia",
+      "bioPlaceholder": "Cocino comida trinitaria en casa desde hace quince años…",
+      "bioCount": "{count} de {max} caracteres",
+      "areasHint": "Elige hasta {max} zonas: toca el mapa o los botones de abajo.",
+      "areasCount": "{count} de {max} elegidas",
+      "languagesLabel": "Idiomas en los que se te puede escribir",
+      "fulfillmentLabel": "Cómo pueden recibir tu comida",
+      "specialtiesLabel": "Añadir una especialidad",
+      "specialtiesPlaceholder": "pastelón",
+      "specialtiesAdd": "Añadir",
+      "specialtiesRemove": "Quitar {name}",
+      "specialtiesCount": "{count} de {max}",
+      "displayNameLabel": "Nombre de la cocina",
+      "displayNameSlugNote": "Cambiar el nombre de tu cocina no cambia tu dirección web: los enlaces que ya compartiste siguen funcionando."
+    },
+    "languages": {
+      "es": "Español",
+      "en": "Inglés"
+    },
+    "fulfillmentHints": {
+      "PICKUP": "Los compradores recogen donde tú digas. Compartes el sitio exacto después de aceptar un pedido, nunca en tu perfil público.",
+      "SELLER_DELIVERY": "Tú entregas dentro de las zonas en las que sirves.",
+      "MEETUP": "Quedan en un sitio acordado: un estacionamiento, un mercado, una dirección de trabajo."
+    },
+    "photo": {
+      "choose": "Elegir una foto",
+      "replace": "Cambiar la foto",
+      "uploading": "Subiendo…",
+      "hint": "JPEG, PNG o WebP. Los datos de ubicación ocultos se eliminan automáticamente.",
+      "avatarAlt": "Tu foto de perfil",
+      "coverAlt": "Tu foto de portada",
+      "errors": {
+        "tooLarge": "Esa foto pesa demasiado. Prueba con una de menos de 10 MB.",
+        "invalid": "No se pudo leer ese archivo como foto. Prueba con un JPEG, PNG o WebP.",
+        "rateLimited": "Demasiadas subidas seguidas. Espera un minuto y vuelve a intentarlo.",
+        "unauthorized": "Tu sesión ha caducado. Inicia sesión otra vez y reinténtalo.",
+        "failed": "La subida no terminó. Revisa tu conexión y vuelve a intentarlo."
+      }
+    },
+    "gallery": {
+      "empty": "Todavía no hay fotos en la galería.",
+      "add": "Añadir una foto",
+      "adding": "Añadiendo…",
+      "count": "{count} de {max}",
+      "full": "Has llegado al límite de {max} fotos.",
+      "photoAlt": "Foto {position} de la galería",
+      "moveUp": "Mover la foto {position} antes",
+      "moveDown": "Mover la foto {position} después",
+      "remove": "Quitar la foto {position}",
+      "removeConfirm": "¿Quitar esta foto de tu galería?"
+    },
+    "checklist": {
+      "title": "Lo que falta",
+      "body": "Nada de esto es obligatorio para seguir, pero un perfil más completo se revisa antes y vende más.",
+      "complete": "Tu perfil está completo. Buen trabajo.",
+      "required": "Necesario"
+    },
+    "emptyStates": {
+      "listings": {
+        "title": "Todavía no hay platos",
+        "body": "Aquí estarán tus platos: qué cocinas, cuánto cuesta y cuándo está disponible."
+      },
+      "stories": {
+        "title": "Nada fresco hoy",
+        "body": "Publica lo que salió hoy de tu cocina. Aparece arriba en la página de inicio para quienes te siguen."
+      },
+      "orders": {
+        "title": "Todavía no hay pedidos",
+        "body": "Aquí llegan las solicitudes de los compradores. Aceptas o rechazas cada una y acuerdas los detalles en su conversación."
+      }
+    },
+    "errors": {
+      "signedOut": "Tu sesión ha caducado. Inicia sesión otra vez y reinténtalo.",
+      "noSeller": "No encontramos tu cocina. Recarga la página y vuelve a intentarlo.",
+      "displayName": "Ponle a tu cocina un nombre de entre 2 y 60 caracteres.",
+      "bio": "Esa historia es demasiado larga. Que no pase de 600 caracteres.",
+      "areas": "Elige como máximo tres zonas.",
+      "languages": "Ese idioma todavía no está disponible.",
+      "specialties": "Hasta ocho especialidades, cada una de menos de 40 caracteres.",
+      "fulfillment": "Esa opción de entrega no está disponible.",
+      "slug": "No pudimos crear una dirección web con ese nombre. Prueba con uno un poco distinto.",
+      "unknown": "Eso no funcionó. Recarga la página y vuelve a intentarlo."
     }
   },
   "scaffold": {

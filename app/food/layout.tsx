@@ -1,21 +1,22 @@
 import { getTranslations } from "next-intl/server";
 
 import { LocaleToggle } from "@/components/locale-toggle";
-import { SurfaceBanner } from "@/components/scaffold/surface-banner";
 
 /**
  * Seller dashboard + admin shell — served at portal.apoyolime.com/food/… and
  * physically nested under /food from the first commit (architecture Part B2).
  * middleware.ts 404s this whole subtree on the food.* host.
  *
- * Deliberately minimal: Slice 13 builds the real dashboard nav and empty
- * states, Slice 16 composes /food/admin into the shared Apoyo admin shell (with
- * its own namespaced CSS, kept away from this app's Tailwind tokens).
+ * ⚠ This layout deliberately carries NO padding of its own. Slice 13's
+ * dashboard nav is a full-bleed bar under the header, which cannot be produced
+ * from inside a padded `<main>`; each route group supplies its own `<main>`
+ * instead. `app/food/(dashboard)/layout.tsx` does it for the workspace,
+ * `/food/admin` and `/food/login` do it for themselves.
  *
- * ⚠ Nothing here authorizes anything yet. The seller/admin guards arrive in
- * Slice 3 (`requireFoodSeller`, `requireAdmin`), and per Slice 16's warning a
- * layout gate controls what is *displayed*, not what *executes* — every
- * data-loading admin page must call the payload guard before its first query.
+ * ⚠ Nothing here authorizes anything. `<SellerNav>` renders only for someone
+ * who already owns a `FoodSeller` row, but that is presentation — every write
+ * re-resolves the seller from the session (`lib/seller.ts`), and per Slice 16's
+ * warning a layout gate controls what is *displayed*, not what *executes*.
  */
 export default async function FoodSurfaceLayout({ children }: { children: React.ReactNode }) {
   const t = await getTranslations("brand");
@@ -35,10 +36,7 @@ export default async function FoodSurfaceLayout({ children }: { children: React.
           <LocaleToggle />
         </div>
       </header>
-      <main className="screen-pad flex flex-1 flex-col gap-6 py-8">
-        <SurfaceBanner />
-        {children}
-      </main>
+      {children}
     </div>
   );
 }

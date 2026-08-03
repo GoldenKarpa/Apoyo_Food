@@ -18,17 +18,25 @@ import { cn } from "@/lib/utils";
  * Contrast, measured (not assumed) at Slice 1: `card`-cream label on the `green`
  * fill is 5.44:1, and on `error` 5.44:1 — both clear the 4.5 bar. The outline
  * and ghost variants carry `green`/`ink` text on cream surfaces (4.98–12.73:1).
+ *
+ * ⚠ The HOVER fills darken (`green-deep`/`error-deep`) rather than taking an
+ * alpha. Slice 13's audit measured the old `hover:bg-green/90` at **4.39:1** —
+ * alpha composites the accent with the CREAM page behind it, so "90% green"
+ * is really "green mixed with cream", which lightens the fill and fails AA on
+ * the app's most-used control in the state a pointer user sees constantly. The
+ * darker fills measure 6.83 and 6.90. Never restore an alpha hover on a filled
+ * button on this palette.
  */
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-pill text-label font-medium transition-colors duration-200 ease-soft disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        primary: "bg-green text-card hover:bg-green/90",
+        primary: "bg-green text-card hover:bg-green-deep",
         secondary: "bg-green-soft text-ink hover:bg-green-soft/80",
         outline: "border border-green bg-transparent text-green hover:bg-green-soft",
         ghost: "bg-transparent text-ink hover:bg-sunken",
-        destructive: "bg-error text-card hover:bg-error/90",
+        destructive: "bg-error text-card hover:bg-error-deep",
       },
       size: {
         // Every size clears the >=44px tap target Part F3 requires; `sm` reaches

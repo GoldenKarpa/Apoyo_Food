@@ -21,18 +21,15 @@
     }
   },
   "footer": {
-    "legal": "Apoyo Food is part of the Apoyo ecosystem. Cooks keep their own kitchens, prices and customers."
+    "legal": "Apoyo Food is part of the Apoyo ecosystem. Cooks keep their own kitchens, prices and customers.",
+    "becomeSeller": "Sell your food",
+    "sellingClosed": "Seller registration opens soon."
   },
   "comingSoon": {
     "badge": "Coming soon",
     "acknowledge": "Got it",
     "phaseNote": "Planned for phase {phase} of the build.",
     "features": {
-      "becomeSeller": {
-        "action": "Sell your food",
-        "title": "Cook and sell on Apoyo Food",
-        "description": "Home cooks, bakers and caterers will be able to set up a kitchen here — profile, service areas, languages, menu and photos — and start taking orders. Registration opens once seller onboarding is built, so nobody signs up for a form that cannot be finished."
-      },
       "requestOrder": {
         "action": "Request order",
         "title": "Requesting an order",
@@ -52,6 +49,26 @@
         "action": "Account",
         "title": "Your account",
         "description": "Saved addresses, your language, notification settings and your Apoyo profile will live here. You can browse the whole marketplace without an account — you are only asked to sign in when you commit to something."
+      },
+      "sellerListings": {
+        "action": "Add a dish",
+        "title": "Your listings",
+        "description": "Each dish gets its own page: photos, what it costs (a fixed price, a starting price, or price on request), how many people it feeds, dietary tags, and when it is available — a standing weekday schedule, a pre-order lead time, or a date range for a season."
+      },
+      "sellerStories": {
+        "action": "Post today's food",
+        "title": "Fresh Today",
+        "description": "Post what came out of your kitchen today in a few taps: a photo, a line about it, and optionally the dish it belongs to. It appears at the top of the home page for the people who follow you and disappears on its own."
+      },
+      "sellerOrders": {
+        "action": "Order inbox",
+        "title": "Orders from buyers",
+        "description": "Requests arrive here with what was asked for, when it is wanted and how it should be handed over. You accept — setting the price if the dish is quote-based — or decline, and the conversation for the details opens once you have accepted."
+      },
+      "sellerInsights": {
+        "action": "Insights",
+        "title": "What people are looking for",
+        "description": "What buyers in your areas searched for, what they found nothing for, and which of your dishes get looked at and saved. Apoyo Food has been recording this since the marketplace opened, so the picture will already have history in it when this arrives."
       }
     }
   },
@@ -95,7 +112,15 @@
     "seasonal": "In season now",
     "unavailable": "Ask the cook",
     "preorderShort": "Pre-order",
-    "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    "days": [
+      "Sun",
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat"
+    ],
     "everyDay": "Every day",
     "weekdaysOnly": "Weekdays",
     "seasonWindow": "{from} – {to}"
@@ -321,7 +346,10 @@
   "seller": {
     "dashboard": {
       "title": "Seller dashboard",
-      "body": "Your order inbox, listings, Fresh Today posts and profile will live here. Onboarding arrives in Slice 13, listings in Slice 14, Fresh Today tools in Slice 15."
+      "body": "Your order inbox, listings, Fresh Today posts and profile live here.",
+      "continueSetup": "Continue setting up",
+      "editProfile": "Edit profile",
+      "viewPublic": "View public profile"
     },
     "admin": {
       "title": "Food administration",
@@ -330,6 +358,192 @@
     "login": {
       "title": "Seller sign-in",
       "body": "Sellers sign in with the same ecosystem account — wired in Slice 3."
+    },
+    "nav": {
+      "label": "Seller workspace",
+      "items": {
+        "dashboard": "Dashboard",
+        "profile": "Profile",
+        "listings": "Listings",
+        "stories": "Fresh Today",
+        "orders": "Orders"
+      }
+    },
+    "signedOut": {
+      "title": "Sign in to reach your kitchen",
+      "body": "The seller workspace needs an Apoyo account. Sign in on any Apoyo site with the account you already use, then come back to this page — the same session works everywhere in the ecosystem."
+    },
+    "become": {
+      "title": "Sell your food on Apoyo",
+      "body": "Home cooks, bakers and caterers set up a kitchen here: a profile with your service areas, the languages you cook and talk in, your specialties and your photos. Registration takes one field. Everything after it can be finished later.",
+      "cta": "Start selling",
+      "closed": "Seller registration is not open yet. It will appear here the moment it is."
+    },
+    "status": {
+      "pending": {
+        "label": "Pending review",
+        "body": "Your kitchen exists and is yours to fill in, but it is not visible to buyers yet — an Apoyo admin reviews new kitchens before they appear in the marketplace. Nothing is blocked in the meantime: keep filling in your profile, and the more complete it is, the faster a review goes."
+      },
+      "active": {
+        "label": "Live",
+        "body": "Your kitchen is live in the marketplace. Buyers can find you in browse, search and the seller directory."
+      },
+      "suspended": {
+        "label": "Suspended",
+        "body": "Your kitchen is hidden from the marketplace. You can still edit everything here; contact Apoyo if you think this is a mistake."
+      }
+    },
+    "onboarding": {
+      "title": "Set up your kitchen",
+      "intro": "One field to start. Everything else — photos, your story, service areas, languages, specialties and how you hand food over — comes after, one step at a time, and you can stop and come back whenever you like.",
+      "displayNameLabel": "What is your kitchen called?",
+      "displayNamePlaceholder": "Cocina de Abuela",
+      "displayNameHint": "This is the name buyers see. Your web address is made from it once and never changes afterwards, even if you rename the kitchen later.",
+      "submit": "Create my kitchen",
+      "submitting": "Creating…",
+      "back": "Back to the dashboard",
+      "privacyTitle": "About your address",
+      "privacyBody": "Apoyo Food never shows or stores your home address. Buyers see the areas you serve — nothing finer than that. Where to collect an order is something you share yourself, in that order's conversation, after you have accepted it. Photos are stripped of hidden location data the moment you upload them."
+    },
+    "setup": {
+      "title": "Finish your profile",
+      "intro": "Every step saves on its own and every step can be skipped. Come back whenever you like — this page picks up where you left off.",
+      "stepOf": "Step {position} of {total}",
+      "percentComplete": "{percent}% complete",
+      "stepDone": "(done)",
+      "stepTodo": "(not done yet)",
+      "continue": "Continue",
+      "saving": "Saving…",
+      "skip": "Skip for now",
+      "toDashboard": "Back to the dashboard",
+      "toEditor": "Edit everything at once",
+      "steps": {
+        "photo": {
+          "title": "Profile photo",
+          "body": "A photo of you, your kitchen or your best-known dish. This is the small round image buyers see beside your name everywhere on the site."
+        },
+        "cover": {
+          "title": "Cover photo",
+          "body": "The wide banner at the top of your profile. A table, a spread, a work-in-progress shot — something that shows what eating your food feels like."
+        },
+        "bio": {
+          "title": "Your story",
+          "body": "Who cooks here, and what makes it worth ordering. Write it in the language you actually speak — buyers reading the other one get an automatic translation where it matters."
+        },
+        "areas": {
+          "title": "Service areas",
+          "body": "Where you can realistically deliver, meet or have people collect from. Up to three. This is the only location Apoyo Food ever shows publicly."
+        },
+        "languages": {
+          "title": "Languages",
+          "body": "Which languages you can be reached in. Buyers see this before they order, and order messages translate themselves either way."
+        },
+        "specialties": {
+          "title": "Specialties",
+          "body": "The dishes you are known for. These help people find you in search, spelled however people around here actually spell them."
+        },
+        "fulfillment": {
+          "title": "How you hand food over",
+          "body": "Pick every option you are willing to offer. You can change this at any time, and you agree each order's details in that order's conversation."
+        },
+        "gallery": {
+          "title": "Photo gallery",
+          "body": "A few shots of past work, on your profile beneath your listings. Optional — but it is what convinces someone who has never ordered from you."
+        }
+      }
+    },
+    "profile": {
+      "title": "Your profile",
+      "intro": "Everything buyers see. Each section saves on its own.",
+      "publicUrl": "Your public address: /sellers/{slug}",
+      "guidedSetup": "Walk through it step by step",
+      "nameSection": "Kitchen name",
+      "save": "Save",
+      "saved": "Saved"
+    },
+    "fields": {
+      "bioLabel": "Your story",
+      "bioPlaceholder": "Cocino comida trinitaria en casa desde hace quince años…",
+      "bioCount": "{count} of {max} characters",
+      "areasHint": "Choose up to {max} areas — tap the map or the buttons beneath it.",
+      "areasCount": "{count} of {max} chosen",
+      "languagesLabel": "Languages you can be reached in",
+      "fulfillmentLabel": "How buyers can get your food",
+      "specialtiesLabel": "Add a specialty",
+      "specialtiesPlaceholder": "pastelón",
+      "specialtiesAdd": "Add",
+      "specialtiesRemove": "Remove {name}",
+      "specialtiesCount": "{count} of {max}",
+      "displayNameLabel": "Kitchen name",
+      "displayNameSlugNote": "Renaming your kitchen does not change your web address — links you have already shared keep working."
+    },
+    "languages": {
+      "es": "Spanish",
+      "en": "English"
+    },
+    "fulfillmentHints": {
+      "PICKUP": "Buyers collect from you. You share exactly where after you accept an order, never on your public profile.",
+      "SELLER_DELIVERY": "You deliver within the areas you serve.",
+      "MEETUP": "You meet somewhere agreed — a car park, a market, a work address."
+    },
+    "photo": {
+      "choose": "Choose a photo",
+      "replace": "Replace photo",
+      "uploading": "Uploading…",
+      "hint": "JPEG, PNG or WebP. Hidden location data is removed automatically.",
+      "avatarAlt": "Your profile photo",
+      "coverAlt": "Your cover photo",
+      "errors": {
+        "tooLarge": "That photo is too large. Try one under 10 MB.",
+        "invalid": "That file could not be read as a photo. Try a JPEG, PNG or WebP.",
+        "rateLimited": "Too many uploads just now. Wait a minute and try again.",
+        "unauthorized": "Your session has expired. Sign in again and retry.",
+        "failed": "The upload did not finish. Check your connection and try again."
+      }
+    },
+    "gallery": {
+      "empty": "No gallery photos yet.",
+      "add": "Add a photo",
+      "adding": "Adding…",
+      "count": "{count} of {max}",
+      "full": "You have reached the {max}-photo limit.",
+      "photoAlt": "Gallery photo {position}",
+      "moveUp": "Move photo {position} earlier",
+      "moveDown": "Move photo {position} later",
+      "remove": "Remove photo {position}",
+      "removeConfirm": "Remove this photo from your gallery?"
+    },
+    "checklist": {
+      "title": "What is left",
+      "body": "Nothing here is compulsory to keep going, but a fuller profile is reviewed faster and sells more.",
+      "complete": "Your profile is complete. Nice work.",
+      "required": "Needed"
+    },
+    "emptyStates": {
+      "listings": {
+        "title": "No dishes yet",
+        "body": "Your listings — what you cook, what it costs and when it is available — will live here."
+      },
+      "stories": {
+        "title": "Nothing fresh today",
+        "body": "Post what came out of your kitchen today. It appears at the top of the home page for the people who follow you."
+      },
+      "orders": {
+        "title": "No orders yet",
+        "body": "Requests from buyers arrive here. You accept or decline each one, and agree the details in its conversation."
+      }
+    },
+    "errors": {
+      "signedOut": "Your session has expired. Sign in again and retry.",
+      "noSeller": "We could not find your kitchen. Reload the page and try again.",
+      "displayName": "Give your kitchen a name between 2 and 60 characters.",
+      "bio": "That story is too long. Keep it under 600 characters.",
+      "areas": "Choose up to three areas.",
+      "languages": "That is not a language we support yet.",
+      "specialties": "Up to eight specialties, each under 40 characters.",
+      "fulfillment": "That is not a fulfilment option we support.",
+      "slug": "We could not create a web address for that name. Try a slightly different one.",
+      "unknown": "That did not work. Reload the page and try again."
     }
   },
   "scaffold": {

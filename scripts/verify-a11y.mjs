@@ -706,9 +706,24 @@ async function run() {
         el.getAttribute("data-coming-soon"),
       ),
     );
-    for (const key of ["becomeSeller", "requestOrder", "buyerOrders", "messageSeller", "buyerAccount"]) {
+    // ⚠ Keep in step with `lib/coming-soon.ts`. Slice 13 RETIRED `becomeSeller`
+    // (the footer links to real onboarding now) and added the seller
+    // workspace's four nav destinations, so this list is also the assertion
+    // that the retirement actually happened — `becomeSeller` is checked for
+    // ABSENCE below, not merely dropped from the list.
+    for (const key of [
+      "requestOrder",
+      "buyerOrders",
+      "messageSeller",
+      "buyerAccount",
+      "sellerListings",
+      "sellerStories",
+      "sellerOrders",
+      "sellerInsights",
+    ]) {
       check(stubs.includes(key), `stubs: "${key}" rendered a trigger`);
     }
+    check(!stubs.includes("becomeSeller"), `stubs: "becomeSeller" retired (Slice 13)`);
 
     await context.close();
   }

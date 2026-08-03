@@ -22,6 +22,40 @@ export async function ensureFoodClientMembership(userId: string): Promise<void> 
   await createMembership({ userId, vertical: "FOOD", role: "CLIENT" });
 }
 
+/**
+ * `(FOOD, PROVIDER)` — minted at Slice 13's onboarding submit, which is Food's
+ * own authorization point for provider standing (architecture B1 / decision 15:
+ * the `vertical_registration_config` toggle gates CTA VISIBILITY only and is not
+ * a security control).
+ *
+ * ⚠ Separate from `ensureFoodClientMembership` above rather than a parameter,
+ * because the two have opposite failure postures. A missing CLIENT membership
+ * costs a buyer nothing — the save still lands. A missing PROVIDER membership is
+ * the "ghost provider" state inverted: the seller row exists but carries no
+ * ecosystem standing, so no other vertical, and no admin surface reading
+ * memberships, can see that this person sells food. It is repairable and it is
+ * repaired — `loadSellerWorkspace`'s callers re-run this on every dashboard
+ * render — but it must never be silently ignored.
+ *
+ * Returns whether standing is now in place. Callers decide whether that is
+ * fatal; onboarding treats it as non-fatal on purpose (see the write-order note
+ * in `lib/actions/onboard-seller.ts`).
+ */
+export async function ensureFoodProviderMembership(userId: string): Promise<boolean> {
+  try {
+    const memberships = await getMemberships(userId);
+    const has = memberships.some(
+      (m) => m.vertical === "FOOD" && m.role === "PROVIDER" && m.status === "ACTIVE",
+    );
+    if (has) return true;
+    await createMembership({ userId, vertical: "FOOD", role: "PROVIDER" });
+    return true;
+  } catch (err) {
+    console.error("[seller] (FOOD, PROVIDER) membership mint failed", err);
+    return false;
+  }
+}
+
 export interface FoodSellerContext {
   session: FoodSession;
   seller: FoodSeller;
