@@ -236,9 +236,24 @@ async function run() {
   section("Fresh Today (Part E2) + the Menu shelf");
   const stories = sellers.flatMap((s) => s.stories);
   check(stories.length >= 8, `a spread of Fresh Today entries (${stories.length})`);
+  // ⚠ Slice 15 rewrote these from far-future to realistic recent timestamps —
+  // this assertion changed WITH that rewrite rather than being dropped, so a
+  // future regression back to a fixed far-future date fails loudly here.
   check(
-    stories.every((s) => s.expiresAt.getUTCFullYear() >= 2027),
-    "seeded far-future so they survive until Slice 15 rewrites them",
+    stories.every((s) => s.expiresAt.getTime() === s.createdAt.getTime() + 24 * 60 * 60 * 1000),
+    "every story's expiresAt is exactly createdAt + 24h (STORY_LIFETIME_HOURS)",
+  );
+  check(
+    stories.some((s) => s.expiresAt.getTime() <= Date.now()),
+    "…and the mix includes some ALREADY EXPIRED entries — real work for food-sweep, not a hypothetical",
+  );
+  check(
+    stories.some((s) => s.expiresAt.getTime() > Date.now()),
+    "…and some still ACTIVE — the buyer-facing rail is non-empty right after a fresh seed run",
+  );
+  check(
+    stories.some((s) => s.expiresAt.getTime() <= Date.now() && s.highlightId !== null),
+    "…and at least one already-expired entry is HIGHLIGHTED — the sweep's exemption has a real case to protect",
   );
   check(stories.some((s) => s.linkedListingId !== null), "some entries link through to a listing");
   check(stories.some((s) => s.highlightId !== null), "some entries are kept on the Menu shelf");

@@ -4,7 +4,6 @@ import { Camera, ChefHat, Receipt } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ComingSoon } from "@/components/coming-soon";
-import type { ComingSoonFeature } from "@/lib/coming-soon";
 
 /**
  * The dashboard's three next-action cards — listings, Fresh Today, orders.
@@ -14,21 +13,23 @@ import type { ComingSoonFeature } from "@/lib/coming-soon";
  * the slice brief's own wording, and it is the whole difference between a
  * dashboard that reads as unfinished and one that reads as new.
  *
- * ── Slice 14: the listings card became real ──
- * It is the first of these three that is genuinely data-driven rather than a
- * hardcoded `<ComingSoon>` stub: `listingCount` is a real count of this
- * seller's `FoodListing` rows, and the card branches on it — "add your first
- * dish" at zero, "manage your N dishes" once there's at least one. Fresh
- * Today and Orders stay stubs (Slices 15/17 build them), and their counts stay
- * hardcoded zero on purpose — those tables have no writer yet, so querying
- * them would be a round trip to confirm a constant.
+ * ── Slice 14 made listings real; Slice 15 makes Fresh Today real too ──
+ * Both now branch on a real count instead of rendering a hardcoded
+ * `<ComingSoon>` stub — "add your first dish/post" at zero, "manage" once
+ * there's at least one. `activeStoryCount` counts only NON-EXPIRED posts
+ * (`expiresAt > now`) on purpose: a seller who posted yesterday and let
+ * everything expire should see the empty-state copy again, not a stale
+ * "manage your post" pointing at nothing currently live. Orders stays a stub
+ * (Slice 17 builds it); its count stays hardcoded zero — that table has no
+ * writer yet, so querying it would be a round trip to confirm a constant.
  */
-const STUB_CARDS: { key: string; feature: ComingSoonFeature; icon: typeof Camera }[] = [
-  { key: "stories", feature: "sellerStories", icon: Camera },
-  { key: "orders", feature: "sellerOrders", icon: Receipt },
-];
-
-export async function WorkspaceEmptyStates({ listingCount }: { listingCount: number }) {
+export async function WorkspaceEmptyStates({
+  listingCount,
+  activeStoryCount,
+}: {
+  listingCount: number;
+  activeStoryCount: number;
+}) {
   const t = await getTranslations("seller.emptyStates");
 
   return (
@@ -50,18 +51,31 @@ export async function WorkspaceEmptyStates({ listingCount }: { listingCount: num
         </div>
       </article>
 
-      {STUB_CARDS.map(({ key, feature, icon: Icon }) => (
-        <article key={key} className="flex flex-col gap-3 rounded-card border border-hairline bg-card p-6">
-          <span className="flex h-10 w-10 items-center justify-center rounded-pill bg-green-soft text-ink">
-            <Icon aria-hidden className="size-5" />
-          </span>
-          <h3 className="font-display text-h3 font-semibold text-ink">{t(`${key}.title`)}</h3>
-          <p className="text-label text-ink">{t(`${key}.body`)}</p>
-          <div className="mt-auto pt-2">
-            <ComingSoon feature={feature} variant="secondary" size="sm" />
-          </div>
-        </article>
-      ))}
+      <article className="flex flex-col gap-3 rounded-card border border-hairline bg-card p-6">
+        <span className="flex h-10 w-10 items-center justify-center rounded-pill bg-green-soft text-ink">
+          <Camera aria-hidden className="size-5" />
+        </span>
+        <h3 className="font-display text-h3 font-semibold text-ink">
+          {activeStoryCount > 0 ? t("stories.titleWithCount", { count: activeStoryCount }) : t("stories.title")}
+        </h3>
+        <p className="text-label text-ink">{activeStoryCount > 0 ? t("stories.bodyWithCount") : t("stories.body")}</p>
+        <div className="mt-auto pt-2">
+          <Button variant="secondary" size="sm" asChild>
+            <Link href="/food/stories">{activeStoryCount > 0 ? t("stories.manage") : t("stories.add")}</Link>
+          </Button>
+        </div>
+      </article>
+
+      <article className="flex flex-col gap-3 rounded-card border border-hairline bg-card p-6">
+        <span className="flex h-10 w-10 items-center justify-center rounded-pill bg-green-soft text-ink">
+          <Receipt aria-hidden className="size-5" />
+        </span>
+        <h3 className="font-display text-h3 font-semibold text-ink">{t("orders.title")}</h3>
+        <p className="text-label text-ink">{t("orders.body")}</p>
+        <div className="mt-auto pt-2">
+          <ComingSoon feature="sellerOrders" variant="secondary" size="sm" />
+        </div>
+      </article>
     </section>
   );
 }

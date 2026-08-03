@@ -349,7 +349,12 @@
       "body": "Your order inbox, listings, Fresh Today posts and profile live here.",
       "continueSetup": "Continue setting up",
       "editProfile": "Edit profile",
-      "viewPublic": "View public profile"
+      "viewPublic": "View public profile",
+      "stats": {
+        "views": "Views",
+        "saves": "Saves",
+        "follows": "Followers"
+      }
     },
     "admin": {
       "title": "Food administration",
@@ -530,7 +535,11 @@
       },
       "stories": {
         "title": "Nothing fresh today",
-        "body": "Post what came out of your kitchen today. It appears at the top of the home page for the people who follow you."
+        "body": "Post what came out of your kitchen today. It appears at the top of the home page for the people who follow you.",
+        "titleWithCount": "{count, plural, one {# post live} other {# posts live}}",
+        "bodyWithCount": "See how they're doing, add another, or manage your Menu shelf.",
+        "manage": "Manage Fresh Today",
+        "add": "Post your first update"
       },
       "orders": {
         "title": "No orders yet",
@@ -663,6 +672,65 @@
         "windowLimit": "This listing already has the maximum number of availability windows.",
         "noListing": "We could not find that listing. Reload the page and try again.",
         "unknown": "That did not work. Reload the page and try again."
+      }
+    },
+    "stories": {
+      "title": "Fresh Today",
+      "intro": "Show what's coming out of your kitchen right now. Posts stay up for 24 hours; keep the good ones on your Menu shelf.",
+      "activeTitle": "Active now",
+      "shelfTitle": "Menu shelf",
+      "shelfIntro": "Named groups on your profile that never expire. Add a post to one to keep it around.",
+      "post": {
+        "title": "Post something fresh",
+        "choosePhoto": "Choose a photo",
+        "changePhoto": "Choose a different photo",
+        "uploading": "Uploading…",
+        "uploadErrors": {
+          "tooLarge": "That photo is too large. Try one under 10 MB.",
+          "invalid": "That file could not be read as a photo. Try a JPEG, PNG or WebP.",
+          "rateLimited": "Too many uploads just now. Wait a minute and try again.",
+          "unauthorized": "Your session has expired. Sign in again and retry.",
+          "failed": "The upload did not finish. Check your connection and try again."
+        },
+        "captionLabel": "Caption (optional)",
+        "captionPlaceholder": "Fresh out of the oven…",
+        "linkedListingLabel": "Link a dish (optional)",
+        "linkedListingNone": "No linked dish",
+        "posting": "Posting…",
+        "post": "Post",
+        "errors": {
+          "photo": "Choose a photo first.",
+          "signedOut": "Your session has expired. Sign in again and retry.",
+          "linkedListing": "That dish is not available to link right now. Reload the page and try again."
+        }
+      },
+      "active": {
+        "empty": "Nothing posted right now. Your next post will appear here.",
+        "removeConfirm": "Remove this post?",
+        "linkedTo": "Linked to {title}",
+        "expiresIn": "{hours, plural, =0 {expires any moment} one {expires in # hour} other {expires in # hours}}",
+        "viewCount": "{count, plural, one {# view} other {# views}}",
+        "assignLabel": "Add to shelf",
+        "assignNone": "Not on a shelf",
+        "remove": "Remove"
+      },
+      "shelf": {
+        "empty": "No shelves yet. Create one below to start keeping your best posts.",
+        "saveTitle": "Save",
+        "cancel": "Cancel",
+        "rename": "Rename",
+        "deleteConfirm": "Delete this shelf? Its posts are not deleted — they just come off the shelf.",
+        "delete": "Delete",
+        "shelfEmpty": "Nothing on this shelf yet.",
+        "unassign": "Take off this shelf",
+        "newTitleLabel": "New shelf name",
+        "newTitlePlaceholder": "Especialidades",
+        "newShelf": "Create shelf",
+        "errors": {
+          "signedOut": "Your session has expired. Sign in again and retry.",
+          "highlightTitle": "Give the shelf a name between 1 and 40 characters.",
+          "highlightLimit": "You have reached the maximum number of shelves."
+        }
       }
     }
   },

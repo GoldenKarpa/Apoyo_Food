@@ -38,6 +38,14 @@ export type SellerFormErrorKey =
   | "windowLeadTime"
   | "windowNote"
   | "windowLimit"
+  // Slice 15 — Fresh Today posting + the Menu shelf manager.
+  | "photo"
+  | "caption"
+  | "linkedListing"
+  | "noStory"
+  | "noHighlight"
+  | "highlightTitle"
+  | "highlightLimit"
   | "unknown";
 
 export type SellerFormState =

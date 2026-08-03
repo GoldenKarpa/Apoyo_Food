@@ -3,7 +3,6 @@
 import * as React from "react";
 import {
   BarChart3,
-  Camera,
   ChefHat,
   MessageSquare,
   Receipt,
@@ -49,7 +48,6 @@ const ICONS: Record<FeatureIcon, LucideIcon> = {
   receipt: Receipt,
   user: User,
   chefHat: ChefHat,
-  camera: Camera,
   chart: BarChart3,
 };
 

@@ -29,7 +29,12 @@
     "verify:onboarding": "node scripts/verify-onboarding.mjs",
     "test": "vitest run",
     "verify:listings": "tsx scripts/verify-listings.ts",
-    "verify:listing-editor": "node scripts/verify-listing-editor.mjs"
+    "verify:listing-editor": "node scripts/verify-listing-editor.mjs",
+    "verify:sweep": "tsx scripts/verify-sweep.ts",
+    "verify:seller-stories": "tsx scripts/verify-seller-stories.ts",
+    "food-sweep": "tsx scripts/sweep.ts",
+    "food-sweep:once": "tsx scripts/sweep.ts --once",
+    "verify:story-posting": "node scripts/verify-story-posting.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

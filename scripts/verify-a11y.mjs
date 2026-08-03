@@ -708,24 +708,18 @@ async function run() {
     );
     // ⚠ Keep in step with `lib/coming-soon.ts`. Slice 13 retired `becomeSeller`
     // (the footer links to real onboarding now); Slice 14 retired
-    // `sellerListings` the same way (the nav links to `/food/listings` now).
-    // Both are checked for ABSENCE below, not merely dropped from the
+    // `sellerListings` (the nav links to `/food/listings` now); Slice 15
+    // retired `sellerStories` (the nav links to `/food/stories` now). All
+    // three are checked for ABSENCE below, not merely dropped from the
     // present-list — a retirement that silently regressed (the stub coming
     // back because a later edit re-added the registry key) would otherwise
     // pass this audit by doing nothing.
-    for (const key of [
-      "requestOrder",
-      "buyerOrders",
-      "messageSeller",
-      "buyerAccount",
-      "sellerStories",
-      "sellerOrders",
-      "sellerInsights",
-    ]) {
+    for (const key of ["requestOrder", "buyerOrders", "messageSeller", "buyerAccount", "sellerOrders", "sellerInsights"]) {
       check(stubs.includes(key), `stubs: "${key}" rendered a trigger`);
     }
     check(!stubs.includes("becomeSeller"), `stubs: "becomeSeller" retired (Slice 13)`);
     check(!stubs.includes("sellerListings"), `stubs: "sellerListings" retired (Slice 14)`);
+    check(!stubs.includes("sellerStories"), `stubs: "sellerStories" retired (Slice 15)`);
 
     await context.close();
   }

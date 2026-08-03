@@ -7,9 +7,11 @@ import { SignedOutNotice } from "@/components/seller/signed-out-notice";
 import { SellerStatusBanner } from "@/components/seller/status-banner";
 import { ProfileChecklist } from "@/components/seller/profile-checklist";
 import { WorkspaceEmptyStates } from "@/components/seller/workspace-empty-states";
+import { DashboardStats } from "@/components/seller/dashboard-stats";
 import { loadSellerWorkspace } from "@/lib/seller";
 import { ensureFoodProviderMembership } from "@/lib/auth-guards";
 import { getProviderRegistrationConfig } from "@/lib/ecosystem";
+import { sellerDashboardStats } from "@/lib/seller-stories";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -69,7 +71,11 @@ export default async function SellerDashboardPage() {
   if (!seller) return <SignedOutNotice />; // unreachable; narrows the type
 
   await ensureFoodProviderMembership(seller.userId);
-  const listingCount = await prisma.foodListing.count({ where: { sellerId: seller.id } });
+  const [listingCount, activeStoryCount, stats] = await Promise.all([
+    prisma.foodListing.count({ where: { sellerId: seller.id } }),
+    prisma.foodStory.count({ where: { sellerId: seller.id, expiresAt: { gt: new Date() } } }),
+    sellerDashboardStats(seller),
+  ]);
 
   return (
     <>
@@ -92,8 +98,14 @@ export default async function SellerDashboardPage() {
         )}
       </div>
 
+      {/* Slice 15: "views/saves/follows counts — not the full analytics/
+          insights dashboard." Shown for every standing, PENDING included —
+          zero is a real, honest number for a seller nobody can discover yet,
+          not a state to hide. */}
+      <DashboardStats stats={stats} />
+
       <ProfileChecklist steps={steps} percent={percent} />
-      <WorkspaceEmptyStates listingCount={listingCount} />
+      <WorkspaceEmptyStates listingCount={listingCount} activeStoryCount={activeStoryCount} />
     </>
   );
 }

@@ -349,7 +349,12 @@
       "body": "Aquí están tus pedidos, tus platos, tus publicaciones de En la cocina hoy y tu perfil.",
       "continueSetup": "Seguir configurando",
       "editProfile": "Editar perfil",
-      "viewPublic": "Ver perfil público"
+      "viewPublic": "Ver perfil público",
+      "stats": {
+        "views": "Vistas",
+        "saves": "Guardados",
+        "follows": "Seguidores"
+      }
     },
     "admin": {
       "title": "Administración de Food",
@@ -530,7 +535,11 @@
       },
       "stories": {
         "title": "Nada fresco hoy",
-        "body": "Publica lo que salió hoy de tu cocina. Aparece arriba en la página de inicio para quienes te siguen."
+        "body": "Publica lo que salió hoy de tu cocina. Aparece arriba en la página de inicio para quienes te siguen.",
+        "titleWithCount": "{count, plural, one {# publicación activa} other {# publicaciones activas}}",
+        "bodyWithCount": "Mira cómo van, añade otra, o gestiona tu estante de menú.",
+        "manage": "Gestionar En la cocina hoy",
+        "add": "Publica tu primera novedad"
       },
       "orders": {
         "title": "Todavía no hay pedidos",
@@ -663,6 +672,65 @@
         "windowLimit": "Este plato ya tiene el número máximo de horarios de disponibilidad.",
         "noListing": "No encontramos ese plato. Recarga la página y vuelve a intentarlo.",
         "unknown": "Eso no funcionó. Recarga la página y vuelve a intentarlo."
+      }
+    },
+    "stories": {
+      "title": "En la cocina hoy",
+      "intro": "Muestra lo que está saliendo de tu cocina ahora mismo. Las publicaciones duran 24 horas; guarda las buenas en tu estante de menú.",
+      "activeTitle": "Activas ahora",
+      "shelfTitle": "Estante de menú",
+      "shelfIntro": "Grupos con nombre en tu perfil que nunca caducan. Añade una publicación a uno para conservarla.",
+      "post": {
+        "title": "Publica algo fresco",
+        "choosePhoto": "Elegir una foto",
+        "changePhoto": "Elegir otra foto",
+        "uploading": "Subiendo…",
+        "uploadErrors": {
+          "tooLarge": "Esa foto pesa demasiado. Prueba con una de menos de 10 MB.",
+          "invalid": "No se pudo leer ese archivo como foto. Prueba con un JPEG, PNG o WebP.",
+          "rateLimited": "Demasiadas subidas seguidas. Espera un minuto y vuelve a intentarlo.",
+          "unauthorized": "Tu sesión ha caducado. Inicia sesión otra vez y reinténtalo.",
+          "failed": "La subida no terminó. Revisa tu conexión y vuelve a intentarlo."
+        },
+        "captionLabel": "Descripción (opcional)",
+        "captionPlaceholder": "Recién salido del horno…",
+        "linkedListingLabel": "Enlazar un plato (opcional)",
+        "linkedListingNone": "Sin plato enlazado",
+        "posting": "Publicando…",
+        "post": "Publicar",
+        "errors": {
+          "photo": "Elige primero una foto.",
+          "signedOut": "Tu sesión ha caducado. Inicia sesión otra vez y reinténtalo.",
+          "linkedListing": "Ese plato no se puede enlazar ahora mismo. Recarga la página y vuelve a intentarlo."
+        }
+      },
+      "active": {
+        "empty": "No hay nada publicado ahora mismo. Tu próxima publicación aparecerá aquí.",
+        "removeConfirm": "¿Quitar esta publicación?",
+        "linkedTo": "Enlazado a {title}",
+        "expiresIn": "{hours, plural, =0 {caduca en cualquier momento} one {caduca en # hora} other {caduca en # horas}}",
+        "viewCount": "{count, plural, one {# vista} other {# vistas}}",
+        "assignLabel": "Añadir al estante",
+        "assignNone": "Sin estante",
+        "remove": "Quitar"
+      },
+      "shelf": {
+        "empty": "Todavía no hay estantes. Crea uno abajo para empezar a guardar tus mejores publicaciones.",
+        "saveTitle": "Guardar",
+        "cancel": "Cancelar",
+        "rename": "Renombrar",
+        "deleteConfirm": "¿Eliminar este estante? Sus publicaciones no se eliminan, solo salen del estante.",
+        "delete": "Eliminar",
+        "shelfEmpty": "Todavía no hay nada en este estante.",
+        "unassign": "Quitar de este estante",
+        "newTitleLabel": "Nombre del nuevo estante",
+        "newTitlePlaceholder": "Especialidades",
+        "newShelf": "Crear estante",
+        "errors": {
+          "signedOut": "Tu sesión ha caducado. Inicia sesión otra vez y reinténtalo.",
+          "highlightTitle": "Ponle al estante un nombre de entre 1 y 40 caracteres.",
+          "highlightLimit": "Has llegado al número máximo de estantes."
+        }
       }
     }
   },

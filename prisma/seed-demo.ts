@@ -55,15 +55,13 @@ import {
   type PhotoSource,
 } from "./seed-data/photos";
 import { demoUserId, intBetween, rngFor, type Rng } from "./seed-data/rng";
+import { expiresAtFrom } from "../lib/story-form";
 
 const prisma = new PrismaClient();
 
 // sharp/libvips holds native file handles in a process-lifetime cache; a script
 // that ingests many files on Windows hits EBUSY without this (Slice 4 finding).
 sharp.cache(false);
-
-/** Fresh Today entries are seeded far-future so they survive until Slice 15. */
-const STORY_EXPIRY = new Date("2027-12-31T00:00:00.000Z");
 
 const tally: Record<PhotoSource, number> = { mealdb: 0, commons: 0, synthetic: 0 };
 
@@ -126,6 +124,18 @@ function daysAgo(days: number, hours = 9): Date {
   d.setUTCDate(d.getUTCDate() - days);
   d.setUTCHours(hours, 0, 0, 0);
   return d;
+}
+
+/**
+ * Hours ago, from THIS SEED RUN's own clock — Fresh Today's 24h window is too
+ * short for `daysAgo`'s whole-day-plus-fixed-hour granularity to place an
+ * entry meaningfully relative to it. Written on CREATE only, same as every
+ * other seed timestamp (the file's own top-of-file rule) — a re-run never
+ * recomputes this, so an entry's age only ever advances with real time, which
+ * is the honest behaviour for a feature whose whole point is expiry.
+ */
+function hoursAgo(hours: number): Date {
+  return new Date(Date.now() - hours * 60 * 60 * 1000);
 }
 
 type Ingestor = (buffer: Buffer, mime: string) => Promise<PhotoVariantPaths>;
@@ -363,6 +373,7 @@ async function seedFreshToday(spec: SellerSpec, ownerId: string) {
   }
 
   const highlightList = [...highlightIds.values()];
+  let mostRecentCreatedAt: Date | null = null;
 
   for (const [index, entry] of spec.freshToday.entries()) {
     const id = `${ownerId}-story-${index}`;
@@ -376,6 +387,41 @@ async function seedFreshToday(spec: SellerSpec, ownerId: string) {
       amateur: rng() < 0.6,
     });
 
+    // ⚠ Realistic recent timestamps (Slice 15) — these were seeded far-future
+    // through Slice 11 so the Fresh Today rail and viewer had something to
+    // render before the posting tools and the sweep existed to produce real
+    // entries. Now that both exist, a mix of ages is what actually PROVES the
+    // done-when.
+    //
+    // ⚠ Index 1 (a seller's SECOND entry, when one exists) is FORCED old
+    // rather than left to chance. `index % 3 === 0` (below) never highlights
+    // it, so this deterministically guarantees at least one entry that is
+    // BOTH past its 24h window AND ephemeral — food-sweep's actual, immediate
+    // deletion target. Leaving this to a coin flip was tried first and
+    // measured: on this catalogue most sellers have exactly one freshToday
+    // entry, which `index % 3 === 0` always highlights, so a purely random
+    // draw produced runs where every already-expired entry happened to be
+    // highlighted and the sweep had nothing real to clear — a demo trap the
+    // same shape as Slice 8's deliberate SUSPENDED-seller one, found the same
+    // way (by looking at what the seed actually produced, not assuming it).
+    // ⚠ `cocina-de-abuela`'s index-0 entry is EXEMPT from the coin flip,
+    // deliberately — the same "named, deliberate exception" shape as
+    // `mama-lin-kitchen` (SUSPENDED) and `pastelitos-y-mas` (PENDING).
+    // `verify-a11y.mjs` and several other scripts hardcode this seller as a
+    // known-good `/stories/[slug]` fixture (a real ACTIVE seller with a Menu
+    // shelf highlight, active listings and a gallery — Slice 11's own
+    // comment), and it has exactly one freshToday entry. Left to the same
+    // 40% roll everyone else gets, that ONE entry can land old and take the
+    // viewer route to a 404 — which it did, deterministically, the first
+    // time this ran after the realistic-timestamp rewrite (this hash-based
+    // RNG stream is stable, not flaky, so it would do it every time without
+    // this exemption).
+    const isAlreadyExpired =
+      spec.slug === "cocina-de-abuela" ? false : index === 1 || rng() < 0.4;
+    const createdAt = isAlreadyExpired
+      ? hoursAgo(intBetween(rng, 30, 60))
+      : hoursAgo(intBetween(rng, 1, 20));
+
     await prisma.foodStory.create({
       data: {
         id,
@@ -383,22 +429,23 @@ async function seedFreshToday(spec: SellerSpec, ownerId: string) {
         ...paths,
         caption: entry.caption,
         linkedListingId: entry.linkTo ? listingId(entry.linkTo) : null,
-        // ⚠ Far-future expiry on purpose: Slice 11 needs these to still be live
-        // whenever it is built, and Slice 15 rewrites them to realistic recent
-        // timestamps once the posting tools and the sweep exist.
-        expiresAt: STORY_EXPIRY,
-        createdAt: daysAgo(intBetween(rng, 0, 3), intBetween(rng, 6, 18)),
+        createdAt,
+        expiresAt: expiresAtFrom(createdAt),
         // A third of entries land on the Menu shelf, which is what makes the
-        // shelf non-empty for Slice 11 without every post being kept forever.
+        // shelf non-empty without every post being kept forever.
         highlightId: highlightList.length > 0 && index % 3 === 0 ? highlightList[index % highlightList.length] : null,
       },
     });
+
+    if (!mostRecentCreatedAt || createdAt > mostRecentCreatedAt) mostRecentCreatedAt = createdAt;
   }
 
-  await prisma.foodSeller.update({
-    where: { id: ownerId },
-    data: { lastStoryAt: daysAgo(0, 8) },
-  });
+  if (mostRecentCreatedAt) {
+    await prisma.foodSeller.update({
+      where: { id: ownerId },
+      data: { lastStoryAt: mostRecentCreatedAt },
+    });
+  }
 }
 
 /**

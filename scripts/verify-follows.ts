@@ -63,11 +63,19 @@ async function run() {
   // ──────────────────────────────────────────────────────────────────────
   section("FoodFollow model — constraint, transactional recount, cascade");
 
+  // ⚠ Must ALSO currently have a non-expired story, not merely be ACTIVE.
+  // Before Slice 15 rewrote the seed's story timestamps from far-future to
+  // realistic (createdAt + 24h, a genuine mix of already-expired and still-
+  // active), any ACTIVE seller was guaranteed to have a live Fresh Today
+  // entry, so this filter was never needed. It is now: an ACTIVE seller
+  // picked without it can easily have zero currently-active stories, which
+  // made `freshTodayEntries` correctly omit them below and this script wrongly
+  // read that as a re-ordering bug rather than its own fixture being stale.
   const seller = await prisma.foodSeller.findFirst({
-    where: { status: "ACTIVE" },
+    where: { status: "ACTIVE", stories: { some: { expiresAt: { gt: new Date() } } } },
     select: { id: true, followerCount: true },
   });
-  if (!seller) throw new Error("no ACTIVE seller in the seed");
+  if (!seller) throw new Error("no ACTIVE seller with a currently-active Fresh Today story in the seed");
   const userId = `verify-follows-${Date.now()}`;
   await prisma.foodFollow.deleteMany({ where: { userId } });
 

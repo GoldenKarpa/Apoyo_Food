@@ -39,7 +39,6 @@ export type FeatureIcon =
   | "receipt"
   | "user"
   | "chefHat"
-  | "camera"
   | "chart";
 
 export interface ComingSoonEntry {
@@ -99,15 +98,19 @@ export interface ComingSoonEntry {
  * The one-line contract again: `/food/listings` is real now, so the seller
  * nav links to it directly (`components/seller/seller-nav.tsx`) instead of
  * opening a modal about it, and the dashboard's listings card
- * (`components/seller/workspace-empty-states.tsx`) became data-driven. Three
- * stubs remain: `sellerStories`, `sellerOrders`, `sellerInsights`.
+ * (`components/seller/workspace-empty-states.tsx`) became data-driven.
+ *
+ * ── Slice 15: `sellerStories` retired too ──
+ * `/food/stories` (Fresh Today posting + the Menu shelf manager) is real now,
+ * same treatment: the nav links to it directly and the dashboard's Fresh
+ * Today card is data-driven off a real, non-expired post count. Two stubs
+ * remain: `sellerOrders` (Slice 17), `sellerInsights` (Phase 6).
  */
 export const COMING_SOON_FEATURES = {
   requestOrder: { phase: 3, slice: 17, icon: "utensils" },
   buyerOrders: { phase: 3, slice: 17, icon: "receipt" },
   messageSeller: { phase: 3, slice: 18, icon: "message" },
   buyerAccount: { phase: 4, slice: 0, icon: "user" },
-  sellerStories: { phase: 2, slice: 15, icon: "camera" },
   sellerOrders: { phase: 3, slice: 17, icon: "receipt" },
   sellerInsights: { phase: 6, slice: 0, icon: "chart" },
 } as const satisfies Record<string, ComingSoonEntry>;
