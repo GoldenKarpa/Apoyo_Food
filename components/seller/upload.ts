@@ -1,6 +1,6 @@
 /**
- * The browser half of seller media upload, shared by `<PhotoField>` and
- * `<GalleryManager>`.
+ * The browser half of seller media upload, shared by `<PhotoField>`,
+ * `<GalleryManager>` and (Slice 14) `<ListingPhotoManager>`.
  *
  * ⚠ The server's own `detail` string is deliberately DISCARDED. Route handlers
  * answer in English ("File exceeds 10 MB limit"), and the seller surface
@@ -15,17 +15,33 @@ export type SellerUploadErrorKey = "tooLarge" | "invalid" | "rateLimited" | "una
 
 export type SellerUploadResult = { ok: true } | { ok: false; error: SellerUploadErrorKey };
 
+export interface UploadOptions {
+  /**
+   * Defaults to `/api/seller/media`. Slice 14's listing photos go through
+   * `/api/seller/listing-media` instead — a different ownership check (listing
+   * -> seller, one relation hop further out than a seller's own media), same
+   * request/response shape, so this is an override rather than a second helper.
+   */
+  endpoint?: string;
+  /** Extra form fields the target route needs — e.g. `{ listingId }`. */
+  extraFields?: Record<string, string>;
+}
+
 export async function uploadSellerMedia(
   kind: "avatar" | "cover" | "gallery",
   file: File,
+  options: UploadOptions = {},
 ): Promise<SellerUploadResult> {
   const body = new FormData();
   body.set("kind", kind);
   body.set("file", file);
+  for (const [key, value] of Object.entries(options.extraFields ?? {})) {
+    body.set(key, value);
+  }
 
   let response: Response;
   try {
-    response = await fetch("/api/seller/media", { method: "POST", body });
+    response = await fetch(options.endpoint ?? "/api/seller/media", { method: "POST", body });
   } catch {
     // A dropped connection mid-upload is a normal event on a phone.
     return { ok: false, error: "failed" };

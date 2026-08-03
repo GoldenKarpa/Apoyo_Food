@@ -408,9 +408,13 @@ async function run() {
   check((await page.locator('nav[aria-label] a[href="/food/profile"]').count()) > 0, "…and the workspace nav is present");
   // Unbuilt destinations are stubs, never missing nav items (conventions block).
   const stubs = await page.$$eval("[data-coming-soon]", (els) => els.map((e) => e.getAttribute("data-coming-soon")));
-  for (const key of ["sellerListings", "sellerStories", "sellerOrders"]) {
+  for (const key of ["sellerStories", "sellerOrders"]) {
     check(stubs.includes(key), `…and "${key}" is a ComingSoon stub in the nav, not a dead link`);
   }
+  // ⚠ Slice 14 retired the `sellerListings` stub — `/food/listings` is real
+  // now, so the nav links to it directly. Checked for ABSENCE, the same
+  // regression guard `verify-a11y.mjs` applies to `becomeSeller`'s retirement.
+  check(!stubs.includes("sellerListings"), '…and "sellerListings" is retired (Slice 14) — the nav links to /food/listings for real');
   const publicLink = await page.locator(`a[href="/sellers/${EXPECTED_SLUG}"]`).count();
   check(publicLink === 0, "a PENDING seller is NOT offered a link to their public profile (it would 404)");
 

@@ -12,13 +12,14 @@ import { cn } from "@/lib/utils";
  * The seller dashboard's navigation — the shell Slice 13 owes the rest of
  * Phase 2 and 3.
  *
- * ⚠ **Two destinations are real and three are stubs, and that is deliberate.**
+ * ⚠ **Three destinations are real and two are stubs, and that is deliberate.**
  * The conventions block's rule is that an unbuilt action opens a localized
  * explain-the-feature modal, never a dead link, a disabled control or a MISSING
- * NAV ITEM. Hiding Listings until Slice 14 would leave a seller with no way to
- * know the product has listings at all — the nav is the only place the shape of
- * the workspace is visible. Replacing each stub is deleting one line here plus
- * one registry entry, exactly as `becomeSeller` was replaced by this slice.
+ * NAV ITEM. Hiding Fresh Today/Orders until Slices 15/17 would leave a seller
+ * with no way to know the product has them at all — the nav is the only place
+ * the shape of the workspace is visible. Replacing each stub is deleting one
+ * line here plus one registry entry, exactly as `becomeSeller` and (this
+ * slice) `sellerListings` were replaced.
  *
  * Same source of truth for both widths (`components/chrome/nav-config.ts`'s
  * lesson from the buyer surface): one array, rendered as a scrolling row on a
@@ -29,11 +30,11 @@ import { cn } from "@/lib/utils";
 
 const REAL_ITEMS = [
   { href: "/food", key: "dashboard", icon: LayoutDashboard },
+  { href: "/food/listings", key: "listings", icon: ChefHat },
   { href: "/food/profile", key: "profile", icon: UserRound },
 ] as const;
 
 const STUB_ITEMS = [
-  { feature: "sellerListings", key: "listings", icon: ChefHat },
   { feature: "sellerStories", key: "stories", icon: Camera },
   { feature: "sellerOrders", key: "orders", icon: Receipt },
 ] as const;

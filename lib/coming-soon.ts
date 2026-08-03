@@ -94,13 +94,19 @@ export interface ComingSoonEntry {
  * slice in this file builds it: Part E7 calls insights the product's signature
  * feature, and Slice 9 has been logging `FoodDemandEvent` rows for it since
  * Phase 1.
+ *
+ * ── Slice 14: `sellerListings` retired ──
+ * The one-line contract again: `/food/listings` is real now, so the seller
+ * nav links to it directly (`components/seller/seller-nav.tsx`) instead of
+ * opening a modal about it, and the dashboard's listings card
+ * (`components/seller/workspace-empty-states.tsx`) became data-driven. Three
+ * stubs remain: `sellerStories`, `sellerOrders`, `sellerInsights`.
  */
 export const COMING_SOON_FEATURES = {
   requestOrder: { phase: 3, slice: 17, icon: "utensils" },
   buyerOrders: { phase: 3, slice: 17, icon: "receipt" },
   messageSeller: { phase: 3, slice: 18, icon: "message" },
   buyerAccount: { phase: 4, slice: 0, icon: "user" },
-  sellerListings: { phase: 2, slice: 14, icon: "chefHat" },
   sellerStories: { phase: 2, slice: 15, icon: "camera" },
   sellerOrders: { phase: 3, slice: 17, icon: "receipt" },
   sellerInsights: { phase: 6, slice: 0, icon: "chart" },

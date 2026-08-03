@@ -706,17 +706,18 @@ async function run() {
         el.getAttribute("data-coming-soon"),
       ),
     );
-    // ⚠ Keep in step with `lib/coming-soon.ts`. Slice 13 RETIRED `becomeSeller`
-    // (the footer links to real onboarding now) and added the seller
-    // workspace's four nav destinations, so this list is also the assertion
-    // that the retirement actually happened — `becomeSeller` is checked for
-    // ABSENCE below, not merely dropped from the list.
+    // ⚠ Keep in step with `lib/coming-soon.ts`. Slice 13 retired `becomeSeller`
+    // (the footer links to real onboarding now); Slice 14 retired
+    // `sellerListings` the same way (the nav links to `/food/listings` now).
+    // Both are checked for ABSENCE below, not merely dropped from the
+    // present-list — a retirement that silently regressed (the stub coming
+    // back because a later edit re-added the registry key) would otherwise
+    // pass this audit by doing nothing.
     for (const key of [
       "requestOrder",
       "buyerOrders",
       "messageSeller",
       "buyerAccount",
-      "sellerListings",
       "sellerStories",
       "sellerOrders",
       "sellerInsights",
@@ -724,6 +725,7 @@ async function run() {
       check(stubs.includes(key), `stubs: "${key}" rendered a trigger`);
     }
     check(!stubs.includes("becomeSeller"), `stubs: "becomeSeller" retired (Slice 13)`);
+    check(!stubs.includes("sellerListings"), `stubs: "sellerListings" retired (Slice 14)`);
 
     await context.close();
   }

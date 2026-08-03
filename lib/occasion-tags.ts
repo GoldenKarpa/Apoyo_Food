@@ -11,7 +11,11 @@
  * same "unknown resolves gracefully" instinct `lib/category-accent.ts` already
  * applies to an unrecognised category slug.
  */
-const KNOWN_OCCASION_TAGS = ["christmas", "birthday", "divali"] as const;
+/**
+ * Exported at Slice 14 for the listing form's occasion-tag suggestions — the
+ * same known set, read rather than re-typed, so the two lists cannot drift.
+ */
+export const KNOWN_OCCASION_TAGS = ["christmas", "birthday", "divali"] as const;
 
 export function occasionLabel(tag: string, t: (key: string) => string): string {
   return (KNOWN_OCCASION_TAGS as readonly string[]).includes(tag) ? t(tag) : tag;

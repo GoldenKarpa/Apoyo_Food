@@ -252,3 +252,23 @@ export function describeWindow(
 export function weekdayBitmask(weekday: number): number {
   return 1 << weekday;
 }
+
+/**
+ * Bitmask <-> weekday-index-array conversions, added at Slice 14 for the
+ * seller-facing window builder's day picker. Pure bit math, so it belongs
+ * beside `weekdayBitmask` rather than in the form-validation module — these
+ * two functions are the only place either direction of the conversion happens,
+ * which is what keeps the picker's UI state and the stored `daysOfWeek` column
+ * from ever disagreeing about which bit means which day.
+ */
+export function bitmaskFromDays(days: readonly number[]): number {
+  return days.reduce((mask, day) => mask | weekdayBitmask(day), 0);
+}
+
+export function daysFromBitmask(mask: number): number[] {
+  const days: number[] = [];
+  for (let day = 0; day < 7; day += 1) {
+    if ((mask & weekdayBitmask(day)) !== 0) days.push(day);
+  }
+  return days;
+}

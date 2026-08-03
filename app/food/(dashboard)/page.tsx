@@ -10,6 +10,7 @@ import { WorkspaceEmptyStates } from "@/components/seller/workspace-empty-states
 import { loadSellerWorkspace } from "@/lib/seller";
 import { ensureFoodProviderMembership } from "@/lib/auth-guards";
 import { getProviderRegistrationConfig } from "@/lib/ecosystem";
+import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("seller.dashboard");
@@ -68,6 +69,7 @@ export default async function SellerDashboardPage() {
   if (!seller) return <SignedOutNotice />; // unreachable; narrows the type
 
   await ensureFoodProviderMembership(seller.userId);
+  const listingCount = await prisma.foodListing.count({ where: { sellerId: seller.id } });
 
   return (
     <>
@@ -91,7 +93,7 @@ export default async function SellerDashboardPage() {
       </div>
 
       <ProfileChecklist steps={steps} percent={percent} />
-      <WorkspaceEmptyStates />
+      <WorkspaceEmptyStates listingCount={listingCount} />
     </>
   );
 }

@@ -522,7 +522,11 @@
     "emptyStates": {
       "listings": {
         "title": "No dishes yet",
-        "body": "Your listings — what you cook, what it costs and when it is available — will live here."
+        "body": "Your listings — what you cook, what it costs and when it is available — will live here.",
+        "titleWithCount": "{count, plural, one {# dish} other {# dishes}}",
+        "bodyWithCount": "Manage what you're offering, update prices, or add another.",
+        "manage": "Manage listings",
+        "add": "Add your first dish"
       },
       "stories": {
         "title": "Nothing fresh today",
@@ -544,6 +548,122 @@
       "fulfillment": "That is not a fulfilment option we support.",
       "slug": "We could not create a web address for that name. Try a slightly different one.",
       "unknown": "That did not work. Reload the page and try again."
+    },
+    "listings": {
+      "title": "Your listings",
+      "intro": "Every dish you offer, in one place.",
+      "add": "Add a dish",
+      "empty": "No dishes yet. Add your first one to start filling your menu.",
+      "quotePrice": "Price on request",
+      "windowCount": "{count, plural, =0 {no availability set} one {# availability window} other {# availability windows}}",
+      "edit": "Edit",
+      "activate": "Make this dish visible to buyers",
+      "deactivate": "Hide this dish from buyers",
+      "active": "Active",
+      "inactive": "Paused"
+    },
+    "listingForm": {
+      "newTitle": "Add a dish",
+      "newIntro": "Start with the basics. Once it's created you can add photos and set when it's available.",
+      "editTitle": "Edit dish",
+      "back": "Back to listings",
+      "titleLabel": "Dish name",
+      "titlePlaceholder": "Pastelón de plátano",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "What it is, what's in it, and anything a buyer should know before ordering.",
+      "kindLabel": "Dish kind",
+      "kind": {
+        "SINGLE_ITEM": "Single item",
+        "MENU": "Menu",
+        "PACKAGE": "Package",
+        "TRAY": "Tray",
+        "CUSTOM": "Custom order"
+      },
+      "priceModeLabel": "Price",
+      "priceMode": {
+        "FIXED": "Fixed price",
+        "STARTING_AT": "Starting at",
+        "QUOTE": "Price on request"
+      },
+      "priceModeQuoteHint": "Buyers will see \"Price on request\" and agree a price with you directly.",
+      "priceLabel": "Amount",
+      "feedsLabel": "Feeds how many?",
+      "categoriesLabel": "Categories",
+      "categoriesCount": "{count} of {max} chosen",
+      "dietaryLabel": "Dietary",
+      "ingredientTagsLabel": "Ingredients",
+      "ingredientTagsPlaceholder": "pigeon peas",
+      "ingredientTagsAdd": "Add",
+      "ingredientTagsRemove": "Remove {name}",
+      "occasionLabel": "Occasion (optional)",
+      "occasionPlaceholder": "e.g. Christmas, Divali, Birthday",
+      "saving": "Saving…",
+      "save": "Save",
+      "saved": "Saved",
+      "create": "Create dish",
+      "photosTitle": "Photos",
+      "photos": {
+        "empty": "No photos yet. The first one you add becomes the hero photo.",
+        "photoAlt": "Photo {position}",
+        "hero": "Hero",
+        "moveUp": "Move photo {position} earlier",
+        "moveDown": "Move photo {position} later",
+        "remove": "Remove photo {position}",
+        "removeConfirm": "Remove this photo?",
+        "add": "Add a photo",
+        "adding": "Adding…",
+        "count": "{count} of {max}",
+        "full": "You have reached the {max}-photo limit."
+      },
+      "availabilityTitle": "Availability",
+      "availabilityIntro": "When can buyers get this? Add one or more windows — weekdays, weekends, pre-order, or a date range for a season.",
+      "viewPublic": "View public listing",
+      "hiddenInactive": "Hidden from buyers — this listing is paused.",
+      "hiddenSellerPending": "Hidden from buyers until your kitchen is approved.",
+      "errors": {
+        "title": "Give the dish a name between 2 and 80 characters.",
+        "description": "Add a description.",
+        "kind": "Choose a kind.",
+        "priceMode": "Choose a price type.",
+        "price": "Enter a valid price of $0 or more.",
+        "feedsCount": "Enter a number of 1 or more.",
+        "categories": "Choose up to 5 categories.",
+        "ingredientTags": "Up to 15 ingredients, each under 30 characters.",
+        "occasionTag": "Keep the occasion under 30 characters.",
+        "noListing": "We could not find that listing. Reload the page and try again.",
+        "unknown": "That did not work. Reload the page and try again."
+      }
+    },
+    "availabilityForm": {
+      "daysLabel": "Which days?",
+      "typeLabel": "Availability type",
+      "types": {
+        "RECURRING_WEEKLY": "Recurring — specific days each week",
+        "PREORDER": "Pre-order — always on offer, ordered ahead",
+        "DATE_RANGE": "Date range — a season or a limited run"
+      },
+      "startsLabel": "Starts",
+      "endsLabel": "Ends",
+      "leadLabelRequired": "Order how many days ahead?",
+      "leadLabelOptional": "Also require advance notice? (optional, in days)",
+      "noteLabel": "Note (optional)",
+      "notePlaceholder": "Orders close 4pm Friday",
+      "add": "Add window",
+      "adding": "Adding…",
+      "empty": "No availability set yet — buyers won't know when to expect this dish.",
+      "remove": "Remove this availability window",
+      "removeConfirm": "Remove this availability window?",
+      "errors": {
+        "windowType": "Choose a type.",
+        "windowDays": "Choose at least one day.",
+        "windowDates": "Enter a start and end date.",
+        "windowDateOrder": "The end date must be on or after the start date.",
+        "windowLeadTime": "Enter a number of days between 1 and 60.",
+        "windowNote": "Keep the note under 140 characters.",
+        "windowLimit": "This listing already has the maximum number of availability windows.",
+        "noListing": "We could not find that listing. Reload the page and try again.",
+        "unknown": "That did not work. Reload the page and try again."
+      }
     }
   },
   "scaffold": {

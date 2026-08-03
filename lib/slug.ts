@@ -62,30 +62,53 @@ export function slugify(input: string): string {
 }
 
 /**
- * A seller slug that is free at the moment it is read.
+ * Walks `stem`, `stem-2`, `stem-3`, … against an already-fetched set of taken
+ * slugs. Shared by the seller and listing generators below — the collision
+ * rule is one rule, not two copies that could drift.
  *
- * ⚠ This is check-then-write, so it is *not* a race-free guarantee — two
- * sellers registering the same kitchen name in the same instant can both be
- * handed `cocina-de-abuela`, and the second write loses on the unique index.
- * That is deliberate: the alternative (a transaction holding a lock across an
- * ecosystem HTTP call) is far worse. The caller retries on `P2002`, which is
- * where the real guarantee lives — see `lib/actions/onboard-seller.ts`.
+ * ⚠ This is check-then-write, so it is *not* a race-free guarantee — two rows
+ * created in the same instant can both be handed the same free slug, and the
+ * second write loses on the unique index. That is deliberate: the alternative
+ * (a transaction holding a lock across an ecosystem HTTP call, for the seller
+ * case) is far worse. The caller retries on `P2002`, which is where the real
+ * guarantee lives — see `lib/actions/onboard-seller.ts` and
+ * `lib/actions/upsert-listing.ts`.
  */
-export async function uniqueSellerSlug(displayName: string): Promise<string> {
-  const stem = slugify(displayName) || FALLBACK_STEM;
-
-  const existing = await prisma.foodSeller.findMany({
-    where: { slug: { startsWith: stem } },
-    select: { slug: true },
-  });
-  const taken = new Set(existing.map((row) => row.slug));
-
+function firstFreeSlug(stem: string, taken: ReadonlySet<string>): string {
   if (!taken.has(stem)) return stem;
   for (let n = 2; n < 1000; n += 1) {
     const candidate = `${stem}-${n}`;
     if (!taken.has(candidate)) return candidate;
   }
-  // 999 kitchens with the same name is not a real state; a random suffix is
-  // still better than throwing on a registration that is otherwise valid.
+  // 999 rows with the same name is not a real state; a random suffix is still
+  // better than throwing on a creation that is otherwise valid.
   return `${stem}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/** A seller slug that is free at the moment it is read. See `firstFreeSlug`. */
+export async function uniqueSellerSlug(displayName: string): Promise<string> {
+  const stem = slugify(displayName) || FALLBACK_STEM;
+  const existing = await prisma.foodSeller.findMany({
+    where: { slug: { startsWith: stem } },
+    select: { slug: true },
+  });
+  return firstFreeSlug(stem, new Set(existing.map((row) => row.slug)));
+}
+
+/**
+ * A listing slug that is free at the moment it is read. Listing slugs are
+ * GLOBALLY unique — `/meals/[slug]` is a root-level route, not nested under
+ * the seller (Slice 2) — so the collision check is against every listing in
+ * the marketplace, not just this seller's own. `FALLBACK_STEM` is reused
+ * rather than a listing-specific word: an unnamed dish and an unnamed kitchen
+ * are the same "couldn't derive anything" case, and one fallback word is
+ * simpler than inventing a second.
+ */
+export async function uniqueListingSlug(title: string): Promise<string> {
+  const stem = slugify(title) || FALLBACK_STEM;
+  const existing = await prisma.foodListing.findMany({
+    where: { slug: { startsWith: stem } },
+    select: { slug: true },
+  });
+  return firstFreeSlug(stem, new Set(existing.map((row) => row.slug)));
 }

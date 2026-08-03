@@ -14,6 +14,7 @@ import { SaveButton } from "@/components/ui/save-button";
 import { SectionHeader } from "@/components/ui/section-header";
 import { DIETARY_TAGS } from "@/lib/browse";
 import { describeWindow } from "@/lib/availability";
+import { buildWindowLabels } from "@/lib/window-labels";
 import { DISCOVERABLE, moreFromSeller, mostSavedListings, similarInCategory } from "@/lib/discovery";
 import { logDemand } from "@/lib/demand";
 import { formatCentsTtd } from "@/lib/money";
@@ -37,13 +38,6 @@ const WINDOW_TONE: Record<AvailabilityType, AvailabilityTone> = {
   PREORDER: "preorder",
   DATE_RANGE: "seasonal",
 };
-
-/** `startsOn`/`endsOn` are `@db.Date` — formatted as the calendar date they
- * represent, never converted through an instant (Slice 2/9's timezone rule). */
-function formatIsoDate(iso: string, locale: string): string {
-  const date = new Date(`${iso}T00:00:00.000Z`);
-  return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", timeZone: "UTC" }).format(date);
-}
 
 export async function generateMetadata({
   params,
@@ -153,16 +147,10 @@ export default async function MealDetailPage({ params }: { params: Promise<{ slu
     alt: p.caption,
   }));
 
-  const dayLabels = ta.raw("days") as string[];
-  const windowLabels = {
-    days: dayLabels,
-    everyDay: ta("everyDay"),
-    weekends: ta("weekend"),
-    weekdays: ta("weekdaysOnly"),
-    preorder: (n: number) => ta("preorder", { days: n }),
-    season: (from: string, to: string) =>
-      ta("seasonWindow", { from: formatIsoDate(from, locale), to: formatIsoDate(to, locale) }),
-  };
+  // Slice 14 factored this construction into lib/window-labels.ts so the
+  // seller's window builder renders identical wording — one source, not two
+  // that could drift.
+  const windowLabels = buildWindowLabels(ta, ta.raw("days") as string[], locale);
 
   const categoryName = primaryCategory
     ? locale === "es"

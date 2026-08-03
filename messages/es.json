@@ -522,7 +522,11 @@
     "emptyStates": {
       "listings": {
         "title": "Todavía no hay platos",
-        "body": "Aquí estarán tus platos: qué cocinas, cuánto cuesta y cuándo está disponible."
+        "body": "Aquí estarán tus platos: qué cocinas, cuánto cuesta y cuándo está disponible.",
+        "titleWithCount": "{count, plural, one {# plato} other {# platos}}",
+        "bodyWithCount": "Gestiona lo que ofreces, actualiza precios o añade otro.",
+        "manage": "Gestionar platos",
+        "add": "Añade tu primer plato"
       },
       "stories": {
         "title": "Nada fresco hoy",
@@ -544,6 +548,122 @@
       "fulfillment": "Esa opción de entrega no está disponible.",
       "slug": "No pudimos crear una dirección web con ese nombre. Prueba con uno un poco distinto.",
       "unknown": "Eso no funcionó. Recarga la página y vuelve a intentarlo."
+    },
+    "listings": {
+      "title": "Tus platos",
+      "intro": "Todo lo que ofreces, en un solo lugar.",
+      "add": "Añadir un plato",
+      "empty": "Todavía no hay platos. Añade el primero para empezar a llenar tu menú.",
+      "quotePrice": "Precio a consultar",
+      "windowCount": "{count, plural, =0 {sin disponibilidad configurada} one {# horario de disponibilidad} other {# horarios de disponibilidad}}",
+      "edit": "Editar",
+      "activate": "Hacer visible este plato para los compradores",
+      "deactivate": "Ocultar este plato de los compradores",
+      "active": "Activo",
+      "inactive": "En pausa"
+    },
+    "listingForm": {
+      "newTitle": "Añadir un plato",
+      "newIntro": "Empieza con lo básico. En cuanto se cree podrás añadir fotos y decir cuándo está disponible.",
+      "editTitle": "Editar plato",
+      "back": "Volver a los platos",
+      "titleLabel": "Nombre del plato",
+      "titlePlaceholder": "Pastelón de plátano",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Qué es, qué lleva, y cualquier cosa que un comprador deba saber antes de pedirlo.",
+      "kindLabel": "Tipo de plato",
+      "kind": {
+        "SINGLE_ITEM": "Plato individual",
+        "MENU": "Menú",
+        "PACKAGE": "Paquete",
+        "TRAY": "Bandeja",
+        "CUSTOM": "Por encargo"
+      },
+      "priceModeLabel": "Precio",
+      "priceMode": {
+        "FIXED": "Precio fijo",
+        "STARTING_AT": "Desde",
+        "QUOTE": "Precio a consultar"
+      },
+      "priceModeQuoteHint": "Los compradores verán \"Precio a consultar\" y acordarán un precio contigo directamente.",
+      "priceLabel": "Monto",
+      "feedsLabel": "¿Para cuántas personas alcanza?",
+      "categoriesLabel": "Categorías",
+      "categoriesCount": "{count} de {max} elegidas",
+      "dietaryLabel": "Dietético",
+      "ingredientTagsLabel": "Ingredientes",
+      "ingredientTagsPlaceholder": "gandules",
+      "ingredientTagsAdd": "Añadir",
+      "ingredientTagsRemove": "Quitar {name}",
+      "occasionLabel": "Ocasión (opcional)",
+      "occasionPlaceholder": "p. ej. Navidad, Divali, Cumpleaños",
+      "saving": "Guardando…",
+      "save": "Guardar",
+      "saved": "Guardado",
+      "create": "Crear plato",
+      "photosTitle": "Fotos",
+      "photos": {
+        "empty": "Todavía no hay fotos. La primera que añadas será la foto principal.",
+        "photoAlt": "Foto {position}",
+        "hero": "Principal",
+        "moveUp": "Mover la foto {position} antes",
+        "moveDown": "Mover la foto {position} después",
+        "remove": "Quitar la foto {position}",
+        "removeConfirm": "¿Quitar esta foto?",
+        "add": "Añadir una foto",
+        "adding": "Añadiendo…",
+        "count": "{count} de {max}",
+        "full": "Has llegado al límite de {max} fotos."
+      },
+      "availabilityTitle": "Disponibilidad",
+      "availabilityIntro": "¿Cuándo pueden pedir esto los compradores? Añade uno o más horarios: entre semana, fines de semana, por encargo, o un rango de fechas para una temporada.",
+      "viewPublic": "Ver plato público",
+      "hiddenInactive": "Oculto para los compradores: este plato está en pausa.",
+      "hiddenSellerPending": "Oculto para los compradores hasta que tu cocina esté aprobada.",
+      "errors": {
+        "title": "Ponle al plato un nombre de entre 2 y 80 caracteres.",
+        "description": "Añade una descripción.",
+        "kind": "Elige un tipo.",
+        "priceMode": "Elige un tipo de precio.",
+        "price": "Introduce un precio válido de $0 o más.",
+        "feedsCount": "Introduce un número de 1 o más.",
+        "categories": "Elige hasta 5 categorías.",
+        "ingredientTags": "Hasta 15 ingredientes, cada uno de menos de 30 caracteres.",
+        "occasionTag": "Que la ocasión tenga menos de 30 caracteres.",
+        "noListing": "No encontramos ese plato. Recarga la página y vuelve a intentarlo.",
+        "unknown": "Eso no funcionó. Recarga la página y vuelve a intentarlo."
+      }
+    },
+    "availabilityForm": {
+      "daysLabel": "¿Qué días?",
+      "typeLabel": "Tipo de horario",
+      "types": {
+        "RECURRING_WEEKLY": "Recurrente — días específicos cada semana",
+        "PREORDER": "Por encargo — siempre disponible, se pide con anticipación",
+        "DATE_RANGE": "Rango de fechas — una temporada o una tanda limitada"
+      },
+      "startsLabel": "Empieza",
+      "endsLabel": "Termina",
+      "leadLabelRequired": "¿Con cuántos días de anticipación se pide?",
+      "leadLabelOptional": "¿También requiere aviso previo? (opcional, en días)",
+      "noteLabel": "Nota (opcional)",
+      "notePlaceholder": "Se cierran los pedidos el viernes a las 4pm",
+      "add": "Añadir horario",
+      "adding": "Añadiendo…",
+      "empty": "Todavía no hay disponibilidad configurada: los compradores no sabrán cuándo esperar este plato.",
+      "remove": "Quitar este horario de disponibilidad",
+      "removeConfirm": "¿Quitar este horario de disponibilidad?",
+      "errors": {
+        "windowType": "Elige un tipo.",
+        "windowDays": "Elige al menos un día.",
+        "windowDates": "Introduce una fecha de inicio y de fin.",
+        "windowDateOrder": "La fecha de fin debe ser igual o posterior a la de inicio.",
+        "windowLeadTime": "Introduce un número de días entre 1 y 60.",
+        "windowNote": "Que la nota tenga menos de 140 caracteres.",
+        "windowLimit": "Este plato ya tiene el número máximo de horarios de disponibilidad.",
+        "noListing": "No encontramos ese plato. Recarga la página y vuelve a intentarlo.",
+        "unknown": "Eso no funcionó. Recarga la página y vuelve a intentarlo."
+      }
     }
   },
   "scaffold": {

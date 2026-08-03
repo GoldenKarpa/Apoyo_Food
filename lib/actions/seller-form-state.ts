@@ -20,6 +20,24 @@ export type SellerFormErrorKey =
   | "specialties"
   | "fulfillment"
   | "slug"
+  // Slice 14 — listing CRUD + the availability-window builder.
+  | "title"
+  | "description"
+  | "kind"
+  | "priceMode"
+  | "price"
+  | "feedsCount"
+  | "categories"
+  | "ingredientTags"
+  | "occasionTag"
+  | "noListing"
+  | "windowType"
+  | "windowDays"
+  | "windowDates"
+  | "windowDateOrder"
+  | "windowLeadTime"
+  | "windowNote"
+  | "windowLimit"
   | "unknown";
 
 export type SellerFormState =
