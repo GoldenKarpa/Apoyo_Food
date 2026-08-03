@@ -35,6 +35,7 @@ export const LISTING_EDIT_SELECT = {
   ingredientTags: true,
   occasionTag: true,
   active: true,
+  takenDownAt: true,
   createdAt: true,
   photos: {
     select: { id: true, pathThumb: true, pathCard: true, pathFull: true, blurDataUrl: true, sortOrder: true },
@@ -91,6 +92,7 @@ export async function sellerListingSummaries(sellerId: string) {
       priceMode: true,
       priceCents: true,
       active: true,
+      takenDownAt: true,
       updatedAt: true,
       photos: {
         select: { pathThumb: true, blurDataUrl: true },

@@ -8,6 +8,7 @@ import { ComingSoon } from "@/components/coming-soon";
 import { ListingGallery, type ListingGalleryPhoto } from "@/components/listing-gallery";
 import { ListingRail } from "@/components/listing-grid";
 import { ListingSellerRow } from "@/components/listing-seller-row";
+import { ReportListingSheet } from "@/components/report-listing-sheet";
 import { AvailabilityStamp, type AvailabilityTone } from "@/components/ui/availability-stamp";
 import { Chip } from "@/components/ui/chip";
 import { SaveButton } from "@/components/ui/save-button";
@@ -235,6 +236,8 @@ export default async function MealDetailPage({ params }: { params: Promise<{ slu
             <h2 className="font-display text-h1 font-semibold text-ink">{t("about")}</h2>
             <p className="whitespace-pre-line text-body text-ink-muted">{listing.description}</p>
           </div>
+
+          <ReportListingSheet listingId={listing.id} />
         </div>
 
         {moreFromThisSeller.length > 0 && (

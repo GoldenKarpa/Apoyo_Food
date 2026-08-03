@@ -112,3 +112,13 @@ export async function uniqueListingSlug(title: string): Promise<string> {
   });
   return firstFreeSlug(stem, new Set(existing.map((row) => row.slug)));
 }
+
+/** A category slug that is free at the moment it is read (Slice 16's category manager). */
+export async function uniqueCategorySlug(nameEn: string): Promise<string> {
+  const stem = slugify(nameEn) || FALLBACK_STEM;
+  const existing = await prisma.foodCategory.findMany({
+    where: { slug: { startsWith: stem } },
+    select: { slug: true },
+  });
+  return firstFreeSlug(stem, new Set(existing.map((row) => row.slug)));
+}

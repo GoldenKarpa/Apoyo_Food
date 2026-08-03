@@ -46,6 +46,17 @@ export type SellerFormErrorKey =
   | "noHighlight"
   | "highlightTitle"
   | "highlightLimit"
+  // Slice 16 — admin composition & trust basics. `updateSellerStatus`,
+  // `takedownListing` and `resolveReport` return a plain `{ok,reason}` shape
+  // (`lib/actions/admin.ts`) rather than `SellerFormState` — the admin UI
+  // shows one generic error label per action rather than a per-reason
+  // message, so only the keys below (which DO flow through `SellerFormState`)
+  // need entries in `seller.errors`.
+  | "takenDown"
+  | "noCategory"
+  | "categoryNameEn"
+  | "categoryNameEs"
+  | "categorySlug"
   | "unknown";
 
 export type SellerFormState =

@@ -188,10 +188,26 @@ export const getProviderRegistrationConfig = cache(async (): Promise<ProviderReg
   if (cached && cached.expiresAt > Date.now()) {
     return cached.config;
   }
-  const res = await fetch(ecosystemUrl("/config/registration"), {
-    headers: ecosystemHeaders(),
-    cache: "no-store",
-  });
+
+  // ⚠ Slice 16 finding: the comment below always said "fail CLOSED… rather
+  // than throw", but only the `!res.ok` branch actually did that — `fetch`
+  // itself throwing (ECONNREFUSED, DNS failure, any network-level failure,
+  // as opposed to a reachable server returning a bad status) was never
+  // caught, and propagated straight out of `<SiteFooter>` (Slice 7), which
+  // calls this on every buyer-facing page. That crashed the ENTIRE `(client)`
+  // route group with a 500 the moment the ecosystem API was unreachable —
+  // reproduced directly, not inferred. The try/catch below is what actually
+  // delivers the fail-closed behaviour this function already claimed to have.
+  let res: Response;
+  try {
+    res = await fetch(ecosystemUrl("/config/registration"), {
+      headers: ecosystemHeaders(),
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[ecosystem] registration config fetch failed", err);
+    return CONFIG_ALL_OFF;
+  }
   if (!res.ok) {
     // Fail CLOSED on the CTA (hide it) rather than throw — a transient
     // ecosystem-API blip must not break the Food storefront, and hiding a CTA

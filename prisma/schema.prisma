@@ -158,6 +158,26 @@ enum AttachmentKind {
   @@map("attachment_kind")
 }
 
+/// Slice 16 report/flag intake. Trinidad-appropriate reasons for a home-kitchen
+/// marketplace — `FOOD_SAFETY_CONCERN` replaces Apparel's `WRONG_CATEGORY`,
+/// which has no equivalent stakes here (Part G).
+enum ReportReason {
+  INAPPROPRIATE
+  SUSPECTED_SCAM
+  FOOD_SAFETY_CONCERN
+  OTHER
+
+  @@map("report_reason")
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+
+  @@map("report_status")
+}
+
 // ============================================================================
 // Core entities
 // ============================================================================
@@ -217,6 +237,7 @@ model FoodSeller {
   highlights FoodStoryHighlight[]
   followers  FoodFollow[]
   orders     FoodOrder[]
+  reports    FoodReport[]
 
   @@index([status])
   @@index([status, lastStoryAt])
@@ -291,6 +312,13 @@ model FoodListing {
 
   active Boolean @default(true)
 
+  /// Admin-authority removal (Slice 16), distinct from the seller's own
+  /// `active` pause switch. Set only by `takedownListing`; `DISCOVERABLE`
+  /// requires it null, and the seller's own `toggleListingActive` refuses to
+  /// flip `active` back on while it is set — otherwise "takedown" would mean
+  /// nothing, since the seller could just undo it themselves.
+  takenDownAt DateTime? @map("taken_down_at")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -301,6 +329,7 @@ model FoodListing {
   saves               FoodSave[]
   orderItems          FoodOrderItem[]
   linkedStories       FoodStory[]
+  reports             FoodReport[]
 
   @@index([sellerId, active])
   @@index([active, createdAt])
@@ -598,6 +627,38 @@ model FoodOrderMessage {
 
   @@index([orderId, createdAt])
   @@map("food_order_messages")
+}
+
+/// Buyer-facing report/flag intake (Slice 16), mirroring Apparel's
+/// `ApparelReport` shape. Anonymous-safe: `reporterUserId` is nullable because
+/// an anonymous reporter has no stable identity to attach, and the mitigation
+/// for spam is content-scoped (at most one OPEN report per listing) rather
+/// than identity-scoped (`lib/actions/report-listing.ts`).
+model FoodReport {
+  id String @id @default(cuid())
+
+  listingId      String? @map("listing_id")
+  sellerId       String  @map("seller_id")
+  reporterUserId String? @map("reporter_user_id")
+
+  reason  ReportReason
+  message String?      @db.Text
+  status  ReportStatus @default(OPEN)
+
+  createdAt  DateTime  @default(now()) @map("created_at")
+  resolvedAt DateTime? @map("resolved_at")
+
+  /// SetNull, not Cascade: a report is evidence about the SELLER even if the
+  /// specific listing it named is later removed.
+  listing FoodListing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  /// Restrict, same reasoning as `FoodOrder.seller` — a seller with an
+  /// unresolved report is not hard-deletable through any path this app has.
+  seller  FoodSeller   @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+
+  @@index([status, createdAt])
+  @@index([listingId])
+  @@index([sellerId])
+  @@map("food_reports")
 }
 
 // ============================================================================

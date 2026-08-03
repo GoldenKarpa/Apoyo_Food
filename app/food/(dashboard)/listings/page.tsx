@@ -86,7 +86,13 @@ export default async function SellerListingsPage() {
                 </p>
               </div>
 
-              <ListingActiveToggle listingId={listing.id} active={listing.active} />
+              {listing.takenDownAt ? (
+                <span className="rounded-pill bg-error/10 px-3 py-1 text-caption font-medium text-error">
+                  {t("takenDown")}
+                </span>
+              ) : (
+                <ListingActiveToggle listingId={listing.id} active={listing.active} />
+              )}
 
               <Button variant="outline" asChild>
                 <Link href={`/food/listings/${listing.id}`}>{t("edit")}</Link>

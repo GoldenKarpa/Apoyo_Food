@@ -22,9 +22,16 @@ import { seenStoryIds } from "@/lib/stories";
  * the storefront. Every query in this module goes through `DISCOVERABLE`.
  */
 
-/** The only listing filter any buyer-facing query may start from. */
+/**
+ * The only listing filter any buyer-facing query may start from.
+ *
+ * `takenDownAt: null` (Slice 16) is a SEPARATE gate from `active`: `active` is
+ * the seller's own pause switch, `takenDownAt` is admin-authority removal, and
+ * a listing must be hidden if EITHER is set.
+ */
 export const DISCOVERABLE = {
   active: true,
+  takenDownAt: null,
   seller: { status: "ACTIVE" as const },
 } satisfies Prisma.FoodListingWhereInput;
 

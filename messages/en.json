@@ -241,7 +241,24 @@
     "meal": {
       "title": "Meal",
       "about": "About this dish",
-      "feeds": "Serves {count}"
+      "feeds": "Serves {count}",
+      "report": {
+        "trigger": "Report this listing",
+        "title": "Report this listing",
+        "description": "Let Apoyo know if something's wrong with this listing. We'll take a look.",
+        "reasonLabel": "What's the issue?",
+        "reason": {
+          "INAPPROPRIATE": "Inappropriate content",
+          "SUSPECTED_SCAM": "Suspected scam",
+          "FOOD_SAFETY_CONCERN": "Food safety concern",
+          "OTHER": "Something else"
+        },
+        "messageLabel": "Details (optional)",
+        "messagePlaceholder": "Tell us more about what you saw",
+        "submit": "Submit report",
+        "submitting": "Submitting…",
+        "thanks": "Thanks — we'll take a look."
+      }
     },
     "sellerProfile": {
       "follow": "Follow",
@@ -358,7 +375,74 @@
     },
     "admin": {
       "title": "Food administration",
-      "body": "The seller approval queue, listing takedowns, report intake and the category manager arrive in Slice 16, composed into the shared Apoyo admin shell."
+      "accessDenied": {
+        "title": "Admin access required",
+        "signedInAs": "Signed in as {email}, but this account is not an Apoyo admin.",
+        "signedInGeneric": "This account is not an Apoyo admin.",
+        "returnToWorkspace": "Back to your workspace",
+        "signInPrompt": "Sign in with an Apoyo admin account to continue.",
+        "signIn": "Sign in"
+      },
+      "sellers": {
+        "pendingHeading": "Pending review ({count})",
+        "pendingEmpty": "No kitchens waiting on review.",
+        "activeHeading": "Live ({count})",
+        "activeEmpty": "No live kitchens yet.",
+        "suspendedHeading": "Suspended ({count})",
+        "suspendedEmpty": "No suspended kitchens.",
+        "noAreas": "No service areas set yet",
+        "approve": "Approve",
+        "suspend": "Suspend",
+        "suspendConfirm": "Suspend {name}? Their kitchen and listings disappear from the marketplace immediately.",
+        "reinstate": "Reinstate",
+        "actionError": "That did not work. Reload the page and try again."
+      },
+      "reports": {
+        "heading": "Open reports ({count})",
+        "empty": "No open reports.",
+        "listingGone": "(listing no longer exists)",
+        "byLine": "Reported for {reason} · {seller}",
+        "takedown": "Take down",
+        "takedownConfirm": "Take down this listing? It disappears from the marketplace immediately, and the seller cannot bring it back themselves.",
+        "dismiss": "Dismiss",
+        "actionError": "That did not work. Reload the page and try again."
+      },
+      "takedown": {
+        "heading": "Listing takedown",
+        "searchPlaceholder": "Search listings by title",
+        "noResults": "No listings match that search.",
+        "badge": "Taken down",
+        "remove": "Take down",
+        "removeConfirm": "Take down this listing? It disappears from the marketplace immediately, and the seller cannot bring it back themselves.",
+        "actionError": "That did not work. Reload the page and try again."
+      },
+      "categories": {
+        "heading": "Categories ({count})",
+        "addHeading": "Add a category",
+        "nameEnLabel": "English name",
+        "nameEsLabel": "Spanish name",
+        "seasonalLabel": "Seasonal",
+        "add": "Add",
+        "save": "Save"
+      },
+      "vocab": {
+        "region": {
+          "north_west": "North West",
+          "east_west_corridor": "East–West Corridor",
+          "central": "Central",
+          "south_central": "South Central",
+          "south_west": "South West",
+          "north_east": "North East",
+          "south_east": "South East",
+          "tobago": "Tobago"
+        },
+        "reportReason": {
+          "INAPPROPRIATE": "inappropriate content",
+          "SUSPECTED_SCAM": "suspected scam",
+          "FOOD_SAFETY_CONCERN": "food safety concern",
+          "OTHER": "other"
+        }
+      }
     },
     "login": {
       "title": "Seller sign-in",
@@ -556,6 +640,11 @@
       "specialties": "Up to eight specialties, each under 40 characters.",
       "fulfillment": "That is not a fulfilment option we support.",
       "slug": "We could not create a web address for that name. Try a slightly different one.",
+      "takenDown": "This listing was taken down by Apoyo and cannot be reactivated from here.",
+      "noCategory": "We could not find that category. Reload the page and try again.",
+      "categoryNameEn": "Give the category an English name between 1 and 40 characters.",
+      "categoryNameEs": "Give the category a Spanish name between 1 and 40 characters.",
+      "categorySlug": "We could not create a web address for that name. Try a slightly different one.",
       "unknown": "That did not work. Reload the page and try again."
     },
     "listings": {
@@ -569,7 +658,8 @@
       "activate": "Make this dish visible to buyers",
       "deactivate": "Hide this dish from buyers",
       "active": "Active",
-      "inactive": "Paused"
+      "inactive": "Paused",
+      "takenDown": "Taken down by Apoyo"
     },
     "listingForm": {
       "newTitle": "Add a dish",
@@ -629,6 +719,7 @@
       "viewPublic": "View public listing",
       "hiddenInactive": "Hidden from buyers — this listing is paused.",
       "hiddenSellerPending": "Hidden from buyers until your kitchen is approved.",
+      "takenDownNotice": "This listing was taken down by Apoyo and cannot be reactivated from here. Contact Apoyo if you think this is a mistake.",
       "errors": {
         "title": "Give the dish a name between 2 and 80 characters.",
         "description": "Add a description.",

@@ -34,7 +34,9 @@
     "verify:seller-stories": "tsx scripts/verify-seller-stories.ts",
     "food-sweep": "tsx scripts/sweep.ts",
     "food-sweep:once": "tsx scripts/sweep.ts --once",
-    "verify:story-posting": "node scripts/verify-story-posting.mjs"
+    "verify:story-posting": "node scripts/verify-story-posting.mjs",
+    "verify:admin": "tsx scripts/verify-admin.ts",
+    "verify:admin-e2e": "node scripts/verify-admin-e2e.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

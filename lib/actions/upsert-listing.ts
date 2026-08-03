@@ -193,8 +193,11 @@ export async function toggleListingActive(listingId: string): Promise<SellerForm
   if (!ctx) return { status: "error", error: "noListing" };
   const current = await prisma.foodListing.findUniqueOrThrow({
     where: { id: listingId },
-    select: { active: true, slug: true },
+    select: { active: true, slug: true, takenDownAt: true },
   });
+  // An admin takedown (Slice 16) is a separate, higher-authority gate — the
+  // seller's own pause switch must not be able to undo it.
+  if (current.takenDownAt) return { status: "error", error: "takenDown" };
   await prisma.foodListing.update({ where: { id: listingId }, data: { active: !current.active } });
   revalidatePath("/food/listings");
   revalidatePath(`/food/listings/${listingId}`);

@@ -1,0 +1,310 @@
+/*
+ * Apoyo admin shell chrome for Food-owned admin pages (UAS-S3, mirroring
+ * Salon's and Apparel's own copies of it exactly — Apparel's is the more
+ * recently built one this was copied from).
+ *
+ * Mirrors portal-web's admin shell (portal-web/app/globals.css) so a Food
+ * admin page composed under the Portal shell looks & navigates identically to
+ * a native Portal admin page (nav-contract item 5). Self-contained plain CSS
+ * with the SAME `--aa-*` variable namespace every other vertical's copy uses
+ * (not Food's own `--fd-*` Sobremesa prefix, deliberately — see this file's
+ * own BUILD_SLICES.md note: the whole point of the shared shell is that it is
+ * PIXEL-IDENTICAL across every vertical, and giving it a Food-specific prefix
+ * would only invite drift), scoped to `.admin-shell` so it cannot collide
+ * with Food's own Sobremesa Tailwind tokens or leak into the buyer/seller
+ * surfaces below `.admin-content`.
+ *
+ * No shared package until Phase H — keep these values in sync with
+ * portal-web's globals.css (and Salon's/Apparel's mirrors) if that shell's
+ * look changes.
+ */
+.admin-shell {
+  --aa-bg: #f6f7f9;
+  --aa-surface: #ffffff;
+  --aa-surface-2: #f0f2f5;
+  --aa-border: #dfe3e8;
+  --aa-text: #1a1f26;
+  --aa-text-muted: #5b6673;
+  --aa-accent: #2b6cb0;
+  --aa-accent-contrast: #ffffff;
+  --aa-radius: 8px;
+  --aa-sidebar-w: 248px;
+  --aa-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  display: grid;
+  grid-template-columns: var(--aa-sidebar-w) 1fr;
+  min-height: 100vh;
+  font-family: var(--aa-font);
+  color: var(--aa-text);
+  background: var(--aa-bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  .admin-shell {
+    --aa-bg: #14171c;
+    --aa-surface: #1c2027;
+    --aa-surface-2: #232830;
+    --aa-border: #333a44;
+    --aa-text: #e6e9ee;
+    --aa-text-muted: #9aa4b1;
+    --aa-accent: #5b9bd5;
+    --aa-accent-contrast: #0d1013;
+  }
+}
+
+.admin-sidebar {
+  background: var(--aa-surface);
+  border-right: 1px solid var(--aa-border);
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.admin-brand {
+  font-weight: 700;
+  font-size: 1.05rem;
+  padding: 0.25rem 0.5rem;
+  color: var(--aa-text);
+  text-decoration: none;
+}
+.admin-brand .tag {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--aa-text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.admin-home-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--aa-radius);
+  color: var(--aa-text);
+  font-weight: 600;
+  background: var(--aa-surface-2);
+  text-decoration: none;
+}
+.admin-home-link:hover {
+  background: var(--aa-border);
+}
+.admin-nav-group + .admin-nav-group {
+  margin-top: 0.75rem;
+}
+.admin-nav-group-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--aa-text-muted);
+  padding: 0 0.6rem;
+  margin-bottom: 0.3rem;
+}
+.admin-nav-link,
+.admin-nav-disabled {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--aa-radius);
+  color: var(--aa-text);
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+.admin-nav-link:hover {
+  background: var(--aa-surface-2);
+}
+.admin-nav-link.active {
+  background: var(--aa-accent);
+  color: var(--aa-accent-contrast);
+  font-weight: 600;
+}
+.admin-nav-disabled {
+  color: var(--aa-text-muted);
+  cursor: default;
+}
+.admin-nav-hint {
+  font-size: 0.65rem;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--aa-border);
+  border-radius: 999px;
+  color: var(--aa-text-muted);
+  white-space: nowrap;
+}
+.admin-nav-ext {
+  font-size: 0.8rem;
+  color: var(--aa-text-muted);
+}
+.admin-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--aa-surface);
+  border-bottom: 1px solid var(--aa-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.admin-topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--aa-text-muted);
+}
+.admin-content {
+  padding: 1.5rem;
+  max-width: 1100px;
+  width: 100%;
+}
+.admin-breadcrumbs ol {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9rem;
+}
+.admin-breadcrumbs a {
+  color: var(--aa-accent);
+  text-decoration: none;
+}
+.admin-breadcrumbs a:hover {
+  text-decoration: underline;
+}
+.admin-breadcrumbs .sep {
+  color: var(--aa-text-muted);
+}
+.admin-breadcrumbs [aria-current="page"] {
+  color: var(--aa-text-muted);
+}
+.btn {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--aa-radius);
+  border: 1px solid var(--aa-accent);
+  background: var(--aa-accent);
+  color: var(--aa-accent-contrast);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-ghost {
+  background: transparent;
+  border-color: var(--aa-border);
+  color: var(--aa-text);
+}
+@media (max-width: 768px) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+  .admin-sidebar {
+    position: static;
+    height: auto;
+  }
+}
+
+/* ── Food-specific admin content primitives (not part of the shared shell
+   contract; the sections below the chrome are this app's own, matching the
+   plain, functionality-first tone Salon's/Apparel's admin bodies use). ── */
+.admin-section {
+  margin-bottom: 2.5rem;
+}
+.admin-section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+.admin-card {
+  border: 1px solid var(--aa-border);
+  border-radius: var(--aa-radius);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  background: var(--aa-surface);
+}
+.admin-card-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.admin-muted {
+  color: var(--aa-text-muted);
+  font-size: 0.85rem;
+}
+.admin-empty {
+  color: var(--aa-text-muted);
+  font-size: 0.9rem;
+}
+.admin-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--aa-radius);
+  border: 1px solid var(--aa-border);
+  background: var(--aa-surface);
+  color: var(--aa-text);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.admin-btn:hover {
+  background: var(--aa-surface-2);
+}
+.admin-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.admin-btn-primary {
+  background: var(--aa-accent);
+  border-color: var(--aa-accent);
+  color: var(--aa-accent-contrast);
+}
+.admin-btn-danger {
+  border-color: #b3413a;
+  color: #b3413a;
+}
+.admin-input,
+.admin-textarea {
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--aa-radius);
+  border: 1px solid var(--aa-border);
+  background: var(--aa-bg);
+  color: var(--aa-text);
+  font: inherit;
+  font-size: 0.9rem;
+}
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.admin-badge-open {
+  background: #f9e3d1;
+  color: #8a4b12;
+}

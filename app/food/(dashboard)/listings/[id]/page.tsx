@@ -74,7 +74,9 @@ export default async function EditListingPage({
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="font-display text-display font-semibold text-ink">{listing.title}</h1>
-          {isPublic ? (
+          {listing.takenDownAt ? (
+            <p className="text-caption font-medium text-error">{t("takenDownNotice")}</p>
+          ) : isPublic ? (
             <Link href={`/meals/${listing.slug}`} className="text-label text-green hover:underline">
               {t("viewPublic")}
             </Link>
@@ -84,7 +86,7 @@ export default async function EditListingPage({
             </p>
           )}
         </div>
-        <ListingActiveToggle listingId={listing.id} active={listing.active} />
+        {!listing.takenDownAt && <ListingActiveToggle listingId={listing.id} active={listing.active} />}
       </header>
 
       <section className="rounded-card border border-hairline bg-card p-6">

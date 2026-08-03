@@ -241,7 +241,24 @@
     "meal": {
       "title": "Comida",
       "about": "Sobre este plato",
-      "feeds": "Rinde para {count}"
+      "feeds": "Rinde para {count}",
+      "report": {
+        "trigger": "Reportar este anuncio",
+        "title": "Reportar este anuncio",
+        "description": "Avísale a Apoyo si algo no está bien con este anuncio. Lo revisaremos.",
+        "reasonLabel": "¿Cuál es el problema?",
+        "reason": {
+          "INAPPROPRIATE": "Contenido inapropiado",
+          "SUSPECTED_SCAM": "Posible estafa",
+          "FOOD_SAFETY_CONCERN": "Preocupación de inocuidad alimentaria",
+          "OTHER": "Otra cosa"
+        },
+        "messageLabel": "Detalles (opcional)",
+        "messagePlaceholder": "Cuéntanos más sobre lo que viste",
+        "submit": "Enviar reporte",
+        "submitting": "Enviando…",
+        "thanks": "Gracias — lo revisaremos."
+      }
     },
     "sellerProfile": {
       "follow": "Seguir",
@@ -358,7 +375,74 @@
     },
     "admin": {
       "title": "Administración de Food",
-      "body": "La cola de aprobación de vendedores, la retirada de publicaciones, la recepción de reportes y el gestor de categorías llegan en el Slice 16, dentro del panel de administración compartido de Apoyo."
+      "accessDenied": {
+        "title": "Se requiere acceso de administrador",
+        "signedInAs": "Sesión iniciada como {email}, pero esta cuenta no es administradora de Apoyo.",
+        "signedInGeneric": "Esta cuenta no es administradora de Apoyo.",
+        "returnToWorkspace": "Volver a tu espacio de trabajo",
+        "signInPrompt": "Inicia sesión con una cuenta de administrador de Apoyo para continuar.",
+        "signIn": "Iniciar sesión"
+      },
+      "sellers": {
+        "pendingHeading": "Pendientes de revisión ({count})",
+        "pendingEmpty": "No hay cocinas esperando revisión.",
+        "activeHeading": "En vivo ({count})",
+        "activeEmpty": "Todavía no hay cocinas en vivo.",
+        "suspendedHeading": "Suspendidas ({count})",
+        "suspendedEmpty": "No hay cocinas suspendidas.",
+        "noAreas": "Todavía no ha elegido áreas de servicio",
+        "approve": "Aprobar",
+        "suspend": "Suspender",
+        "suspendConfirm": "¿Suspender a {name}? Su cocina y sus platos desaparecen del mercado de inmediato.",
+        "reinstate": "Reincorporar",
+        "actionError": "Eso no funcionó. Recarga la página e inténtalo de nuevo."
+      },
+      "reports": {
+        "heading": "Reportes abiertos ({count})",
+        "empty": "No hay reportes abiertos.",
+        "listingGone": "(el anuncio ya no existe)",
+        "byLine": "Reportado por {reason} · {seller}",
+        "takedown": "Retirar",
+        "takedownConfirm": "¿Retirar este anuncio? Desaparece del mercado de inmediato, y el vendedor no puede restaurarlo por su cuenta.",
+        "dismiss": "Descartar",
+        "actionError": "Eso no funcionó. Recarga la página e inténtalo de nuevo."
+      },
+      "takedown": {
+        "heading": "Retirada de anuncios",
+        "searchPlaceholder": "Buscar anuncios por título",
+        "noResults": "Ningún anuncio coincide con esa búsqueda.",
+        "badge": "Retirado",
+        "remove": "Retirar",
+        "removeConfirm": "¿Retirar este anuncio? Desaparece del mercado de inmediato, y el vendedor no puede restaurarlo por su cuenta.",
+        "actionError": "Eso no funcionó. Recarga la página e inténtalo de nuevo."
+      },
+      "categories": {
+        "heading": "Categorías ({count})",
+        "addHeading": "Agregar una categoría",
+        "nameEnLabel": "Nombre en inglés",
+        "nameEsLabel": "Nombre en español",
+        "seasonalLabel": "Estacional",
+        "add": "Agregar",
+        "save": "Guardar"
+      },
+      "vocab": {
+        "region": {
+          "north_west": "Noroeste",
+          "east_west_corridor": "Corredor Este-Oeste",
+          "central": "Central",
+          "south_central": "Centro-Sur",
+          "south_west": "Suroeste",
+          "north_east": "Noreste",
+          "south_east": "Sureste",
+          "tobago": "Tobago"
+        },
+        "reportReason": {
+          "INAPPROPRIATE": "contenido inapropiado",
+          "SUSPECTED_SCAM": "posible estafa",
+          "FOOD_SAFETY_CONCERN": "preocupación de inocuidad alimentaria",
+          "OTHER": "otro"
+        }
+      }
     },
     "login": {
       "title": "Acceso para vendedores",
@@ -556,6 +640,11 @@
       "specialties": "Hasta ocho especialidades, cada una de menos de 40 caracteres.",
       "fulfillment": "Esa opción de entrega no está disponible.",
       "slug": "No pudimos crear una dirección web con ese nombre. Prueba con uno un poco distinto.",
+      "takenDown": "Apoyo retiró este anuncio y no se puede reactivar desde aquí.",
+      "noCategory": "No encontramos esa categoría. Recarga la página y vuelve a intentarlo.",
+      "categoryNameEn": "Ponle a la categoría un nombre en inglés de entre 1 y 40 caracteres.",
+      "categoryNameEs": "Ponle a la categoría un nombre en español de entre 1 y 40 caracteres.",
+      "categorySlug": "No pudimos crear una dirección web con ese nombre. Prueba con uno un poco distinto.",
       "unknown": "Eso no funcionó. Recarga la página y vuelve a intentarlo."
     },
     "listings": {
@@ -569,7 +658,8 @@
       "activate": "Hacer visible este plato para los compradores",
       "deactivate": "Ocultar este plato de los compradores",
       "active": "Activo",
-      "inactive": "En pausa"
+      "inactive": "En pausa",
+      "takenDown": "Retirado por Apoyo"
     },
     "listingForm": {
       "newTitle": "Añadir un plato",
@@ -629,6 +719,7 @@
       "viewPublic": "Ver plato público",
       "hiddenInactive": "Oculto para los compradores: este plato está en pausa.",
       "hiddenSellerPending": "Oculto para los compradores hasta que tu cocina esté aprobada.",
+      "takenDownNotice": "Apoyo retiró este anuncio y no se puede reactivar desde aquí. Contacta a Apoyo si crees que es un error.",
       "errors": {
         "title": "Ponle al plato un nombre de entre 2 y 80 caracteres.",
         "description": "Añade una descripción.",
