@@ -3,7 +3,6 @@ import { getTranslations } from "next-intl/server";
 import { Camera, ChefHat, Receipt } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { ComingSoon } from "@/components/coming-soon";
 
 /**
  * The dashboard's three next-action cards — listings, Fresh Today, orders.
@@ -13,22 +12,25 @@ import { ComingSoon } from "@/components/coming-soon";
  * the slice brief's own wording, and it is the whole difference between a
  * dashboard that reads as unfinished and one that reads as new.
  *
- * ── Slice 14 made listings real; Slice 15 makes Fresh Today real too ──
- * Both now branch on a real count instead of rendering a hardcoded
- * `<ComingSoon>` stub — "add your first dish/post" at zero, "manage" once
- * there's at least one. `activeStoryCount` counts only NON-EXPIRED posts
+ * ── Slice 14 made listings real; Slice 15 made Fresh Today real too; Slice 17
+ *    makes Orders the third and last ──
+ * All three now branch on a real count instead of rendering a hardcoded
+ * `<ComingSoon>` stub. `activeStoryCount` counts only NON-EXPIRED posts
  * (`expiresAt > now`) on purpose: a seller who posted yesterday and let
  * everything expire should see the empty-state copy again, not a stale
- * "manage your post" pointing at nothing currently live. Orders stays a stub
- * (Slice 17 builds it); its count stays hardcoded zero — that table has no
- * writer yet, so querying it would be a round trip to confirm a constant.
+ * "manage your post" pointing at nothing currently live. `pendingOrderCount`
+ * is PENDING orders specifically, not the seller's total order count — the
+ * card's whole job is to say what needs THIS seller's attention right now,
+ * and an order already accepted/completed/declined needs no action from here.
  */
 export async function WorkspaceEmptyStates({
   listingCount,
   activeStoryCount,
+  pendingOrderCount,
 }: {
   listingCount: number;
   activeStoryCount: number;
+  pendingOrderCount: number;
 }) {
   const t = await getTranslations("seller.emptyStates");
 
@@ -70,10 +72,14 @@ export async function WorkspaceEmptyStates({
         <span className="flex h-10 w-10 items-center justify-center rounded-pill bg-green-soft text-ink">
           <Receipt aria-hidden className="size-5" />
         </span>
-        <h3 className="font-display text-h3 font-semibold text-ink">{t("orders.title")}</h3>
-        <p className="text-label text-ink">{t("orders.body")}</p>
+        <h3 className="font-display text-h3 font-semibold text-ink">
+          {pendingOrderCount > 0 ? t("orders.titleWithCount", { count: pendingOrderCount }) : t("orders.title")}
+        </h3>
+        <p className="text-label text-ink">{pendingOrderCount > 0 ? t("orders.bodyWithCount") : t("orders.body")}</p>
         <div className="mt-auto pt-2">
-          <ComingSoon feature="sellerOrders" variant="secondary" size="sm" />
+          <Button variant="secondary" size="sm" asChild>
+            <Link href="/food/orders">{pendingOrderCount > 0 ? t("orders.review") : t("orders.view")}</Link>
+          </Button>
         </div>
       </article>
     </section>

@@ -5,21 +5,19 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ChefHat, Camera, LayoutDashboard, Receipt, UserRound } from "lucide-react";
 
-import { ComingSoon } from "@/components/coming-soon";
 import { cn } from "@/lib/utils";
 
 /**
  * The seller dashboard's navigation — the shell Slice 13 owes the rest of
  * Phase 2 and 3.
  *
- * ⚠ **Four destinations are real and one is a stub, and that is deliberate.**
- * The conventions block's rule is that an unbuilt action opens a localized
- * explain-the-feature modal, never a dead link, a disabled control or a MISSING
- * NAV ITEM. Hiding Orders until Slice 17 would leave a seller with no way to
- * know the product has it at all — the nav is the only place the shape of the
- * workspace is visible. Replacing the stub is deleting one line here plus one
- * registry entry, exactly as `becomeSeller` (Slice 13) and `sellerListings`
- * (Slice 14) were replaced — Slice 15 does the same for `sellerStories`.
+ * ⚠ **All five destinations are real as of Slice 17.** `sellerOrders` was the
+ * last stub standing (`sellerListings` retired at Slice 14, `sellerStories`
+ * at Slice 15) — the conventions block's rule is that an unbuilt action opens
+ * a localized explain-the-feature modal, never a dead link, a disabled
+ * control or a missing nav item, and Orders held that line until the real
+ * order lifecycle existed to link to. Replacing a stub is always this same
+ * shape: delete one line here plus one registry entry in `lib/coming-soon.ts`.
  *
  * Same source of truth for both widths (`components/chrome/nav-config.ts`'s
  * lesson from the buyer surface): one array, rendered as a scrolling row on a
@@ -32,10 +30,9 @@ const REAL_ITEMS = [
   { href: "/food", key: "dashboard", icon: LayoutDashboard },
   { href: "/food/listings", key: "listings", icon: ChefHat },
   { href: "/food/stories", key: "stories", icon: Camera },
+  { href: "/food/orders", key: "orders", icon: Receipt },
   { href: "/food/profile", key: "profile", icon: UserRound },
 ] as const;
-
-const STUB_ITEMS = [{ feature: "sellerOrders", key: "orders", icon: Receipt }] as const;
 
 const ITEM_CLASS =
   "tap-target inline-flex shrink-0 items-center gap-2 rounded-pill px-4 text-label font-medium transition-colors duration-200 ease-soft";
@@ -64,17 +61,6 @@ export function SellerNav() {
             </li>
           );
         })}
-
-        {STUB_ITEMS.map(({ feature, key, icon: Icon }) => (
-          <li key={key}>
-            <ComingSoon feature={feature} asChild>
-              <button type="button" data-coming-soon={feature} className={cn(ITEM_CLASS, "text-ink hover:bg-sunken")}>
-                <Icon aria-hidden className="size-4" />
-                {t(`items.${key}`)}
-              </button>
-            </ComingSoon>
-          </li>
-        ))}
       </ul>
     </nav>
   );

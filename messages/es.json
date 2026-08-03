@@ -293,7 +293,8 @@
     },
     "orders": {
       "title": "Mis pedidos",
-      "body": "El historial de pedidos y el hilo de conversación llegan en los Slices 17 y 18."
+      "empty": "Todavía no has hecho ningún pedido. Explora el catálogo para encontrar algo que pedir.",
+      "moreItems": " +{count} más"
     },
     "account": {
       "title": "Cuenta",
@@ -358,6 +359,58 @@
         "snacks": "Meriendas",
         "vegetarian-vegan": "Vegetariano y vegano"
       }
+    },
+    "orderForm": {
+      "cta": "Solicitar pedido",
+      "title": "Solicitar este pedido",
+      "pausedBody": "Los pedidos todavía no están abiertos — vuelve pronto. Esta cocina todavía no recibe solicitudes a través de Apoyo.",
+      "quantityLabel": "Cantidad",
+      "itemNoteLabel": "Nota para este plato (opcional)",
+      "itemNotePlaceholder": "por ejemplo, sin pimientos",
+      "fulfillmentModeLabel": "¿Cómo te gustaría recibirlo?",
+      "dateLabel": "Fecha",
+      "timeLabel": "Hora",
+      "areaLabel": "Punto de recogida o zona de entrega (opcional)",
+      "areaPlaceholder": "por ejemplo, Curepe, cerca del mercado",
+      "areaHint": "La dirección exacta se comparte en la conversación del pedido una vez que la cocina lo acepte.",
+      "customerNoteLabel": "¿Algo más que la cocina deba saber? (opcional)",
+      "customerNotePlaceholder": "por ejemplo, llamar al llegar",
+      "submit": "Enviar solicitud",
+      "submitting": "Enviando…",
+      "errors": {
+        "signedOut": "Inicia sesión para enviar esta solicitud.",
+        "orderingPaused": "Los pedidos todavía no están abiertos.",
+        "noListing": "Este plato ya no está disponible.",
+        "fulfillmentMode": "Elige una de las opciones de entrega de la cocina.",
+        "quantity": "Elige una cantidad de al menos 1.",
+        "invalidDate": "Elige una fecha y hora válidas.",
+        "past": "Elige una fecha y hora futuras.",
+        "outOfWindow": "Este plato no está disponible ese día — revisa su disponibilidad arriba.",
+        "leadTime": "Este plato necesita al menos {days, plural, one {# día} other {# días}} de aviso — elige una fecha más adelante.",
+        "rateLimited": "Demasiadas solicitudes — inténtalo de nuevo en un momento.",
+        "unknown": "Eso no funcionó. Inténtalo de nuevo."
+      }
+    },
+    "signedOut": {
+      "title": "Inicia sesión para ver tus pedidos",
+      "body": "Pedir necesita una cuenta de Apoyo. Inicia sesión en cualquier sitio de Apoyo con la cuenta que ya usas y vuelve a esta página: la misma sesión funciona en todo el ecosistema."
+    },
+    "orderDetail": {
+      "itemsHeading": "Artículos",
+      "priceOnAcceptance": "La cocina confirmará el precio al aceptar.",
+      "fulfillmentHeading": "Entrega",
+      "yourNote": "Tu nota",
+      "respondByNotice": "Esperando respuesta de la cocina antes de {time}.",
+      "declineReasonPrefix": "Nota de la cocina",
+      "cancellationReasonPrefix": "Motivo",
+      "expiredNotice": "Esta solicitud no se respondió a tiempo y ha expirado.",
+      "browseSimilar": "Explorar otras cocinas",
+      "cancelTrigger": "Cancelar pedido",
+      "cancelReasonLabel": "Motivo (opcional)",
+      "cancelReasonPlaceholder": "Cuéntale a la cocina por qué, si quieres",
+      "cancelConfirm": "Confirmar cancelación",
+      "cancelDismiss": "No, dejarlo",
+      "cancelError": "Eso no funcionó. Inténtalo de nuevo."
     }
   },
   "seller": {
@@ -442,6 +495,17 @@
           "FOOD_SAFETY_CONCERN": "preocupación de inocuidad alimentaria",
           "OTHER": "otro"
         }
+      },
+      "ordering": {
+        "heading": "Pedidos",
+        "status": "Estado:",
+        "description": "Mientras esté pausado, los compradores ven un aviso de \"próximamente\" en cada anuncio en lugar del formulario de solicitud. Actívalo cuando estés listo para recibir pedidos reales.",
+        "enabledLabel": "Activo",
+        "disabledLabel": "Próximamente",
+        "enable": "Activar pedidos",
+        "pause": "Pausar pedidos",
+        "pauseConfirm": "¿Pausar los pedidos? Los compradores verán un aviso de \"próximamente\" hasta que lo vuelvas a activar.",
+        "actionError": "Eso no funcionó. Inténtalo de nuevo."
       }
     },
     "login": {
@@ -627,7 +691,11 @@
       },
       "orders": {
         "title": "Todavía no hay pedidos",
-        "body": "Aquí llegan las solicitudes de los compradores. Aceptas o rechazas cada una y acuerdas los detalles en su conversación."
+        "body": "Aquí llegan las solicitudes de los compradores. Aceptas o rechazas cada una y acuerdas los detalles en su conversación.",
+        "titleWithCount": "{count, plural, one {# pedido necesita} other {# pedidos necesitan}} tu atención",
+        "bodyWithCount": "Revisa las solicitudes pendientes y responde antes de que expiren.",
+        "view": "Ver pedidos",
+        "review": "Revisar pedidos"
       }
     },
     "errors": {
@@ -645,7 +713,11 @@
       "categoryNameEn": "Ponle a la categoría un nombre en inglés de entre 1 y 40 caracteres.",
       "categoryNameEs": "Ponle a la categoría un nombre en español de entre 1 y 40 caracteres.",
       "categorySlug": "No pudimos crear una dirección web con ese nombre. Prueba con uno un poco distinto.",
-      "unknown": "Eso no funcionó. Recarga la página y vuelve a intentarlo."
+      "unknown": "Eso no funcionó. Recarga la página y vuelve a intentarlo.",
+      "noOrder": "No encontramos ese pedido. Recarga la página y vuelve a intentarlo.",
+      "orderInvalidTransition": "Este pedido ya cambió de estado — recarga la página para ver su estado actual.",
+      "priceRequired": "Ingresa un precio para cada artículo antes de aceptar.",
+      "priceInvalid": "Ingresa un precio válido, por ejemplo 45.00."
     },
     "listings": {
       "title": "Tus platos",
@@ -823,6 +895,41 @@
           "highlightLimit": "Has llegado al número máximo de estantes."
         }
       }
+    },
+    "orders": {
+      "title": "Pedidos",
+      "detailTitle": "Detalle del pedido",
+      "pendingHeading": "{count, plural, =0 {Sin solicitudes pendientes} one {# solicitud pendiente} other {# solicitudes pendientes}}",
+      "pendingEmpty": "Las solicitudes nuevas aparecerán aquí primero.",
+      "historyHeading": "Historial",
+      "historyEmpty": "Los pedidos aceptados, rechazados y completados aparecerán aquí.",
+      "moreItems": " +{count} más",
+      "respondByPrefix": "Responder antes de",
+      "itemsHeading": "Artículos",
+      "fulfillmentHeading": "Entrega",
+      "customerNotePrefix": "Nota del cliente",
+      "acceptHeading": "Confirma el precio y acepta",
+      "priceLabelFor": "Precio de {title} (× {quantity})",
+      "pricePlaceholder": "por ejemplo, 45.00",
+      "accept": "Aceptar pedido",
+      "accepting": "Aceptando…",
+      "declineTrigger": "Rechazar",
+      "declineReasonLabel": "Motivo (opcional)",
+      "declineReasonPlaceholder": "Cuéntale al cliente por qué, si quieres",
+      "declineConfirm": "Confirmar rechazo",
+      "declineDismiss": "No, dejarlo",
+      "declineError": "Eso no funcionó. Inténtalo de nuevo.",
+      "completeTrigger": "Marcar como completado",
+      "completeConfirm": "¿Marcar este pedido como completado?",
+      "completeError": "Eso no funcionó. Inténtalo de nuevo.",
+      "cancelTrigger": "Cancelar pedido",
+      "cancelReasonLabel": "Motivo (opcional)",
+      "cancelReasonPlaceholder": "Cuéntale al cliente por qué, si quieres",
+      "cancelConfirm": "Confirmar cancelación",
+      "cancelDismiss": "No, dejarlo",
+      "cancelError": "Eso no funcionó. Inténtalo de nuevo.",
+      "declineReasonPrefix": "Tu nota",
+      "cancellationReasonPrefix": "Motivo"
     }
   },
   "scaffold": {
@@ -851,5 +958,14 @@
     "south_east": "Sureste",
     "south_west": "Suroeste",
     "tobago": "Tobago"
+  },
+  "orderStatus": {
+    "PENDING": "Pendiente",
+    "ACCEPTED": "Aceptado",
+    "DECLINED": "Rechazado",
+    "COMPLETED": "Completado",
+    "CANCELLED_BY_CUSTOMER": "Cancelado por el cliente",
+    "CANCELLED_BY_SELLER": "Cancelado por el vendedor",
+    "EXPIRED": "Expirado"
   }
 }

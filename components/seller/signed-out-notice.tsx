@@ -14,9 +14,15 @@ import { getTranslations } from "next-intl/server";
  *
  * Building Food's own login pair is real, separable work, and it is what would
  * turn this notice into a control.
+ *
+ * ⚠ `namespace` was added at Slice 17 for `/orders`/`/orders/[id]` — the FIRST
+ * caller on the CLIENT surface, which needs its own `client.signedOut` copy
+ * (the client surface defaults `en`; the seller copy defaults `es`, and the
+ * two read different message trees for that reason alone). Every existing
+ * caller keeps the original default and needed no change.
  */
-export async function SignedOutNotice() {
-  const t = await getTranslations("seller.signedOut");
+export async function SignedOutNotice({ namespace = "seller.signedOut" }: { namespace?: string } = {}) {
+  const t = await getTranslations(namespace);
 
   return (
     <section className="rounded-card border border-hairline bg-card p-6">

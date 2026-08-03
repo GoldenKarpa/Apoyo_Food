@@ -106,12 +106,22 @@ export function checkRateLimit(
  * silently stops working.
  */
 export function clientIp(req: NextRequest): string {
-  const forwarded = req.headers.get("x-forwarded-for");
+  return clientIpFromHeaders(req.headers);
+}
+
+/**
+ * The same read, for a Server Action — which never receives a `NextRequest`,
+ * only whatever `next/headers`' `headers()` hands back. Added at Slice 17 for
+ * `createOrderRequest`; `clientIp` above is now a thin wrapper over this so
+ * the two can never drift.
+ */
+export function clientIpFromHeaders(headers: Headers): string {
+  const forwarded = headers.get("x-forwarded-for");
   if (forwarded) {
     const first = forwarded.split(",")[0]?.trim();
     if (first) return first;
   }
-  return req.headers.get("x-real-ip")?.trim() || "unknown";
+  return headers.get("x-real-ip")?.trim() || "unknown";
 }
 
 /** Media uploads. Generous for a real seller, useless for filling a disk. */
@@ -131,3 +141,12 @@ export const UPLOAD_RULE_PER_IP: RateLimitRule = {
   windowMs: 10 * 60 * 1000,
   maxBytes: 120 * 1024 * 1024,
 };
+
+/**
+ * Order creation (Part G: "rate limits on order creation... per user + per
+ * IP"), Slice 17's own scope. Generous for a real buyer placing a handful of
+ * genuine requests, useless for scripting `respondBy`-spam against a seller's
+ * inbox. Per-IP is the wider net, same reasoning as `UPLOAD_RULE_PER_IP`.
+ */
+export const ORDER_CREATE_RULE_PER_USER: RateLimitRule = { limit: 10, windowMs: 60 * 60 * 1000 };
+export const ORDER_CREATE_RULE_PER_IP: RateLimitRule = { limit: 20, windowMs: 60 * 60 * 1000 };

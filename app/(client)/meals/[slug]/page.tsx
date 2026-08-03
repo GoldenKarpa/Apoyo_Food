@@ -4,22 +4,23 @@ import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { AvailabilityType, RegionKey } from "@prisma/client";
 
-import { ComingSoon } from "@/components/coming-soon";
 import { ListingGallery, type ListingGalleryPhoto } from "@/components/listing-gallery";
 import { ListingRail } from "@/components/listing-grid";
 import { ListingSellerRow } from "@/components/listing-seller-row";
 import { ReportListingSheet } from "@/components/report-listing-sheet";
+import { RequestOrderSheet } from "@/components/request-order-sheet";
 import { AvailabilityStamp, type AvailabilityTone } from "@/components/ui/availability-stamp";
 import { Chip } from "@/components/ui/chip";
 import { SaveButton } from "@/components/ui/save-button";
 import { SectionHeader } from "@/components/ui/section-header";
 import { DIETARY_TAGS } from "@/lib/browse";
-import { describeWindow } from "@/lib/availability";
+import { describeWindow, localDay } from "@/lib/availability";
 import { buildWindowLabels } from "@/lib/window-labels";
 import { DISCOVERABLE, moreFromSeller, mostSavedListings, similarInCategory } from "@/lib/discovery";
 import { logDemand } from "@/lib/demand";
 import { formatCentsTtd } from "@/lib/money";
 import { occasionLabel } from "@/lib/occasion-tags";
+import { getOrderingEnabled } from "@/lib/platform-settings";
 import { AREA_COOKIE, isRegionKey } from "@/lib/regions";
 import { prisma } from "@/lib/prisma";
 import { getFoodSession } from "@/lib/session";
@@ -98,13 +99,14 @@ export default async function MealDetailPage({ params }: { params: Promise<{ slu
           profileImageBlur: true,
           followerCount: true,
           lastStoryAt: true,
+          fulfillmentModes: true,
         },
       },
     },
   });
   if (!listing) notFound();
 
-  const [locale, t, ta, tp, tdiet, toc, ts, session, cookieStore] = await Promise.all([
+  const [locale, t, ta, tp, tdiet, toc, ts, session, cookieStore, orderingEnabled] = await Promise.all([
     getLocale(),
     getTranslations("client.meal"),
     getTranslations("availability"),
@@ -114,6 +116,7 @@ export default async function MealDetailPage({ params }: { params: Promise<{ slu
     getTranslations("client.sections"),
     getFoodSession(),
     cookies(),
+    getOrderingEnabled(),
   ]);
 
   // ⚠ Kept from Slice 9 verbatim: every card on the site already links here, so
@@ -270,13 +273,18 @@ export default async function MealDetailPage({ params }: { params: Promise<{ slu
         )}
       </div>
 
-      {/* Sticky "Request order" CTA (Part F1) — real ordering is Slice 17;
-          this opens the ComingSoon explanation, styled as the finished bar
-          rather than a placeholder link. Above the mobile bottom tab bar
-          (56px + the safe-area inset), a plain floating button on desktop
-          where the tab bar doesn't exist. */}
+      {/* Sticky "Request order" CTA (Part F1) — the real request flow (Slice
+          17), replacing the Phase-1 ComingSoon stub. Above the mobile bottom
+          tab bar (56px + the safe-area inset), a plain floating button on
+          desktop where the tab bar doesn't exist. */}
       <div className="fixed inset-x-0 bottom-[calc(56px+env(safe-area-inset-bottom))] z-30 border-t border-hairline bg-cream-bg px-screen py-3 shadow-soft md:inset-x-auto md:bottom-6 md:right-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none">
-        <ComingSoon feature="requestOrder" variant="primary" size="lg" className="w-full md:w-auto md:px-8" />
+        <RequestOrderSheet
+          listingId={listing.id}
+          fulfillmentModes={listing.seller.fulfillmentModes}
+          minDateIso={localDay().iso}
+          orderingEnabled={orderingEnabled}
+          authenticated={!!session}
+        />
       </div>
     </>
   );

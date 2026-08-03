@@ -6,6 +6,7 @@ import {
   resolveReport,
   takedownListing,
   updateSellerStatus,
+  setOrderingEnabled,
   type ReportResolution,
   type SellerAction,
 } from "@/lib/actions/admin";
@@ -24,11 +25,13 @@ import {
 export type AdminActionSpec =
   | { kind: "seller"; sellerId: string; sellerAction: SellerAction }
   | { kind: "report"; reportId: string; resolution: ReportResolution }
-  | { kind: "takedown"; listingId: string };
+  | { kind: "takedown"; listingId: string }
+  | { kind: "ordering"; enabled: boolean };
 
 async function runAction(spec: AdminActionSpec): Promise<{ ok: boolean }> {
   if (spec.kind === "seller") return updateSellerStatus(spec.sellerId, spec.sellerAction);
   if (spec.kind === "report") return resolveReport(spec.reportId, spec.resolution);
+  if (spec.kind === "ordering") return setOrderingEnabled(spec.enabled);
   return takedownListing(spec.listingId);
 }
 

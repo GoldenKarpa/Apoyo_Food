@@ -71,9 +71,10 @@ export default async function SellerDashboardPage() {
   if (!seller) return <SignedOutNotice />; // unreachable; narrows the type
 
   await ensureFoodProviderMembership(seller.userId);
-  const [listingCount, activeStoryCount, stats] = await Promise.all([
+  const [listingCount, activeStoryCount, pendingOrderCount, stats] = await Promise.all([
     prisma.foodListing.count({ where: { sellerId: seller.id } }),
     prisma.foodStory.count({ where: { sellerId: seller.id, expiresAt: { gt: new Date() } } }),
+    prisma.foodOrder.count({ where: { sellerId: seller.id, status: "PENDING" } }),
     sellerDashboardStats(seller),
   ]);
 
@@ -105,7 +106,11 @@ export default async function SellerDashboardPage() {
       <DashboardStats stats={stats} />
 
       <ProfileChecklist steps={steps} percent={percent} />
-      <WorkspaceEmptyStates listingCount={listingCount} activeStoryCount={activeStoryCount} />
+      <WorkspaceEmptyStates
+        listingCount={listingCount}
+        activeStoryCount={activeStoryCount}
+        pendingOrderCount={pendingOrderCount}
+      />
     </>
   );
 }

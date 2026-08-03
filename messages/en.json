@@ -293,7 +293,8 @@
     },
     "orders": {
       "title": "My orders",
-      "body": "Order history and the order thread arrive in Slices 17 and 18."
+      "empty": "You haven't placed any orders yet. Browse to find something to request.",
+      "moreItems": " +{count} more"
     },
     "account": {
       "title": "Account",
@@ -358,6 +359,58 @@
         "snacks": "Snacks",
         "vegetarian-vegan": "Vegetarian & Vegan"
       }
+    },
+    "orderForm": {
+      "cta": "Request order",
+      "title": "Request this order",
+      "pausedBody": "Ordering isn't open yet — check back soon. This seller isn't taking requests through Apoyo just yet.",
+      "quantityLabel": "Quantity",
+      "itemNoteLabel": "Note for this dish (optional)",
+      "itemNotePlaceholder": "e.g. no peppers",
+      "fulfillmentModeLabel": "How would you like to get it?",
+      "dateLabel": "Date",
+      "timeLabel": "Time",
+      "areaLabel": "Pickup point or delivery area (optional)",
+      "areaPlaceholder": "e.g. Curepe, near the market",
+      "areaHint": "The exact address is shared in the order thread once the seller accepts.",
+      "customerNoteLabel": "Anything else the seller should know? (optional)",
+      "customerNotePlaceholder": "e.g. call when you arrive",
+      "submit": "Send request",
+      "submitting": "Sending…",
+      "errors": {
+        "signedOut": "Sign in to send this request.",
+        "orderingPaused": "Ordering isn't open yet.",
+        "noListing": "This dish is no longer available.",
+        "fulfillmentMode": "Choose one of the seller's fulfilment options.",
+        "quantity": "Choose a quantity of at least 1.",
+        "invalidDate": "Choose a valid date and time.",
+        "past": "Choose a date and time in the future.",
+        "outOfWindow": "This dish isn't offered on that day — check its availability above.",
+        "leadTime": "This dish needs at least {days, plural, one {# day} other {# days}} notice — choose a later date.",
+        "rateLimited": "Too many requests — try again in a little while.",
+        "unknown": "That didn't work. Try again."
+      }
+    },
+    "signedOut": {
+      "title": "Sign in to see your orders",
+      "body": "Ordering needs an Apoyo account. Sign in on any Apoyo site with the account you already use, then come back to this page — the same session works everywhere in the ecosystem."
+    },
+    "orderDetail": {
+      "itemsHeading": "Items",
+      "priceOnAcceptance": "The seller will confirm the price when they accept.",
+      "fulfillmentHeading": "Fulfilment",
+      "yourNote": "Your note",
+      "respondByNotice": "Waiting on the seller to respond by {time}.",
+      "declineReasonPrefix": "Seller's note",
+      "cancellationReasonPrefix": "Reason",
+      "expiredNotice": "This request wasn't answered in time and has expired.",
+      "browseSimilar": "Browse other sellers",
+      "cancelTrigger": "Cancel order",
+      "cancelReasonLabel": "Reason (optional)",
+      "cancelReasonPlaceholder": "Let the seller know why, if you'd like",
+      "cancelConfirm": "Confirm cancellation",
+      "cancelDismiss": "Never mind",
+      "cancelError": "That didn't work. Try again."
     }
   },
   "seller": {
@@ -442,6 +495,17 @@
           "FOOD_SAFETY_CONCERN": "food safety concern",
           "OTHER": "other"
         }
+      },
+      "ordering": {
+        "heading": "Ordering",
+        "status": "Status:",
+        "description": "While paused, buyers see a \"coming soon\" notice on every listing instead of the request form. Turn this on when you're ready to take real orders.",
+        "enabledLabel": "Live",
+        "disabledLabel": "Coming soon",
+        "enable": "Enable ordering",
+        "pause": "Pause ordering",
+        "pauseConfirm": "Pause ordering? Buyers will see a \"coming soon\" notice until you turn it back on.",
+        "actionError": "That didn't work. Try again."
       }
     },
     "login": {
@@ -627,7 +691,11 @@
       },
       "orders": {
         "title": "No orders yet",
-        "body": "Requests from buyers arrive here. You accept or decline each one, and agree the details in its conversation."
+        "body": "Requests from buyers arrive here. You accept or decline each one, and agree the details in its conversation.",
+        "titleWithCount": "{count, plural, one {# order needs} other {# orders need}} your attention",
+        "bodyWithCount": "Review pending requests and respond before they expire.",
+        "view": "View orders",
+        "review": "Review orders"
       }
     },
     "errors": {
@@ -645,7 +713,11 @@
       "categoryNameEn": "Give the category an English name between 1 and 40 characters.",
       "categoryNameEs": "Give the category a Spanish name between 1 and 40 characters.",
       "categorySlug": "We could not create a web address for that name. Try a slightly different one.",
-      "unknown": "That did not work. Reload the page and try again."
+      "unknown": "That did not work. Reload the page and try again.",
+      "noOrder": "We could not find that order. Reload the page and try again.",
+      "orderInvalidTransition": "This order has already moved on — reload the page to see its current status.",
+      "priceRequired": "Enter a price for every item before accepting.",
+      "priceInvalid": "Enter a valid price, e.g. 45.00."
     },
     "listings": {
       "title": "Your listings",
@@ -823,6 +895,41 @@
           "highlightLimit": "You have reached the maximum number of shelves."
         }
       }
+    },
+    "orders": {
+      "title": "Orders",
+      "detailTitle": "Order detail",
+      "pendingHeading": "{count, plural, =0 {No pending requests} one {# pending request} other {# pending requests}}",
+      "pendingEmpty": "New requests will show up here first.",
+      "historyHeading": "History",
+      "historyEmpty": "Accepted, declined and completed orders will show up here.",
+      "moreItems": " +{count} more",
+      "respondByPrefix": "Respond by",
+      "itemsHeading": "Items",
+      "fulfillmentHeading": "Fulfilment",
+      "customerNotePrefix": "Customer's note",
+      "acceptHeading": "Confirm the price and accept",
+      "priceLabelFor": "Price for {title} (× {quantity})",
+      "pricePlaceholder": "e.g. 45.00",
+      "accept": "Accept order",
+      "accepting": "Accepting…",
+      "declineTrigger": "Decline",
+      "declineReasonLabel": "Reason (optional)",
+      "declineReasonPlaceholder": "Let the customer know why, if you'd like",
+      "declineConfirm": "Confirm decline",
+      "declineDismiss": "Never mind",
+      "declineError": "That didn't work. Try again.",
+      "completeTrigger": "Mark as completed",
+      "completeConfirm": "Mark this order as completed?",
+      "completeError": "That didn't work. Try again.",
+      "cancelTrigger": "Cancel order",
+      "cancelReasonLabel": "Reason (optional)",
+      "cancelReasonPlaceholder": "Let the customer know why, if you'd like",
+      "cancelConfirm": "Confirm cancellation",
+      "cancelDismiss": "Never mind",
+      "cancelError": "That didn't work. Try again.",
+      "declineReasonPrefix": "Your note",
+      "cancellationReasonPrefix": "Reason"
     }
   },
   "scaffold": {
@@ -851,5 +958,14 @@
     "south_east": "South East",
     "south_west": "South West",
     "tobago": "Tobago"
+  },
+  "orderStatus": {
+    "PENDING": "Pending",
+    "ACCEPTED": "Accepted",
+    "DECLINED": "Declined",
+    "COMPLETED": "Completed",
+    "CANCELLED_BY_CUSTOMER": "Cancelled by customer",
+    "CANCELLED_BY_SELLER": "Cancelled by seller",
+    "EXPIRED": "Expired"
   }
 }

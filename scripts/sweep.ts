@@ -26,17 +26,35 @@
  *   npx tsx scripts/sweep.ts --once      one pass and exit (verification, a
  *                                        future PM2-cron-restart deployment)
  */
-import { sweepExpiredStories } from "../lib/sweep";
+import { sweepExpiredStories, sweepExpiredOrders, sweepOrderCompletionNudges } from "../lib/sweep";
 import { prisma } from "../lib/prisma";
 
 const TICK_MS = 5 * 60_000;
 
 async function tick(): Promise<void> {
+  // ⚠ Each job's failure is caught independently — a broken story sweep must
+  // never suppress the order-expiry pass sitting right below it, and vice
+  // versa. A single try/catch around all three would have exactly that
+  // coupling.
   try {
     const cleared = await sweepExpiredStories();
     console.log(`[food-sweep] stories: cleared ${cleared} expired, ephemeral (non-highlighted) post(s)`);
   } catch (err) {
-    console.error("[food-sweep] tick failed", err);
+    console.error("[food-sweep] stories tick failed", err);
+  }
+
+  try {
+    const expired = await sweepExpiredOrders();
+    console.log(`[food-sweep] orders: expired ${expired} unanswered PENDING request(s)`);
+  } catch (err) {
+    console.error("[food-sweep] order-expiry tick failed", err);
+  }
+
+  try {
+    const nudged = await sweepOrderCompletionNudges();
+    console.log(`[food-sweep] orders: nudged ${nudged} seller(s) toward marking a fulfilled order COMPLETED`);
+  } catch (err) {
+    console.error("[food-sweep] completion-nudge tick failed", err);
   }
 }
 

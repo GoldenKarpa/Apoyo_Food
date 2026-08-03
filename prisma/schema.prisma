@@ -665,6 +665,24 @@ model FoodReport {
 // Platform entities
 // ============================================================================
 
+/// Slice 17: the pre-launch "Coming Soon" gate for real ordering — a single
+/// admin-toggled row (`id = "singleton"`), not a code-level flag. The user's
+/// own instruction: ordering ships fully built but administratively PAUSED
+/// until `/food/admin`'s "Ordering" section is switched on, so a demo can go
+/// live long before the underlying feature is ready to take real requests.
+///
+/// ⚠ A MISSING row means DISABLED — `lib/platform-settings.ts`'s
+/// `getOrderingEnabled()` treats `null` the same as `orderingEnabled: false`.
+/// That is what makes the feature ship default-OFF (the desired launch state)
+/// without a seed step: the row is created lazily, on the first admin toggle.
+model FoodPlatformSetting {
+  id              String   @id @default("singleton")
+  orderingEnabled Boolean  @default(false) @map("ordering_enabled")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("food_platform_settings")
+}
+
 /// In-app inbox plus the email fan-out marker. `emailedAt` is what makes the
 /// Resend fan-out idempotent and crash-safe (Part E6).
 model FoodNotification {

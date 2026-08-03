@@ -8,6 +8,7 @@ import { requireAdmin, ensureFoodProviderMembership } from "@/lib/auth-guards";
 import { decideSellerLifecycleAction, type SellerLifecycleAction } from "@/lib/admin-sellers";
 import { uniqueCategorySlug } from "@/lib/slug";
 import { MAX_CATEGORY_NAME_LENGTH } from "@/lib/category-form";
+import { setOrderingEnabled as writeOrderingEnabled } from "@/lib/platform-settings";
 import type { SellerFormState } from "@/lib/actions/seller-form-state";
 
 /**
@@ -111,6 +112,26 @@ export async function resolveReport(reportId: string, resolution: ReportResoluti
     revalidatePath("/food/listings");
     revalidatePath(`/food/listings/${report.listingId}`);
   }
+  return { ok: true };
+}
+
+// ── Ordering launch gate (Slice 17) ─────────────────────────────────────────
+
+/**
+ * The pre-launch "Coming Soon" toggle. Ordering ships fully built but
+ * administratively PAUSED (`FoodPlatformSetting.orderingEnabled` defaults
+ * `false` when no row exists) — this is the ONE action that flips it, and it
+ * is deliberately a single boolean write with no other side effect: the
+ * buyer-facing CTA and `createOrderRequest`'s own server-side re-check both
+ * read the same row, so there is nothing else to keep in sync.
+ */
+export async function setOrderingEnabled(enabled: boolean): Promise<ActionResult> {
+  const admin = await requireAdmin();
+  if (!admin) return { ok: false, reason: "unauthorized" };
+
+  await writeOrderingEnabled(enabled);
+
+  revalidatePath("/food/admin");
   return { ok: true };
 }
 

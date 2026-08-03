@@ -132,7 +132,7 @@ export default async function StyleGuidePage() {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <ComingSoon feature="requestOrder" variant="primary" badge />
+          <ComingSoon feature="messageSeller" variant="primary" badge />
           <ComingSoonBadge />
         </div>
       </Section>

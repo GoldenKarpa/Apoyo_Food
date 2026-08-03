@@ -463,10 +463,16 @@ async function run() {
             .catch(() => false);
           check(sellerLink, `${label}: seller row links to /sellers/[slug]`);
 
-          // The sticky CTA — a real, page-specific trigger, not only the
-          // style-guide's demo of the same registry key.
-          const cta = page.locator('[data-coming-soon="requestOrder"]').locator("visible=true").first();
+          // The sticky CTA — real ordering (Slice 17), not the Phase-1
+          // ComingSoon stub anymore. This script drives every route
+          // anonymously with ordering at its real default (PAUSED —
+          // `FoodPlatformSetting`'s Custom Edit: no row means disabled), so
+          // the sheet's content here is the launch-gate notice, not the form
+          // or the sign-in prompt — still real, localized copy, never a raw
+          // translation key or the old registry's stub text.
+          const cta = page.locator('[data-testid="request-order-trigger"]').locator("visible=true").first();
           check(await cta.isVisible().catch(() => false), `${label}: sticky "Request order" CTA visible`);
+          check((await page.locator('[data-coming-soon="requestOrder"]').count()) === 0, `${label}: the Phase-1 requestOrder ComingSoon stub is gone`);
           await cta.click();
           await page.waitForSelector('[role="dialog"]', { state: "visible" });
           await settleAnimations(page);
@@ -475,7 +481,7 @@ async function run() {
           );
           check(
             dialogText.length > 40 && !/comingSoon\.features\./.test(dialogText),
-            `${label}: CTA opens the real, localized requestOrder sheet`,
+            `${label}: CTA opens the real, localized order sheet (default state: ordering paused)`,
             dialogText.slice(0, 120),
           );
           await page.keyboard.press("Escape");
@@ -709,17 +715,21 @@ async function run() {
     // ⚠ Keep in step with `lib/coming-soon.ts`. Slice 13 retired `becomeSeller`
     // (the footer links to real onboarding now); Slice 14 retired
     // `sellerListings` (the nav links to `/food/listings` now); Slice 15
-    // retired `sellerStories` (the nav links to `/food/stories` now). All
-    // three are checked for ABSENCE below, not merely dropped from the
-    // present-list — a retirement that silently regressed (the stub coming
-    // back because a later edit re-added the registry key) would otherwise
-    // pass this audit by doing nothing.
-    for (const key of ["requestOrder", "buyerOrders", "messageSeller", "buyerAccount", "sellerOrders", "sellerInsights"]) {
+    // retired `sellerStories` (the nav links to `/food/stories` now); Slice 17
+    // retired `requestOrder`, `buyerOrders` and `sellerOrders` (the real order
+    // lifecycle). All are checked for ABSENCE below, not merely dropped from
+    // the present-list — a retirement that silently regressed (the stub
+    // coming back because a later edit re-added the registry key) would
+    // otherwise pass this audit by doing nothing.
+    for (const key of ["messageSeller", "buyerAccount", "sellerInsights"]) {
       check(stubs.includes(key), `stubs: "${key}" rendered a trigger`);
     }
     check(!stubs.includes("becomeSeller"), `stubs: "becomeSeller" retired (Slice 13)`);
     check(!stubs.includes("sellerListings"), `stubs: "sellerListings" retired (Slice 14)`);
     check(!stubs.includes("sellerStories"), `stubs: "sellerStories" retired (Slice 15)`);
+    check(!stubs.includes("requestOrder"), `stubs: "requestOrder" retired (Slice 17)`);
+    check(!stubs.includes("buyerOrders"), `stubs: "buyerOrders" retired (Slice 17)`);
+    check(!stubs.includes("sellerOrders"), `stubs: "sellerOrders" retired (Slice 17)`);
 
     await context.close();
   }

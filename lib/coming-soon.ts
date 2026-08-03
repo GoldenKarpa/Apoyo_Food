@@ -59,8 +59,8 @@ export interface ComingSoonEntry {
  * seller on the other end (ordering, messaging) and the two destinations no
  * Phase 0–3 slice creates at all.
  *
- * - `requestOrder`  — the sticky listing CTA (Slice 10 renders it, Slice 17
- *   replaces it). Named explicitly in Slice 7's and Slice 10's briefs.
+ * - `requestOrder`  — GONE (Slice 17). Was the sticky listing CTA (Slice 10
+ *   rendered it). `<RequestOrderSheet>` replaces it now.
  * - `messageSeller` — Slice 7's brief asks for "contact-seller-follow-through
  *   (if any)". There IS one, and it is worth being explicit about: Part E5/E6
  *   put ALL buyer↔seller conversation inside an accepted order's thread, so a
@@ -68,7 +68,8 @@ export interface ComingSoonEntry {
  *   product. A demo viewer will still reach for one on a profile, and the
  *   modal's job is to explain that design decision rather than pretend the
  *   control doesn't exist. Slice 18 builds the thread.
- * - `buyerOrders`   — the bottom nav's Orders destination. Slice 17.
+ * - `buyerOrders`   — GONE (Slice 17). Was the bottom nav's Orders
+ *   destination; it links to the real `/orders` now.
  * - `buyerAccount`  — the nav's Account destination. Flagged as an addition
  *   beyond any brief's list, and for the same reason Apparel added its own:
  *   Part F3's bottom tab bar has an Account destination and NO slice in Phases
@@ -87,7 +88,8 @@ export interface ComingSoonEntry {
  * rather than a missing nav item — a seller who cannot see where listings will
  * live has no way to know the product has them.
  * - `sellerListings` (Slice 14) · `sellerStories` (Slice 15) ·
- *   `sellerOrders` (Slice 17) · `sellerInsights` (Phase 6, unsliced).
+ *   `sellerOrders` — GONE (Slice 17), the seller nav's Orders destination
+ *   links to the real `/food/orders` now · `sellerInsights` (Phase 6, unsliced).
  * ⚠ `sellerInsights` is the first entry with `phase: 6`, which is why
  * `FeaturePhase` gained that value. It is deliberately registered even though no
  * slice in this file builds it: Part E7 calls insights the product's signature
@@ -104,14 +106,20 @@ export interface ComingSoonEntry {
  * `/food/stories` (Fresh Today posting + the Menu shelf manager) is real now,
  * same treatment: the nav links to it directly and the dashboard's Fresh
  * Today card is data-driven off a real, non-expired post count. Two stubs
- * remain: `sellerOrders` (Slice 17), `sellerInsights` (Phase 6).
+ * remained after this slice: `sellerOrders` (Slice 17), `sellerInsights`
+ * (Phase 6).
+ *
+ * ── Slice 17: three more retired — `requestOrder`, `buyerOrders`, `sellerOrders` ──
+ * The real order lifecycle (request → accept/decline → complete, both sides)
+ * is built now. The one-line contract, applied a third time: the listing
+ * page's sticky CTA (`<RequestOrderSheet>`), the bottom tab bar's Orders
+ * destination, and the seller nav's Orders destination all link/render for
+ * real instead of opening a modal. `messageSeller` and `sellerInsights` are
+ * the two keys still standing — Slice 18 and Phase 6 respectively.
  */
 export const COMING_SOON_FEATURES = {
-  requestOrder: { phase: 3, slice: 17, icon: "utensils" },
-  buyerOrders: { phase: 3, slice: 17, icon: "receipt" },
   messageSeller: { phase: 3, slice: 18, icon: "message" },
   buyerAccount: { phase: 4, slice: 0, icon: "user" },
-  sellerOrders: { phase: 3, slice: 17, icon: "receipt" },
   sellerInsights: { phase: 6, slice: 0, icon: "chart" },
 } as const satisfies Record<string, ComingSoonEntry>;
 

@@ -242,6 +242,76 @@ export function describeWindow(
 }
 
 /**
+ * A calendar-date `YYYY-MM-DD` plus a `HH:mm` clock time, resolved as an
+ * instant in the fixed zone (Slice 17: the order request form's requested
+ * date/time).
+ *
+ * ⚠ Trinidad has no DST (the module header's own rule), so the offset is a
+ * plain, permanently-correct literal — `Date`'s own ISO parser accepts an
+ * explicit offset directly, which is simpler and just as correct as routing
+ * through `Intl` for a construction this module never needs to do in reverse.
+ */
+export function localInstant(dateIso: string, time: string): Date {
+  return new Date(`${dateIso}T${time}:00.000-04:00`);
+}
+
+/** Whole CALENDAR days between two `YYYY-MM-DD` strings, staying in calendar space. */
+function calendarDaysBetween(fromIso: string, toIso: string): number {
+  const from = Date.parse(`${fromIso}T00:00:00.000Z`);
+  const to = Date.parse(`${toIso}T00:00:00.000Z`);
+  return Math.round((to - from) / (24 * 60 * 60 * 1000));
+}
+
+export interface FulfillmentValidation {
+  ok: boolean;
+  reason?: "past" | "outOfWindow" | "leadTime";
+  /** LEAD_TIME only — the smallest lead time among the windows that DO cover the requested day, so the form can say "earliest in N days". */
+  minLeadDays?: number;
+}
+
+/**
+ * Validates a buyer's REQUESTED fulfilment instant against a listing's
+ * availability windows (Slice 17, architecture E5: "requested date/time
+ * (validated against the listing's availability windows + lead time)").
+ *
+ * ⚠ Two rules that are easy to get backwards:
+ *  - **Lead time is checked against the window(s) that actually COVER the
+ *    requested day**, not every window on the listing — Slice 2's CHECK
+ *    constraint (and this module's own `windowCoversDay`) already established
+ *    that `leadTimeDays` may sit on ANY window type, so a PREORDER window's
+ *    lead time must never block a request that is really being served by a
+ *    separate RECURRING_WEEKLY window with no lead time at all.
+ *  - **A listing with NO windows at all is not rejected here.** `windows.length
+ *    === 0` renders "Ask the cook" on the card (`summarizeAvailability`), but
+ *    that is a display fallback, not a computed constraint — there is nothing
+ *    to validate against, so any future instant is accepted and the specifics
+ *    are worked out in the order thread, exactly as an unscheduled CUSTOM
+ *    listing already implies.
+ */
+export function validateRequestedFulfillment(
+  windows: AvailabilityWindowLike[],
+  requestedAt: Date,
+  now: Date = new Date(),
+): FulfillmentValidation {
+  if (requestedAt.getTime() <= now.getTime()) return { ok: false, reason: "past" };
+  if (windows.length === 0) return { ok: true };
+
+  const today = localDay(now);
+  const requestedDay = localDay(requestedAt);
+  const covering = windows.filter((w) => windowCoversDay(w, requestedDay));
+  if (covering.length === 0) return { ok: false, reason: "outOfWindow" };
+
+  const daysAhead = calendarDaysBetween(today.iso, requestedDay.iso);
+  const satisfiesLead = covering.some((w) => (w.leadTimeDays ?? 0) <= daysAhead);
+  if (!satisfiesLead) {
+    const minLeadDays = Math.min(...covering.map((w) => w.leadTimeDays ?? 0));
+    return { ok: false, reason: "leadTime", minLeadDays };
+  }
+
+  return { ok: true };
+}
+
+/**
  * SQL fragment matching listings available on a given weekday.
  *
  * Discovery filters must run **in the database**, not by loading every listing

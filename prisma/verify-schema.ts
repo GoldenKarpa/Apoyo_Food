@@ -112,7 +112,11 @@ async function main() {
     SELECT table_name FROM information_schema.tables
     WHERE table_schema = 'public' AND table_name LIKE 'food_%'
   `;
-  assert("17 food_* tables created", tables.length === 17, tables.length);
+  // ⚠ Stale since Slice 16 (added `food_reports`, an 18th table, without
+  // updating this count — `db:verify` wasn't in that slice's own regression
+  // list, which is how it went unnoticed). Now 19: the Slice 2 baseline (17)
+  // + `food_reports` (Slice 16) + `food_platform_settings` (Slice 17).
+  assert("19 food_* tables created", tables.length === 19, tables.length);
   const badlyNamed = tables.filter((t) => !/^food_[a-z_]+$/.test(t.table_name));
   assert("every table is snake_case", badlyNamed.length === 0, badlyNamed);
   const columns = await prisma.$queryRaw<{ column_name: string }[]>`

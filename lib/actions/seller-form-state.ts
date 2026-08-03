@@ -57,6 +57,12 @@ export type SellerFormErrorKey =
   | "categoryNameEn"
   | "categoryNameEs"
   | "categorySlug"
+  // Slice 17 — order lifecycle (seller-side actions: accept/decline/complete/
+  // cancel, plus the admin ordering-launch toggle).
+  | "noOrder"
+  | "orderInvalidTransition"
+  | "priceRequired"
+  | "priceInvalid"
   | "unknown";
 
 export type SellerFormState =

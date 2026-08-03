@@ -14,3 +14,20 @@
  * rather than re-deriving it.
  */
 export const FOOD_TIMEZONE = "America/Port_of_Spain";
+
+/**
+ * An order's `fulfillmentAt` (a real instant, unlike `startsOn`/`endsOn`'s
+ * pure calendar dates), rendered in the fixed zone regardless of the viewer's
+ * own device timezone — Part D's order-summary card: "requested date/time in
+ * America/Port_of_Spain". Slice 17's first caller.
+ */
+export function formatFulfillmentInstant(instant: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: FOOD_TIMEZONE,
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(instant);
+}

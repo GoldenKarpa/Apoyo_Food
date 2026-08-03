@@ -4,6 +4,7 @@ import { AdminActionButton } from "@/components/admin/admin-action-button";
 import { CategoryForm } from "@/components/admin/category-form";
 import { FoodImage } from "@/components/food-image";
 import { adminMayLoadData } from "@/lib/auth-guards";
+import { getOrderingEnabled } from "@/lib/platform-settings";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Food administration" };
@@ -34,10 +35,11 @@ export default async function FoodAdminPage({
   const { q } = await searchParams;
   const searchTerm = q?.trim() ?? "";
 
-  const [t, tv, pendingSellers, activeSellers, suspendedSellers, openReports, categories, searchResults] =
+  const [t, tv, orderingEnabled, pendingSellers, activeSellers, suspendedSellers, openReports, categories, searchResults] =
     await Promise.all([
       getTranslations("seller.admin"),
       getTranslations("seller.admin.vocab"),
+      getOrderingEnabled(),
       prisma.foodSeller.findMany({ where: { status: "PENDING" }, orderBy: { createdAt: "asc" } }),
       prisma.foodSeller.findMany({ where: { status: "ACTIVE" }, orderBy: { createdAt: "asc" } }),
       prisma.foodSeller.findMany({ where: { status: "SUSPENDED" }, orderBy: { createdAt: "asc" } }),
@@ -66,6 +68,39 @@ export default async function FoodAdminPage({
   return (
     <div>
       <h1 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "1.5rem" }}>{t("title")}</h1>
+
+      <section className="admin-section">
+        <h2>{t("ordering.heading")}</h2>
+        <div className="admin-card">
+          <div className="admin-card-row">
+            <div>
+              <p style={{ fontWeight: 600 }}>
+                {t("ordering.status")}{" "}
+                <span className={orderingEnabled ? "admin-badge admin-badge-live" : "admin-badge admin-badge-open"}>
+                  {orderingEnabled ? t("ordering.enabledLabel") : t("ordering.disabledLabel")}
+                </span>
+              </p>
+              <p className="admin-muted">{t("ordering.description")}</p>
+            </div>
+            {orderingEnabled ? (
+              <AdminActionButton
+                label={t("ordering.pause")}
+                variant="danger"
+                confirmMessage={t("ordering.pauseConfirm")}
+                errorLabel={t("ordering.actionError")}
+                spec={{ kind: "ordering", enabled: false }}
+              />
+            ) : (
+              <AdminActionButton
+                label={t("ordering.enable")}
+                variant="primary"
+                errorLabel={t("ordering.actionError")}
+                spec={{ kind: "ordering", enabled: true }}
+              />
+            )}
+          </div>
+        </div>
+      </section>
 
       <section className="admin-section">
         <h2>{t("sellers.pendingHeading", { count: pendingSellers.length })}</h2>

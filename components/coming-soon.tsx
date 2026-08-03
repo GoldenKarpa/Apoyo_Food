@@ -31,10 +31,10 @@ import { cn } from "@/lib/utils";
  * ── Usage: the one-line contract ──
  *   Self-rendering (the common case) — ONE line, and deleting that one line is
  *   how the real feature replaces it:
- *       <ComingSoon feature="requestOrder" />
+ *       <ComingSoon feature="messageSeller" />
  *
  *   Wrapping a control whose own styling matters (a sticky CTA bar, a nav item):
- *       <ComingSoon feature="buyerOrders" asChild>
+ *       <ComingSoon feature="buyerAccount" asChild>
  *         <button className="…">…</button>
  *       </ComingSoon>
  *

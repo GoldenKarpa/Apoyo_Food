@@ -14,16 +14,16 @@ import type { ComingSoonFeature } from "@/lib/coming-soon";
  * server-rendered header and the client-rendered bottom nav can both import it.
  *
  * ── href vs feature ──
- * A destination gets an `href` when the route is real or is built inside Phase 1
- * (Home, Browse and Saved — Slices 9 and 10). It gets a `feature` when nothing
- * in the current phase creates it, in which case tapping it opens the
- * `<ComingSoon>` sheet rather than landing on a scaffold page:
- *   - Orders  → Slice 17 builds `/orders`.
+ * A destination gets an `href` when the route is real. It gets a `feature`
+ * when nothing in the current phase creates it, in which case tapping it
+ * opens the `<ComingSoon>` sheet rather than landing on a scaffold page:
+ *   - Orders → real since Slice 17 (`/orders`), the one-line contract applied
+ *     — this entry used to read `feature: "buyerOrders"`.
  *   - Account → ⚠ **no slice in Phases 0–3 builds a buyer account area at all.**
  *     The route stub exists from Slice 1, but a nav icon leading to a page that
  *     explains it isn't built yet is the exact dead end the stub pattern exists
  *     to prevent.
- * Replacing either is deleting the `feature` line and adding an `href`.
+ * Replacing a `feature` is deleting that line and adding an `href`.
  */
 export interface NavItem {
   key: string;
@@ -37,7 +37,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { key: "home", icon: Home, href: "/" },
   { key: "browse", icon: Search, href: "/browse" },
-  { key: "orders", icon: ReceiptText, feature: "buyerOrders" },
+  { key: "orders", icon: ReceiptText, href: "/orders" },
   { key: "saved", icon: BookMarked, href: "/saved" },
   { key: "account", icon: User, feature: "buyerAccount" },
 ];

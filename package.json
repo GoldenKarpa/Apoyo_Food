@@ -36,7 +36,9 @@
     "food-sweep:once": "tsx scripts/sweep.ts --once",
     "verify:story-posting": "node scripts/verify-story-posting.mjs",
     "verify:admin": "tsx scripts/verify-admin.ts",
-    "verify:admin-e2e": "node scripts/verify-admin-e2e.mjs"
+    "verify:admin-e2e": "node scripts/verify-admin-e2e.mjs",
+    "verify:orders": "tsx scripts/verify-orders.ts",
+    "verify:order-lifecycle": "node scripts/verify-order-lifecycle.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
