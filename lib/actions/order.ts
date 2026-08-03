@@ -22,7 +22,7 @@ import {
 import { parseTtdToCents } from "@/lib/listing-form";
 import { DISCOVERABLE } from "@/lib/discovery";
 import { logDemand } from "@/lib/demand";
-import { notifyUser } from "@/lib/notifications";
+import { notifyUser, notifyOrderPlaced, notifyOrderAccepted, notifyOrderDeclined } from "@/lib/notifications";
 import { checkRateLimit, clientIpFromHeaders, ORDER_CREATE_RULE_PER_IP, ORDER_CREATE_RULE_PER_USER } from "@/lib/rate-limit";
 import type { ClientFormState } from "@/lib/actions/client-form-state";
 import type { SellerFormState } from "@/lib/actions/seller-form-state";
@@ -100,7 +100,7 @@ export async function createOrderRequest(
       availabilityWindows: {
         select: { type: true, daysOfWeek: true, startsOn: true, endsOn: true, leadTimeDays: true },
       },
-      seller: { select: { id: true, userId: true, fulfillmentModes: true } },
+      seller: { select: { id: true, userId: true, email: true, languages: true, displayName: true, fulfillmentModes: true } },
     },
   });
   if (!listing) return { status: "error", error: "noListing" };
@@ -135,6 +135,7 @@ export async function createOrderRequest(
       data: {
         orderNumber,
         clientId: session.userId,
+        clientEmail: session.email,
         sellerId: listing.seller.id,
         fulfillmentMode,
         fulfillmentAt: requestedAt,
@@ -158,11 +159,11 @@ export async function createOrderRequest(
   if (!created) return { status: "error", error: "unknown" };
 
   logDemand({ kind: "ORDER_PLACED", listingId: listing.id, sellerId: listing.seller.id, userId: session.userId });
-  await notifyUser(listing.seller.userId, "ORDER_PLACED", {
-    orderId: created.id,
-    orderNumber: created.orderNumber,
-    listingTitle: listing.title,
-  });
+  await notifyOrderPlaced(
+    { id: created.id, orderNumber: created.orderNumber, clientId: session.userId, clientEmail: session.email },
+    listing.seller,
+    listing.title,
+  );
 
   revalidatePath("/orders");
   revalidatePath("/food/orders");
@@ -192,7 +193,10 @@ export async function acceptOrder(
     select: {
       status: true,
       clientId: true,
+      clientEmail: true,
       orderNumber: true,
+      fulfillmentAt: true,
+      seller: { select: { displayName: true } },
       items: { select: { id: true, priceCentsSnapshot: true } },
     },
   });
@@ -230,7 +234,10 @@ export async function acceptOrder(
     });
   });
 
-  await notifyUser(order.clientId, "ORDER_ACCEPTED", { orderId, orderNumber: order.orderNumber });
+  await notifyOrderAccepted(
+    { id: orderId, orderNumber: order.orderNumber, clientId: order.clientId, clientEmail: order.clientEmail, fulfillmentAt: order.fulfillmentAt },
+    order.seller,
+  );
   revalidateOrderPaths(orderId);
   return { status: "ok" };
 }
@@ -245,16 +252,20 @@ export async function declineOrder(orderId: string, reason: string): Promise<Ord
 
   const order = await prisma.foodOrder.findUniqueOrThrow({
     where: { id: orderId },
-    select: { status: true, clientId: true, orderNumber: true },
+    select: { status: true, clientId: true, clientEmail: true, orderNumber: true, seller: { select: { displayName: true } } },
   });
   const decision = decideOrderTransition(order, "decline", "seller");
   if (!decision.ok) return { ok: false, reason: "invalidTransition" };
 
+  const declineReason = reason.trim().slice(0, 500) || null;
   await prisma.foodOrder.update({
     where: { id: orderId },
-    data: { status: decision.status, declinedAt: new Date(), declineReason: reason.trim().slice(0, 500) || null },
+    data: { status: decision.status, declinedAt: new Date(), declineReason },
   });
-  await notifyUser(order.clientId, "ORDER_DECLINED", { orderId, orderNumber: order.orderNumber });
+  await notifyOrderDeclined(
+    { id: orderId, orderNumber: order.orderNumber, clientId: order.clientId, clientEmail: order.clientEmail, declineReason },
+    order.seller,
+  );
   revalidateOrderPaths(orderId);
   return { ok: true };
 }

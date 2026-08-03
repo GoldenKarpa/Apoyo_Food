@@ -410,7 +410,8 @@
       "cancelReasonPlaceholder": "Let the seller know why, if you'd like",
       "cancelConfirm": "Confirm cancellation",
       "cancelDismiss": "Never mind",
-      "cancelError": "That didn't work. Try again."
+      "cancelError": "That didn't work. Try again.",
+      "threadHeading": "Messages"
     }
   },
   "seller": {
@@ -929,7 +930,8 @@
       "cancelDismiss": "Never mind",
       "cancelError": "That didn't work. Try again.",
       "declineReasonPrefix": "Your note",
-      "cancellationReasonPrefix": "Reason"
+      "cancellationReasonPrefix": "Reason",
+      "threadHeading": "Messages"
     }
   },
   "scaffold": {
@@ -967,5 +969,33 @@
     "CANCELLED_BY_CUSTOMER": "Cancelled by customer",
     "CANCELLED_BY_SELLER": "Cancelled by seller",
     "EXPIRED": "Expired"
+  },
+  "orderThread": {
+    "empty": "No messages yet. Say hello!",
+    "composer": {
+      "placeholder": "Write a message…",
+      "attach": "Attach a photo",
+      "removeAttachment": "Remove photo",
+      "send": "Send",
+      "sending": "Sending…",
+      "error": "That didn't work. Try again."
+    },
+    "report": {
+      "trigger": "Report this message",
+      "title": "Report this message",
+      "description": "Let Apoyo know if something's wrong with this message. We'll take a look.",
+      "reasonLabel": "What's the issue?",
+      "reason": {
+        "INAPPROPRIATE": "Inappropriate content",
+        "SUSPECTED_SCAM": "Suspected scam",
+        "FOOD_SAFETY_CONCERN": "Food safety concern",
+        "OTHER": "Something else"
+      },
+      "messageLabel": "Details (optional)",
+      "messagePlaceholder": "Tell us more about what you saw",
+      "submit": "Submit report",
+      "submitting": "Submitting…",
+      "thanks": "Thanks — we'll take a look."
+    }
   }
 }

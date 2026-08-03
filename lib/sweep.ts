@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { deleteMedia } from "@/lib/storage";
-import { notifyUser } from "@/lib/notifications";
+import { notifyUser, notifyOrderExpired } from "@/lib/notifications";
 
 /**
  * `food-sweep` — the scheduled job(s), kept separate from the CLI/PM2 runner
@@ -9,8 +9,10 @@ import { notifyUser } from "@/lib/notifications";
  * (the ecosystem's own precedent — BUILD_SLICES.md conventions: "Expiry sweep
  * job pattern ... reused for Story expiry and stale-order expiry"). Slices
  * 17/18 add order-expiry jobs here later; this file is where they land.
- * ⚠ Slice 17 is that "later" for the two order jobs below — Slice 18 adds
- * nothing further here; its own notifications ride the existing rows.
+ * ⚠ Slice 17 built both order jobs below; Slice 18 adds no NEW job here — its
+ * own contribution is `sweepExpiredOrders` now sending a real email alongside
+ * the notification row it already wrote (Part E6's "order lifecycle ...
+ * expired ... immediate"), since a sweep has no live session to email from.
  */
 
 /**
@@ -63,7 +65,13 @@ export async function sweepExpiredStories(now: Date = new Date()): Promise<numbe
 export async function sweepExpiredOrders(now: Date = new Date()): Promise<number> {
   const candidates = await prisma.foodOrder.findMany({
     where: { status: "PENDING", respondBy: { lte: now } },
-    select: { id: true, clientId: true, orderNumber: true },
+    select: {
+      id: true,
+      clientId: true,
+      clientEmail: true,
+      orderNumber: true,
+      seller: { select: { displayName: true } },
+    },
   });
   if (candidates.length === 0) return 0;
 
@@ -72,9 +80,7 @@ export async function sweepExpiredOrders(now: Date = new Date()): Promise<number
     data: { status: "EXPIRED", expiredAt: now },
   });
 
-  await Promise.all(
-    candidates.map((o) => notifyUser(o.clientId, "ORDER_EXPIRED", { orderId: o.id, orderNumber: o.orderNumber })),
-  );
+  await Promise.all(candidates.map((o) => notifyOrderExpired(o, o.seller)));
 
   return candidates.length;
 }

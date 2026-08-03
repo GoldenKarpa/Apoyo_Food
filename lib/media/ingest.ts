@@ -153,6 +153,29 @@ const STORY_VARIANTS: readonly VariantSpec[] = [
 ];
 
 /**
+ * Order-thread attachments (Slice 18): 1:1, same numeric ladder as every other
+ * preset (400/800/1600 — required for `lib/media/image-loader.ts`'s width
+ * thresholds to select the right variant regardless of aspect).
+ *
+ * ⚠ A "cake design reference" photo has no natural reason to be square, and
+ * cropping COULD cut off the exact detail the photo was sent to show — but
+ * this preset uses `fit: "cover"` (the saliency crop every other preset uses)
+ * rather than inventing an aspect-preserving mode. Two reasons: Part F3's own
+ * design principle is consistent cream framing across mismatched amateur
+ * photos, which this keeps true for message attachments too; and
+ * `sharp.strategy.attention` smart-crops toward the photo's own most visually
+ * interesting region, which is the mitigation that makes "cover" acceptable
+ * here rather than a compromise. If a future slice finds this crops out real
+ * information, an `inside`-fit mode is a contained change to `ingestImage`'s
+ * options, not a rewrite.
+ */
+const ATTACHMENT_VARIANTS: readonly VariantSpec[] = [
+  { suffix: "thumb", width: 400, height: 400 },
+  { suffix: "card", width: 800, height: 800 },
+  { suffix: "full", width: 1600, height: 1600 },
+];
+
+/**
  * EXACTLY the four columns every photo-bearing model in Part D stores — no more.
  *
  * ⚠ That exactness is the point, and it was a Phase-0 review fix. This type
@@ -225,6 +248,20 @@ export async function ingestCategoryHero(buffer: Buffer, mimeType: string): Prom
   );
 }
 
+/**
+ * `FoodOrderMessage.attachmentPath` — order-thread photo attachments (Slice
+ * 18). ⚠ The schema stores only ONE path (unlike every other photo entity's
+ * three-column set), but the `card` key persisted here still has its `thumb`/
+ * `full` siblings written to storage under the same shared media id — the
+ * loader's suffix-swap can still serve them if a future slice adds a zoom/
+ * lightbox, without a second ingest or a schema change.
+ */
+export async function ingestMessageAttachment(buffer: Buffer, mimeType: string): Promise<PhotoVariantPaths> {
+  return toPhotoPaths(
+    await ingestImage(buffer, mimeType, { category: "orders", variants: ATTACHMENT_VARIANTS, blurWidth: 16 }),
+  );
+}
+
 /** Every preset, by name — used by the upload route's `kind` parameter. */
 export const INGEST_PRESETS = {
   meal: ingestMealPhoto,
@@ -233,6 +270,7 @@ export const INGEST_PRESETS = {
   "seller-cover": ingestSellerCover,
   story: ingestStoryPhoto,
   "category-hero": ingestCategoryHero,
+  message: ingestMessageAttachment,
 } as const;
 
 export type IngestPresetName = keyof typeof INGEST_PRESETS;

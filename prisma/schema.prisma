@@ -191,6 +191,18 @@ model FoodSeller {
   displayName String  @map("display_name")
   bio         String?
 
+  /// Slice 18 schema reconciliation — transactional email (order lifecycle,
+  /// thread messages) needs an address, but the ecosystem API contract
+  /// exposes no users-lookup-by-id endpoint (confirmed against
+  /// `Apoyo_Provider_API_Contract.md`) and a sweep-driven send (expiry,
+  /// completion nudges) has no live session to read one from at that point.
+  /// Captured ONCE at onboarding submit from the session that IS available
+  /// then (`lib/actions/onboard-seller.ts`) — the exact snapshot pattern
+  /// Salon's own `SalonProvider.email` uses for the identical gap. Nullable:
+  /// the JWT's email claim is technically optional, and rows created before
+  /// this column existed have none.
+  email String? @map("email")
+
   /// Media variant sets produced by the Slice 4 pipeline (thumb/card/full +
   /// base64 LQIP). Nullable because Slice 13's onboarding is explicitly
   /// skippable-and-resumable — a NOT NULL column here would block a seller from
@@ -531,6 +543,13 @@ model FoodOrder {
   /// Opaque identity-store id of the customer; no relation (see header).
   clientId String @map("client_id")
   sellerId String @map("seller_id")
+
+  /// Slice 18 schema reconciliation — same identity-lookup gap as
+  /// `FoodSeller.email`, snapshotted at the SAME moment for the SAME reason:
+  /// order lifecycle email (accepted/declined/expired) and the message-thread
+  /// digest fire well after the request, often from a sweep with no live
+  /// client session (`createOrderRequest`, Slice 17, now writes this).
+  clientEmail String? @map("client_email")
 
   status                OrderStatus     @default(PENDING)
   fulfillmentMode       FulfillmentMode @map("fulfillment_mode")

@@ -410,7 +410,8 @@
       "cancelReasonPlaceholder": "Cuéntale a la cocina por qué, si quieres",
       "cancelConfirm": "Confirmar cancelación",
       "cancelDismiss": "No, dejarlo",
-      "cancelError": "Eso no funcionó. Inténtalo de nuevo."
+      "cancelError": "Eso no funcionó. Inténtalo de nuevo.",
+      "threadHeading": "Mensajes"
     }
   },
   "seller": {
@@ -929,7 +930,8 @@
       "cancelDismiss": "No, dejarlo",
       "cancelError": "Eso no funcionó. Inténtalo de nuevo.",
       "declineReasonPrefix": "Tu nota",
-      "cancellationReasonPrefix": "Motivo"
+      "cancellationReasonPrefix": "Motivo",
+      "threadHeading": "Mensajes"
     }
   },
   "scaffold": {
@@ -967,5 +969,33 @@
     "CANCELLED_BY_CUSTOMER": "Cancelado por el cliente",
     "CANCELLED_BY_SELLER": "Cancelado por el vendedor",
     "EXPIRED": "Expirado"
+  },
+  "orderThread": {
+    "empty": "Todavía no hay mensajes. ¡Saluda!",
+    "composer": {
+      "placeholder": "Escribe un mensaje…",
+      "attach": "Adjuntar una foto",
+      "removeAttachment": "Quitar foto",
+      "send": "Enviar",
+      "sending": "Enviando…",
+      "error": "Eso no funcionó. Inténtalo de nuevo."
+    },
+    "report": {
+      "trigger": "Reportar este mensaje",
+      "title": "Reportar este mensaje",
+      "description": "Avísale a Apoyo si algo anda mal con este mensaje. Lo revisaremos.",
+      "reasonLabel": "¿Cuál es el problema?",
+      "reason": {
+        "INAPPROPRIATE": "Contenido inapropiado",
+        "SUSPECTED_SCAM": "Posible estafa",
+        "FOOD_SAFETY_CONCERN": "Problema de seguridad alimentaria",
+        "OTHER": "Otra cosa"
+      },
+      "messageLabel": "Detalles (opcional)",
+      "messagePlaceholder": "Cuéntanos más sobre lo que viste",
+      "submit": "Enviar reporte",
+      "submitting": "Enviando…",
+      "thanks": "Gracias, lo revisaremos."
+    }
   }
 }

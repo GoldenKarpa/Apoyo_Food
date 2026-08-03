@@ -26,13 +26,14 @@ import crypto from "crypto";
  */
 
 /** Maps 1:1 to architecture Part D's photo-bearing entities. */
-export type MediaCategory = "listings" | "sellers" | "stories" | "categories";
+export type MediaCategory = "listings" | "sellers" | "stories" | "categories" | "orders";
 
 const VALID_CATEGORIES: readonly MediaCategory[] = [
   "listings",
   "sellers",
   "stories",
   "categories",
+  "orders",
 ];
 
 export function getUploadsBase(): string {

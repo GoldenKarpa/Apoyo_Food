@@ -91,6 +91,10 @@ export async function onboardSeller(
           userId: session.userId,
           slug,
           displayName,
+          // Slice 18 schema reconciliation — see `FoodSeller.email`'s own
+          // schema comment: captured once, here, because this IS the one
+          // moment a live session exists to read it from.
+          email: session.email,
           // `status` is left to the schema default (PENDING) rather than
           // written explicitly — one place decides what a new seller is.
         },

@@ -5,6 +5,9 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { ListingSellerRow } from "@/components/listing-seller-row";
 import { OrderReasonAction } from "@/components/order-reason-action";
+import { OrderThread } from "@/components/order-thread";
+import { OrderMessageComposer } from "@/components/order-message-composer";
+import { OrderThreadPoller } from "@/components/order-thread-poller";
 import { SignedOutNotice } from "@/components/seller/signed-out-notice";
 import { StatusChip } from "@/components/ui/chip";
 import { clientOrderDetail } from "@/lib/order";
@@ -13,6 +16,7 @@ import { markOrderNotificationsRead } from "@/lib/notifications";
 import { formatCentsTtd } from "@/lib/money";
 import { formatFulfillmentInstant } from "@/lib/time";
 import { getFoodSession } from "@/lib/session";
+import type { Locale } from "@/i18n/request";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("client.orders");
@@ -135,6 +139,13 @@ export default async function ClientOrderDetailPage({ params }: { params: Promis
           errorLabel={t("cancelError")}
         />
       )}
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-h2 font-semibold text-ink">{t("threadHeading")}</h2>
+        <OrderThread messages={order.messages} viewerUserId={session.userId} viewerLocale={locale as Locale} />
+        <OrderMessageComposer orderId={order.id} actor="client" />
+      </section>
+      <OrderThreadPoller />
     </div>
   );
 }

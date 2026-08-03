@@ -38,7 +38,9 @@
     "verify:admin": "tsx scripts/verify-admin.ts",
     "verify:admin-e2e": "node scripts/verify-admin-e2e.mjs",
     "verify:orders": "tsx scripts/verify-orders.ts",
-    "verify:order-lifecycle": "node scripts/verify-order-lifecycle.mjs"
+    "verify:order-lifecycle": "node scripts/verify-order-lifecycle.mjs",
+    "verify:order-thread": "tsx scripts/verify-order-thread.ts",
+    "verify:order-thread-e2e": "node scripts/verify-order-thread-e2e.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -53,6 +55,7 @@
     "next": "^15.5.18",
     "next-auth": "5.0.0-beta.31",
     "next-intl": "^4.13.0",
+    "nodemailer": "^7.0.13",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.56.4",
@@ -63,6 +66,7 @@
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/nodemailer": "^6.4.24",
     "@types/piexifjs": "^1.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -69,6 +69,18 @@ export async function createOrderWithRetry<T>(
   return null;
 }
 
+/** The order thread (Slice 18) — shared by both detail selects below, one shape either surface renders. */
+const ORDER_MESSAGE_SELECT = {
+  id: true,
+  senderUserId: true,
+  originalText: true,
+  originalLocale: true,
+  translations: true,
+  attachmentPath: true,
+  attachmentKind: true,
+  createdAt: true,
+} satisfies Prisma.FoodOrderMessageSelect;
+
 // ── Seller inbox ─────────────────────────────────────────────────────────────
 
 const SELLER_ORDER_LIST_SELECT = {
@@ -126,6 +138,7 @@ const SELLER_ORDER_DETAIL_SELECT = {
   items: {
     select: { id: true, listingId: true, titleSnapshot: true, priceCentsSnapshot: true, quantity: true, note: true },
   },
+  messages: { select: ORDER_MESSAGE_SELECT, orderBy: { createdAt: "asc" } },
 } satisfies Prisma.FoodOrderSelect;
 
 export type SellerOrderDetail = NonNullable<Awaited<ReturnType<typeof sellerOrderDetail>>>;
@@ -183,6 +196,7 @@ const CLIENT_ORDER_DETAIL_SELECT = {
   seller: {
     select: { id: true, displayName: true, slug: true, profileImageThumb: true, profileImageBlur: true },
   },
+  messages: { select: ORDER_MESSAGE_SELECT, orderBy: { createdAt: "asc" } },
 } satisfies Prisma.FoodOrderSelect;
 
 export type ClientOrderDetail = NonNullable<Awaited<ReturnType<typeof clientOrderDetail>>>;

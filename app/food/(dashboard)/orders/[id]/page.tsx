@@ -5,6 +5,9 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { AcceptOrderForm } from "@/components/seller/accept-order-form";
 import { OrderCompleteButton } from "@/components/order-simple-action";
 import { OrderReasonAction } from "@/components/order-reason-action";
+import { OrderThread } from "@/components/order-thread";
+import { OrderMessageComposer } from "@/components/order-message-composer";
+import { OrderThreadPoller } from "@/components/order-thread-poller";
 import { SignedOutNotice } from "@/components/seller/signed-out-notice";
 import { StatusChip } from "@/components/ui/chip";
 import { loadSellerWorkspace } from "@/lib/seller";
@@ -13,6 +16,7 @@ import { ORDER_STATUS_TONE } from "@/lib/order-status-labels";
 import { markOrderNotificationsRead } from "@/lib/notifications";
 import { formatCentsTtd } from "@/lib/money";
 import { formatFulfillmentInstant } from "@/lib/time";
+import type { Locale } from "@/i18n/request";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("seller.orders");
@@ -135,6 +139,13 @@ export default async function SellerOrderDetailPage({ params }: { params: Promis
             {t("cancellationReasonPrefix")}: {order.cancellationReason}
           </p>
         )}
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-h2 font-semibold text-ink">{t("threadHeading")}</h2>
+        <OrderThread messages={order.messages} viewerUserId={workspace.seller.userId} viewerLocale={locale as Locale} />
+        <OrderMessageComposer orderId={order.id} actor="seller" />
+      </section>
+      <OrderThreadPoller />
     </div>
   );
 }
