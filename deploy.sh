@@ -59,10 +59,17 @@ echo ""
 echo "[1/6] Pulling latest from origin/main..."
 run_as_user "GIT_SSH_COMMAND='ssh -o StrictHostKeyChecking=accept-new' git pull"
 
-# What changed between the old HEAD and the new one. Read-only, so it runs
-# directly — root can always read the repo. Empty when the pull was a no-op;
-# every later step degrades gracefully in that case.
-CHANGED=$(cd "$APP_DIR" && git diff HEAD@{1} HEAD --name-only 2>/dev/null || true)
+# What changed between the old HEAD and the new one. Routed through
+# run_as_user, NOT run directly as root against $APP_DIR — even a read-only
+# `git diff` trips git's "dubious ownership" guard when the caller's UID
+# doesn't match the checkout's owning `user` account, and that failure was
+# silently swallowed by `2>/dev/null || true` below, leaving CHANGED
+# permanently empty regardless of what actually changed. Found live during
+# Slice 19's own deploy: npm ci was silently skipped despite a new dependency
+# (nodemailer) actually being added, and "no new migration files" was
+# reported even though three genuinely new ones had just landed. Same bug,
+# same fix, as the Apoyo-Demia app's own deploy.sh (its commit `5127e54`).
+CHANGED=$(run_as_user "git diff HEAD@{1} HEAD --name-only" 2>/dev/null || true)
 
 # ── 2. Dependencies ───────────────────────────────────────────────────────
 echo ""
