@@ -12,14 +12,16 @@
 # account. Root can do that password-free; a non-root caller re-asserting
 # itself cannot.
 #
-# This is a REDEPLOY script, not a bootstrap one — it assumes `food-web`
-# already exists under user-pm2 (DEPLOYMENT.md's one-time `user-pm2 start ...`
-# is what creates it; a bare `restart` here reuses whatever binary/cwd/args
-# that original start call gave PM2, deliberately never re-specified here).
+# This is a REDEPLOY script, not a bootstrap one — it assumes `food-web` AND
+# `food-sweep` already exist under user-pm2 (DEPLOYMENT.md's one-time
+# `user-pm2 start ...` commands are what create them; a bare `restart` here
+# reuses whatever binary/cwd/args/interpreter that original start call gave
+# PM2, deliberately never re-specified here).
 #
-# No background processes yet: `food-sweep` (Fresh Today expiry, stale-order
-# expiry) arrives with Slice 15 and is wired into prod at Slice 19 — a restart
-# line for it belongs here then, not now.
+# `food-sweep` (Fresh Today expiry, stale-order expiry + completion nudges) is
+# a persistent tsx sidecar, same shape as Salon's own `salon-sweep` — only
+# restarted here when its own source changed (step 7 below), mirroring
+# Salon's deploy.sh exactly rather than inventing a new convention.
 #
 # Diff-aware pattern ported from Salon's deploy.sh (E5): skip `npm ci` when the
 # lockfile didn't change; always run `prisma migrate deploy` regardless, since
@@ -128,8 +130,24 @@ run_as_user "npm run build"
 # Unwrapped/direct — user-pm2's wrapper does the su internally; see the
 # top-of-file usage comment for why wrapping the whole script breaks that.
 echo ""
-echo "[6/6] Restarting food-web..."
+echo "[6/7] Restarting food-web..."
 user-pm2 restart food-web
+
+# ── 7. Conditionally restart food-sweep ──────────────────────────────────
+# Same limitation Salon's own script accepts: this only catches changes to
+# the sweep's own directly-owned source, not every shared lib/ file it
+# transitively imports (e.g. lib/availability.ts, lib/notifications.ts). A
+# shared-lib-only change won't trigger a restart here — acceptable because
+# food-sweep re-execs `tsx` fresh on every restart regardless, and the
+# process is cheap to bounce manually if a future slice's own deploy notes
+# call for it explicitly.
+echo ""
+if echo "$CHANGED" | grep -qE "^(scripts/sweep\.ts|lib/sweep\.ts)$"; then
+  echo "[7/7] food-sweep source changed — restarting..."
+  user-pm2 restart food-sweep
+else
+  echo "[7/7] food-sweep unchanged — no restart needed"
+fi
 
 echo ""
 echo "=== Deploy complete ==="

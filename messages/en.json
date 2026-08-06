@@ -30,40 +30,10 @@
     "acknowledge": "Got it",
     "phaseNote": "Planned for phase {phase} of the build.",
     "features": {
-      "requestOrder": {
-        "action": "Request order",
-        "title": "Requesting an order",
-        "description": "You will pick items and quantities, choose pickup, delivery or a meet-up, and propose a date and time that fits the cook's availability. Nothing is charged here: the cook confirms first, and payment happens between the two of you."
-      },
-      "buyerOrders": {
-        "action": "My orders",
-        "title": "Your orders",
-        "description": "Every request you make will live here with its status — waiting on the cook, accepted, ready, completed — along with the agreed price and the conversation thread for the details."
-      },
-      "messageSeller": {
-        "action": "Message the cook",
-        "title": "Talking to a cook",
-        "description": "Messaging is built into an order rather than sitting on a profile, and it translates itself between English and Spanish. That is on purpose: it keeps pickup addresses and phone numbers out of public pages and inside a conversation that only starts once a cook has accepted your request."
-      },
       "buyerAccount": {
         "action": "Account",
         "title": "Your account",
         "description": "Saved addresses, your language, notification settings and your Apoyo profile will live here. You can browse the whole marketplace without an account — you are only asked to sign in when you commit to something."
-      },
-      "sellerListings": {
-        "action": "Add a dish",
-        "title": "Your listings",
-        "description": "Each dish gets its own page: photos, what it costs (a fixed price, a starting price, or price on request), how many people it feeds, dietary tags, and when it is available — a standing weekday schedule, a pre-order lead time, or a date range for a season."
-      },
-      "sellerStories": {
-        "action": "Post today's food",
-        "title": "Fresh Today",
-        "description": "Post what came out of your kitchen today in a few taps: a photo, a line about it, and optionally the dish it belongs to. It appears at the top of the home page for the people who follow you and disappears on its own."
-      },
-      "sellerOrders": {
-        "action": "Order inbox",
-        "title": "Orders from buyers",
-        "description": "Requests arrive here with what was asked for, when it is wanted and how it should be handed over. You accept — setting the price if the dish is quote-based — or decline, and the conversation for the details opens once you have accepted."
       },
       "sellerInsights": {
         "action": "Insights",

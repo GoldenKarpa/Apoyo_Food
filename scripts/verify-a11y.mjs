@@ -717,11 +717,13 @@ async function run() {
     // `sellerListings` (the nav links to `/food/listings` now); Slice 15
     // retired `sellerStories` (the nav links to `/food/stories` now); Slice 17
     // retired `requestOrder`, `buyerOrders` and `sellerOrders` (the real order
-    // lifecycle). All are checked for ABSENCE below, not merely dropped from
-    // the present-list — a retirement that silently regressed (the stub
-    // coming back because a later edit re-added the registry key) would
-    // otherwise pass this audit by doing nothing.
-    for (const key of ["messageSeller", "buyerAccount", "sellerInsights"]) {
+    // lifecycle); Slice 19 retired `messageSeller` (never actually wired to a
+    // real call site — see lib/coming-soon.ts's own Slice 19 note). All are
+    // checked for ABSENCE below, not merely dropped from the present-list — a
+    // retirement that silently regressed (the stub coming back because a
+    // later edit re-added the registry key) would otherwise pass this audit
+    // by doing nothing.
+    for (const key of ["buyerAccount", "sellerInsights"]) {
       check(stubs.includes(key), `stubs: "${key}" rendered a trigger`);
     }
     check(!stubs.includes("becomeSeller"), `stubs: "becomeSeller" retired (Slice 13)`);
@@ -730,6 +732,7 @@ async function run() {
     check(!stubs.includes("requestOrder"), `stubs: "requestOrder" retired (Slice 17)`);
     check(!stubs.includes("buyerOrders"), `stubs: "buyerOrders" retired (Slice 17)`);
     check(!stubs.includes("sellerOrders"), `stubs: "sellerOrders" retired (Slice 17)`);
+    check(!stubs.includes("messageSeller"), `stubs: "messageSeller" retired (Slice 19)`);
 
     await context.close();
   }

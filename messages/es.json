@@ -30,40 +30,10 @@
     "acknowledge": "Entendido",
     "phaseNote": "Previsto para la fase {phase} de la construcción.",
     "features": {
-      "requestOrder": {
-        "action": "Solicitar pedido",
-        "title": "Solicitar un pedido",
-        "description": "Elegirás platos y cantidades, escogerás recogida, entrega o punto de encuentro, y propondrás una fecha y hora que encaje con la disponibilidad del cocinero. Aquí no se cobra nada: primero confirma el cocinero, y el pago ocurre entre ustedes dos."
-      },
-      "buyerOrders": {
-        "action": "Mis pedidos",
-        "title": "Tus pedidos",
-        "description": "Cada solicitud que hagas vivirá aquí con su estado — esperando al cocinero, aceptado, listo, completado — junto al precio acordado y el hilo de conversación para los detalles."
-      },
-      "messageSeller": {
-        "action": "Escribir al cocinero",
-        "title": "Hablar con un cocinero",
-        "description": "La mensajería vive dentro de un pedido y no en el perfil, y se traduce sola entre español e inglés. Es a propósito: mantiene las direcciones de recogida y los teléfonos fuera de las páginas públicas y dentro de una conversación que solo empieza cuando el cocinero acepta tu solicitud."
-      },
       "buyerAccount": {
         "action": "Perfil",
         "title": "Tu cuenta",
         "description": "Aquí vivirán tus direcciones guardadas, tu idioma, los avisos y tu perfil de Apoyo. Puedes explorar todo el mercado sin cuenta — solo se te pide iniciar sesión cuando confirmas algo."
-      },
-      "sellerListings": {
-        "action": "Añadir un plato",
-        "title": "Tus platos",
-        "description": "Cada plato tiene su propia página: fotos, cuánto cuesta (precio fijo, precio desde, o a consultar), para cuántas personas es, etiquetas dietéticas y cuándo está disponible: un horario semanal fijo, un plazo de encargo previo, o un rango de fechas para una temporada."
-      },
-      "sellerStories": {
-        "action": "Publicar lo de hoy",
-        "title": "En la cocina hoy",
-        "description": "Publica en pocos toques lo que salió hoy de tu cocina: una foto, una línea sobre ella y, si quieres, el plato al que pertenece. Aparece arriba en la página de inicio para quienes te siguen y desaparece solo."
-      },
-      "sellerOrders": {
-        "action": "Bandeja de pedidos",
-        "title": "Pedidos de los compradores",
-        "description": "Las solicitudes llegan aquí con qué se pidió, para cuándo y cómo se quiere recibir. Aceptas — fijando el precio si el plato es a consultar — o rechazas, y la conversación con los detalles se abre en cuanto aceptas."
       },
       "sellerInsights": {
         "action": "Estadísticas",

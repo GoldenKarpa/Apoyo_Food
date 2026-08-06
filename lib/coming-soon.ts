@@ -61,13 +61,8 @@ export interface ComingSoonEntry {
  *
  * - `requestOrder`  — GONE (Slice 17). Was the sticky listing CTA (Slice 10
  *   rendered it). `<RequestOrderSheet>` replaces it now.
- * - `messageSeller` — Slice 7's brief asks for "contact-seller-follow-through
- *   (if any)". There IS one, and it is worth being explicit about: Part E5/E6
- *   put ALL buyer↔seller conversation inside an accepted order's thread, so a
- *   seller profile deliberately has no "message me" affordance in the shipped
- *   product. A demo viewer will still reach for one on a profile, and the
- *   modal's job is to explain that design decision rather than pretend the
- *   control doesn't exist. Slice 18 builds the thread.
+ * - `messageSeller` — GONE (Slice 19, retired rather than replaced — see the
+ *   Slice 19 note below for why this one didn't follow the usual pattern).
  * - `buyerOrders`   — GONE (Slice 17). Was the bottom nav's Orders
  *   destination; it links to the real `/orders` now.
  * - `buyerAccount`  — the nav's Account destination. Flagged as an addition
@@ -114,11 +109,29 @@ export interface ComingSoonEntry {
  * is built now. The one-line contract, applied a third time: the listing
  * page's sticky CTA (`<RequestOrderSheet>`), the bottom tab bar's Orders
  * destination, and the seller nav's Orders destination all link/render for
- * real instead of opening a modal. `messageSeller` and `sellerInsights` are
- * the two keys still standing — Slice 18 and Phase 6 respectively.
+ * real instead of opening a modal. `messageSeller` and `sellerInsights` were
+ * the two keys still standing after this slice — Slice 18 and Phase 6
+ * respectively.
+ *
+ * ── Slice 19: `messageSeller` retired, but NOT by the usual pattern ──
+ * Found during this slice's own bilingual-sweep/no-retrofit-debt pass: this
+ * key had never actually been wired to a real call site.
+ * `app/(client)/sellers/[slug]/page.tsx` (built Slice 11) never rendered
+ * `<ComingSoon feature="messageSeller">` — `git log` on that file confirms no
+ * commit ever added it — so the seller profile has shipped, every slice since
+ * Slice 11, with no "message me" affordance and no modal explaining its
+ * absence either. Only the style guide's component gallery ever rendered
+ * this one, which isn't a real user-facing surface. Once Slice 18 built the
+ * real order thread (Part E5/E6's actual buyer↔seller channel, reachable
+ * once a seller accepts a request), the registry entry's own reason for
+ * being — "explain to a demo viewer why there's no message button here" —
+ * stopped being reachable by anyone who could act on the explanation. Rather
+ * than wire the stub onto the profile this late just to satisfy the pattern,
+ * the entry is retired outright: `buyerAccount` and `sellerInsights` are the
+ * two keys still standing, both genuinely deferred to a later phase rather
+ * than silently dead.
  */
 export const COMING_SOON_FEATURES = {
-  messageSeller: { phase: 3, slice: 18, icon: "message" },
   buyerAccount: { phase: 4, slice: 0, icon: "user" },
   sellerInsights: { phase: 6, slice: 0, icon: "chart" },
 } as const satisfies Record<string, ComingSoonEntry>;
