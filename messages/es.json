@@ -16,7 +16,9 @@
       "client": "Cliente",
       "provider": "Vendedor",
       "admin": "Admin"
-    }
+    },
+    "moreComingTitle": "Aquí llegará más",
+    "moreComingBody": "Tus direcciones guardadas, tu idioma, los avisos y el resto de tu perfil de Apoyo vivirán aquí."
   },
   "nav": {
     "primary": "Navegación principal",

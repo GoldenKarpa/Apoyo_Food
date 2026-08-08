@@ -16,7 +16,9 @@
       "client": "Client",
       "provider": "Provider",
       "admin": "Admin"
-    }
+    },
+    "moreComingTitle": "More is coming here",
+    "moreComingBody": "Saved addresses, your language, notification settings and the rest of your Apoyo profile will live here."
   },
   "nav": {
     "primary": "Main navigation",

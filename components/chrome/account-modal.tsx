@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/bottom-sheet";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
+import { ComingSoonBadge } from "@/components/coming-soon";
 import { accountInitial, type AccountSummary } from "@/lib/account-summary";
 import { cn } from "@/lib/utils";
 
@@ -91,6 +92,23 @@ export function AccountModal({ summary, children }: { summary: AccountSummary; c
         <div className="flex flex-wrap gap-2">
           <Chip variant="neutral">{summary.isProvider ? t("badges.provider") : t("badges.client")}</Chip>
           {summary.isAdmin && <Chip variant="neutral">{t("badges.admin")}</Chip>}
+        </div>
+
+        {/*
+         * This modal is deliberately a summary, not the full account-
+         * management page `<PlaceholderPage>` used to promise (addresses,
+         * language, notification settings) — that's still real, unbuilt Phase
+         * 4 scope. Replacing the old stub with this one silently dropped the
+         * only place that said so, which is exactly what prompted this note:
+         * carrying the SAME "more is coming" context forward rather than
+         * letting a signed-in visitor assume this modal is the whole feature.
+         */}
+        <div className="flex flex-col gap-1 rounded-card bg-sunken p-4">
+          <div className="flex items-center gap-2">
+            <ComingSoonBadge />
+            <p className="text-label font-medium text-ink">{t("moreComingTitle")}</p>
+          </div>
+          <p className="text-caption text-ink-muted">{t("moreComingBody")}</p>
         </div>
 
         <BottomSheetFooter>

@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
 
 import { LocaleToggle } from "@/components/locale-toggle";
+import { AccountAvatarIcon, AccountModal } from "@/components/chrome/account-modal";
+import { getAccountSummary } from "@/lib/get-account-summary";
 
 /**
  * Seller dashboard + admin shell — served at portal.apoyolime.com/food/… and
@@ -17,9 +19,16 @@ import { LocaleToggle } from "@/components/locale-toggle";
  * who already owns a `FoodSeller` row, but that is presentation — every write
  * re-resolves the seller from the session (`lib/seller.ts`), and per Slice 16's
  * warning a layout gate controls what is *displayed*, not what *executes*.
+ *
+ * The account avatar (Slice 21, extended here) reuses the exact same
+ * `<AccountModal>`/`getAccountSummary()` the client surface uses — both are
+ * already generic over which surface renders them. Unlike the client
+ * surface, there is no pre-existing "Account" stub to preserve here, so a
+ * signed-out visitor simply sees no avatar at all (this header already had
+ * nothing account-related before this change).
  */
 export default async function FoodSurfaceLayout({ children }: { children: React.ReactNode }) {
-  const t = await getTranslations("brand");
+  const [t, accountSummary] = await Promise.all([getTranslations("brand"), getAccountSummary()]);
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -31,9 +40,19 @@ export default async function FoodSurfaceLayout({ children }: { children: React.
               /food
             </span>
           </div>
-          {/* Sellers are Spanish-first, but the toggle is still always visible
-              here — the seller surface merely DEFAULTS to es (i18n/request.ts). */}
-          <LocaleToggle />
+          <div className="flex items-center gap-3">
+            {/* Sellers are Spanish-first, but the toggle is still always
+                visible here — the seller surface merely DEFAULTS to es
+                (i18n/request.ts). */}
+            <LocaleToggle />
+            {accountSummary && (
+              <AccountModal summary={accountSummary}>
+                <button type="button" className="tap-target flex items-center justify-center rounded-pill hover:bg-sunken" data-account-avatar="">
+                  <AccountAvatarIcon summary={accountSummary} className="h-5 w-5" />
+                </button>
+              </AccountModal>
+            )}
+          </div>
         </div>
       </header>
       {children}

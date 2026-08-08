@@ -1134,6 +1134,22 @@ Files modified: `lib/session.ts` (`FoodSession.name`), `app/(client)/layout.tsx`
 
 ---
 
+### Slice 22 — Restore "more is coming" context; extend the account indicator to the seller surface (found live, correcting a Slice 21 scope gap)
+
+Not planned — found live, from the user's own phone testing of Slice 21 immediately after it deployed. Two distinct corrections, both real:
+
+**1. The new modal silently dropped context the old stub carried.** Slice 21's own Tier-3 scope was always name/email/role badges only — never addresses, saved settings, or a management page, and no prior message in this build ever promised those from the NEW modal. But the OLD `<ComingSoon feature="buyerAccount">` stub it replaced *did* say "planned for phase 4" in its own body copy, and that context — "there's more coming, this isn't the whole feature" — had nowhere to land once the stub was gone for a signed-in visitor. Fixed by ADDING a note back into `<AccountModal>` (`components/chrome/account-modal.tsx`), not reverting the feature: a `<ComingSoonBadge>` + `account.moreComingTitle`/`account.moreComingBody` block, placed between the role badges and the footer, carrying the same "addresses, language, notification settings" framing the old stub used. The avatar/modal itself is unchanged and stays live.
+
+**2. The account indicator only ever reached the client surface.** Slice 21's own done-when was scoped to "a session," but the actual build only wired `getAccountSummary()`/`<AccountModal>` into `app/(client)/layout.tsx` — the seller/provider dashboard (`app/food/layout.tsx`) had zero account-related UI, before or after. Confirmed by reading that layout directly before writing anything: its header was wordmark + `/food` badge + `<LocaleToggle>`, nothing else. Fixed by reusing the exact same `AccountModal`/`AccountAvatarIcon`/`getAccountSummary` — all three were already surface-generic, needing no changes of their own — wired into the seller header's own right-hand cluster, next to the locale toggle. **Signed-out on this surface shows no avatar at all**, deliberately: unlike the client surface there was no pre-existing stub here to preserve, so there's nothing to branch against.
+
+**Verification:** `tsc`/lint/`next build` clean (same route list, no new routes). Bilingual parity **759/759** (up from Slice 21's 757 — the two new `account.moreComingTitle`/`moreComingBody` keys, exact key-set diff). A dedicated Playwright script (9/9, not part of the permanent `verify:*` suite, created in `scripts/` then deleted after running) confirmed: the client modal shows name + the restored "more is coming" note + zero console errors in both locales; the seller surface's own header renders the avatar for a signed-in visitor and opens the identical modal with the same identity info; the seller surface signed-out shows no avatar and zero errors. Full regression re-run clean and unchanged: `vitest` 27/27, `verify:a11y` 498/0, `verify:admin-e2e` 28/28, `verify:order-lifecycle` 33/33, `verify:listing-editor` 38/38, `verify:story-posting` 28/28.
+
+**⚠ Still open, not this slice's fix:** a real-account Provider-badge report from the user's own phone testing (a seller-registered test account showing "Client" instead of "Provider") — diagnostic SQL handed to the user to run against prod (Food's own `food_sellers` row status, and the identity DB's `vertical_memberships` row for `(FOOD, PROVIDER)`) to tell whether this is a genuine bug in `requireFoodSeller()`'s live check or the account itself never completed admin approval. Not yet run/reported back at the time of this entry.
+
+Files modified: `components/chrome/account-modal.tsx` (restored "more is coming" note), `app/food/layout.tsx` (account avatar/modal wired into the seller header), `messages/{en,es}.json` (759/759, `account.moreComingTitle`/`moreComingBody`), `BUILD_SLICES.md`.
+
+---
+
 ## Phases 4+ (architected in `Apoyo_Food_Architecture.md` Part I — slice when reached)
 
 4 Saved & repeat (collections, order-again recs) · 5 Advanced search & trending materialization · 6 Seller dashboard & insights (k-anonymity floor — the signature feature) · 7 Reviews & portal reputation events · 8 Customer requests board · 9 Verification, geocoding, web-push, ws chat upgrade.
