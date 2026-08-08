@@ -14,7 +14,8 @@
     "title": "Your account",
     "badges": {
       "client": "Client",
-      "provider": "Provider",
+      "providerOf": "{vertical} · Provider",
+      "providerPending": "{vertical} · Setup pending",
       "admin": "Admin"
     },
     "moreComingTitle": "More is coming here",

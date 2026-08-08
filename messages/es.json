@@ -14,7 +14,8 @@
     "title": "Tu cuenta",
     "badges": {
       "client": "Cliente",
-      "provider": "Vendedor",
+      "providerOf": "{vertical} · Vendedor",
+      "providerPending": "{vertical} · Configuración pendiente",
       "admin": "Admin"
     },
     "moreComingTitle": "Aquí llegará más",

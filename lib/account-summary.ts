@@ -11,11 +11,28 @@
  * `next/headers`. Keeping the server-only fetch in its own file is what makes
  * that boundary safe to reason about.
  */
+/**
+ * Food's own standing, three-way rather than a boolean:
+ *  - `"provider"` — a fully ACTIVE local `FoodSeller` row AND an active
+ *    `(FOOD, PROVIDER)` ecosystem membership. The real, dashboard-eligible case.
+ *  - `"provider_pending"` — the ecosystem membership exists (another vertical's
+ *    onboarding, a directly-seeded fixture, or a partial signup) but no local
+ *    `FoodSeller` row does. Genuinely different from an ordinary buyer, and
+ *    worth surfacing as such rather than silently folding into `"client"`.
+ *  - `"client"` — neither of the above; Food's own implicit default state for
+ *    any signed-in visitor, per `lib/get-account-summary.ts`'s own note.
+ */
+export type FoodProviderStatus = "provider" | "provider_pending" | "client";
+
+/** The other verticals a Provider badge can legitimately name — DEMIA excluded on purpose, kept off this account surface. */
+export type OtherProviderVertical = "APPAREL" | "SALON" | "SOCIAL";
+
 export interface AccountSummary {
   email: string;
   name: string | null;
-  /** A fully ACTIVE seller, not merely PENDING — see `lib/get-account-summary.ts`. */
-  isProvider: boolean;
+  foodStatus: FoodProviderStatus;
+  /** Other verticals with an active `PROVIDER` ecosystem membership — Food has no local completion signal for these, so there is no `_pending` equivalent here. */
+  otherProviderVerticals: OtherProviderVertical[];
   isAdmin: boolean;
 }
 

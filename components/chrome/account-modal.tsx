@@ -11,10 +11,18 @@ import {
   BottomSheetTrigger,
 } from "@/components/ui/bottom-sheet";
 import { Button } from "@/components/ui/button";
-import { Chip } from "@/components/ui/chip";
+import { Chip, StatusChip } from "@/components/ui/chip";
 import { ComingSoonBadge } from "@/components/coming-soon";
-import { accountInitial, type AccountSummary } from "@/lib/account-summary";
+import { accountInitial, type AccountSummary, type OtherProviderVertical } from "@/lib/account-summary";
 import { cn } from "@/lib/utils";
+
+/** Display names for the badge row — proper nouns, deliberately identical across locales (the same convention "Apoyo Food" itself already gets in the Spanish footer copy). */
+const VERTICAL_LABELS: Record<"FOOD" | OtherProviderVertical, string> = {
+  FOOD: "Food",
+  APPAREL: "Apparel",
+  SALON: "Salon",
+  SOCIAL: "Social",
+};
 
 /**
  * A drop-in replacement for the plain `<User>` nav icon, for a SIGNED-IN
@@ -60,16 +68,26 @@ export function AccountAvatarIcon({
  * account-indicator feature (Slice 21, found needed while onboarding/demo
  * testing: there was no way to tell who, or what capacity, a session was in).
  *
- * ⚠ Client/Provider are shown as ONE OR the other, never both, even though the
- * underlying capabilities are NOT mutually exclusive (an active seller can
- * also browse/order as a buyer — no architectural clash). "Client" here means
- * the *implicit default* state for any signed-in non-provider, not a real
- * `(FOOD, CLIENT)` membership check — that membership is minted lazily on a
- * buyer's first save/follow/order, so a brand-new signed-in visitor would
- * otherwise show no badge at all. Showing "Provider" alone for a confirmed
- * active seller keeps the common case unambiguous rather than redundant.
- * Admin is a real, independent, always-separate badge (a different axis
- * entirely — global role, not Food standing).
+ * Slice 22 extended this to a cross-vertical badge row, found needed the same
+ * way: a real account surfaced with an ACTIVE `(FOOD, PROVIDER)` ecosystem
+ * membership but no local `FoodSeller` row, and the old binary Client/Provider
+ * check silently mislabeled it "Client" — indistinguishable from an ordinary
+ * buyer. Badge rules, worked out with the user directly, not assumed:
+ *  - Food's OWN standing gets exactly one badge: "Food · Provider" (fully
+ *    active), "Food · Setup pending" (ecosystem membership without a local
+ *    row — the case above), or plain "Client" (Food's implicit default for
+ *    everyone else — not a real `(FOOD, CLIENT)` membership check, since that
+ *    membership is minted lazily on a buyer's first save/follow/order).
+ *  - Every OTHER vertical (Apparel, Salon, Social — DEMIA deliberately
+ *    excluded, kept off this surface) gets a Provider chip ONLY, never a
+ *    Client chip: "Client" is an unearned default everywhere, not worth
+ *    surfacing for a vertical the visitor isn't even on; "Provider" is a real,
+ *    opt-in achievement worth showing regardless of which vertical's own
+ *    interface is currently open. There is no `_pending` state for these —
+ *    Food has no visibility into another vertical's own local onboarding
+ *    completion, only its ecosystem membership.
+ *  - Admin is a real, independent, always-separate badge (a different axis
+ *    entirely — global role, not vertical standing).
  */
 export function AccountModal({ summary, children }: { summary: AccountSummary; children: React.ReactNode }) {
   const t = useTranslations("account");
@@ -90,7 +108,20 @@ export function AccountModal({ summary, children }: { summary: AccountSummary; c
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Chip variant="neutral">{summary.isProvider ? t("badges.provider") : t("badges.client")}</Chip>
+          {summary.foodStatus === "provider" && (
+            <Chip variant="neutral">{t("badges.providerOf", { vertical: VERTICAL_LABELS.FOOD })}</Chip>
+          )}
+          {summary.foodStatus === "provider_pending" && (
+            <StatusChip tone="pending">
+              {t("badges.providerPending", { vertical: VERTICAL_LABELS.FOOD })}
+            </StatusChip>
+          )}
+          {summary.foodStatus === "client" && <Chip variant="neutral">{t("badges.client")}</Chip>}
+          {summary.otherProviderVerticals.map((vertical) => (
+            <Chip key={vertical} variant="neutral">
+              {t("badges.providerOf", { vertical: VERTICAL_LABELS[vertical] })}
+            </Chip>
+          ))}
           {summary.isAdmin && <Chip variant="neutral">{t("badges.admin")}</Chip>}
         </div>
 
