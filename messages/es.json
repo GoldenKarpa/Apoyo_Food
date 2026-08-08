@@ -276,11 +276,40 @@
     },
     "login": {
       "title": "Iniciar sesión",
-      "body": "El inicio de sesión se envía al emisor central (portal-web) — se conecta en el Slice 3. Explorar nunca requiere una cuenta; solo se pide iniciar sesión al confirmar algo."
+      "description": "Explorar nunca requiere una cuenta; solo se pide iniciar sesión al confirmar algo.",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "submit": "Iniciar sesión",
+      "submitting": "Iniciando sesión…",
+      "noAccount": "¿No tienes cuenta?",
+      "signUp": "Crear cuenta",
+      "invalidCredentials": "El correo o la contraseña no son correctos.",
+      "networkError": "No pudimos conectar con el servicio de inicio de sesión — inténtalo de nuevo en un momento.",
+      "captchaRequired": "Completa el CAPTCHA, por favor.",
+      "invalidEmail": "Escribe un correo electrónico válido.",
+      "passwordRequired": "Escribe tu contraseña."
     },
     "register": {
       "title": "Crear una cuenta",
-      "body": "El registro se envía al emisor central (portal-web) — se conecta en el Slice 3."
+      "description": "El registro pasa por el servicio de identidad compartido de Apoyo — la misma cuenta funciona en todos los sitios de Apoyo.",
+      "displayName": "Nombre",
+      "email": "Correo electrónico",
+      "password": "Contraseña",
+      "minPassword": "Al menos 8 caracteres",
+      "submit": "Crear cuenta",
+      "submitting": "Creando cuenta…",
+      "alreadyHaveAccount": "¿Ya tienes cuenta?",
+      "signIn": "Iniciar sesión",
+      "checkEmailTitle": "Revisa tu correo",
+      "checkEmailBody": "Te enviamos un enlace de confirmación — haz clic para terminar de crear tu cuenta.",
+      "genericError": "Algo salió mal. Inténtalo de nuevo.",
+      "networkError": "No pudimos conectar con el servicio de registro — inténtalo de nuevo en un momento.",
+      "captchaRequired": "Completa el CAPTCHA, por favor.",
+      "invalidEmail": "Escribe un correo electrónico válido.",
+      "displayNameTooShort": "El nombre debe tener al menos 2 caracteres.",
+      "displayNameTooLong": "El nombre es demasiado largo.",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+      "passwordTooLong": "La contraseña es demasiado larga."
     },
     "sections": {
       "freshTodayNote": "Lo que están cocinando cerca de ti ahora mismo.",
@@ -363,7 +392,8 @@
     },
     "signedOut": {
       "title": "Inicia sesión para ver tus pedidos",
-      "body": "Pedir necesita una cuenta de Apoyo. Inicia sesión en cualquier sitio de Apoyo con la cuenta que ya usas y vuelve a esta página: la misma sesión funciona en todo el ecosistema."
+      "body": "Pedir necesita una cuenta de Apoyo. Inicia sesión en cualquier sitio de Apoyo con la cuenta que ya usas y vuelve a esta página: la misma sesión funciona en todo el ecosistema.",
+      "signIn": "Iniciar sesión"
     },
     "orderDetail": {
       "itemsHeading": "Artículos",

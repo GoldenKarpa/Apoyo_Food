@@ -276,11 +276,40 @@
     },
     "login": {
       "title": "Sign in",
-      "body": "Sign-in posts to the central issuer (portal-web) — wired in Slice 3. Browsing never requires an account; you are only asked to sign in when you commit to something."
+      "description": "Browsing never requires an account; you are only asked to sign in when you commit to something.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "invalidCredentials": "That email or password isn't right.",
+      "networkError": "Couldn't reach the sign-in service — try again in a moment.",
+      "captchaRequired": "Please complete the CAPTCHA.",
+      "invalidEmail": "Enter a valid email address.",
+      "passwordRequired": "Enter your password."
     },
     "register": {
       "title": "Create an account",
-      "body": "Registration posts to the central issuer (portal-web) — wired in Slice 3."
+      "description": "Registration goes through the shared Apoyo identity service — the same account works on every Apoyo site.",
+      "displayName": "Name",
+      "email": "Email",
+      "password": "Password",
+      "minPassword": "At least 8 characters",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "alreadyHaveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "checkEmailTitle": "Check your email",
+      "checkEmailBody": "We sent a confirmation link — click it to finish creating your account.",
+      "genericError": "Something went wrong. Try again.",
+      "networkError": "Couldn't reach the registration service — try again in a moment.",
+      "captchaRequired": "Please complete the CAPTCHA.",
+      "invalidEmail": "Enter a valid email address.",
+      "displayNameTooShort": "Name must be at least 2 characters.",
+      "displayNameTooLong": "Name is too long.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordTooLong": "Password is too long."
     },
     "sections": {
       "freshTodayNote": "What cooks near you have going right now.",
@@ -363,7 +392,8 @@
     },
     "signedOut": {
       "title": "Sign in to see your orders",
-      "body": "Ordering needs an Apoyo account. Sign in on any Apoyo site with the account you already use, then come back to this page — the same session works everywhere in the ecosystem."
+      "body": "Ordering needs an Apoyo account. Sign in on any Apoyo site with the account you already use, then come back to this page — the same session works everywhere in the ecosystem.",
+      "signIn": "Sign in"
     },
     "orderDetail": {
       "itemsHeading": "Items",

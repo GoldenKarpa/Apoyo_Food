@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function OrdersPage() {
   const session = await getFoodSession();
-  if (!session) return <SignedOutNotice namespace="client.signedOut" />;
+  if (!session) return <SignedOutNotice namespace="client.signedOut" loginHref="/login" />;
 
   const [t, ts, locale, orders] = await Promise.all([
     getTranslations("client.orders"),

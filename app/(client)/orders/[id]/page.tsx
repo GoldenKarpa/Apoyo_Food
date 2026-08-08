@@ -38,7 +38,7 @@ const CANCELLABLE = new Set(["PENDING", "ACCEPTED"]);
 export default async function ClientOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getFoodSession();
-  if (!session) return <SignedOutNotice namespace="client.signedOut" />;
+  if (!session) return <SignedOutNotice namespace="client.signedOut" loginHref="/login" />;
 
   const order = await clientOrderDetail(id, session.userId);
   if (!order) notFound();
