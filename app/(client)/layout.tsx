@@ -2,6 +2,7 @@ import { BottomNav } from "@/components/chrome/bottom-nav";
 import { SiteFooter } from "@/components/chrome/site-footer";
 import { SiteHeader } from "@/components/chrome/site-header";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
+import { getAccountSummary } from "@/lib/get-account-summary";
 
 /**
  * Client marketplace shell — food.apoyolime.com.
@@ -19,15 +20,23 @@ import { ServiceWorkerRegister } from "@/components/service-worker-register";
  * `<ServiceWorkerRegister>` (Slice 12) lives here, not in the root layout —
  * the seller dashboard was never meant to be the installed PWA's entry point
  * (`app/manifest.ts`'s own `start_url` is this surface's root).
+ *
+ * `accountSummary` (Slice 21) is read ONCE here and passed down to both
+ * `<SiteHeader>` and `<BottomNav>` — they share `nav-config.ts` precisely so
+ * the two widths can never diverge, and reading the session/ecosystem call
+ * twice (once per component) would risk exactly that if they ever raced to
+ * different results.
  */
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
+export default async function ClientLayout({ children }: { children: React.ReactNode }) {
+  const accountSummary = await getAccountSummary();
+
   return (
     <div className="flex min-h-dvh flex-col">
       <ServiceWorkerRegister />
-      <SiteHeader />
+      <SiteHeader accountSummary={accountSummary} />
       <main className="screen-pad flex flex-1 flex-col gap-8 py-8 pb-24 md:pb-8">{children}</main>
       <SiteFooter />
-      <BottomNav />
+      <BottomNav accountSummary={accountSummary} />
     </div>
   );
 }

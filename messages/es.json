@@ -10,6 +10,14 @@
     "comingSoon": "Próximamente",
     "close": "Cerrar"
   },
+  "account": {
+    "title": "Tu cuenta",
+    "badges": {
+      "client": "Cliente",
+      "provider": "Vendedor",
+      "admin": "Admin"
+    }
+  },
   "nav": {
     "primary": "Navegación principal",
     "items": {

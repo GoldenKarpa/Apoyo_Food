@@ -27,6 +27,15 @@ import { headers } from "next/headers";
 export interface FoodSession {
   userId: string;
   email: string | null;
+  /**
+   * The identity store's `User.name` (the display name given at registration —
+   * see portal-web's `register/route.ts`), embedded in the JWT via next-auth's
+   * own default `user.name` → `token.name` copy (portal-web's custom `jwt()`
+   * callback never sets it explicitly, but never strips it either — confirmed
+   * by reading portal-web's `authorize()`, which returns `name: user.name`).
+   * Null for a guest or any account that never set one.
+   */
+  name: string | null;
   locale: string;
   /**
    * The identity store's legacy global `role`. ⚠ Read-only here, and it does NOT
@@ -94,6 +103,7 @@ export async function getFoodSession(): Promise<FoodSession | null> {
   return {
     userId,
     email: (token.email as string | undefined) ?? null,
+    name: (token.name as string | undefined) ?? null,
     locale: (token.locale as string | undefined) ?? "en",
     legacyRole: (token.role as string | undefined) ?? "CLIENT",
     emailVerified: (token.emailVerified as boolean | undefined) ?? false,

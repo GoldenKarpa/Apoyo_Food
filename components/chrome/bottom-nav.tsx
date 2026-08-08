@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { ComingSoon } from "@/components/coming-soon";
+import { AccountAvatarIcon, AccountModal } from "@/components/chrome/account-modal";
 import { NAV_ITEMS, type NavItem } from "@/components/chrome/nav-config";
+import type { AccountSummary } from "@/lib/account-summary";
 import { cn } from "@/lib/utils";
 
 /**
@@ -37,10 +39,13 @@ function TabInner({
   item,
   label,
   active,
+  icon,
 }: {
   item: NavItem;
   label: string;
   active: boolean;
+  /** Overrides `item.icon` — the signed-in account avatar's own escape hatch. */
+  icon?: React.ReactNode;
 }) {
   const Icon = item.icon;
   return (
@@ -51,14 +56,14 @@ function TabInner({
           active && "bg-green-soft",
         )}
       >
-        <Icon aria-hidden className="h-5 w-5" />
+        {icon ?? <Icon aria-hidden className="h-5 w-5" />}
       </span>
       <span className="text-caption font-medium">{label}</span>
     </>
   );
 }
 
-export function BottomNav() {
+export function BottomNav({ accountSummary }: { accountSummary: AccountSummary | null }) {
   const pathname = usePathname();
   const t = useTranslations("nav");
 
@@ -79,6 +84,27 @@ export function BottomNav() {
             // the Slice 1 rule is to not depend on that (4.37:1 there).
             active ? "text-green" : "text-ink",
           );
+
+          // The signed-in account avatar is the ONE nav item whose rendering
+          // depends on session state — everything else (including "account"
+          // itself when signed out) is exactly the same static ComingSoon/Link
+          // branch this file has always had.
+          if (item.key === "account" && accountSummary) {
+            return (
+              <li key={item.key} className="flex flex-1">
+                <AccountModal summary={accountSummary}>
+                  <button type="button" className={tabClass} data-account-avatar="">
+                    <TabInner
+                      item={item}
+                      label={label}
+                      active={false}
+                      icon={<AccountAvatarIcon summary={accountSummary} className="h-5 w-5" />}
+                    />
+                  </button>
+                </AccountModal>
+              </li>
+            );
+          }
 
           return (
             <li key={item.key} className="flex flex-1">

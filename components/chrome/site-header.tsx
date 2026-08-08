@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { ComingSoon } from "@/components/coming-soon";
+import { AccountAvatarIcon, AccountModal } from "@/components/chrome/account-modal";
 import { NAV_ITEMS } from "@/components/chrome/nav-config";
+import type { AccountSummary } from "@/lib/account-summary";
 import { LocaleToggle } from "@/components/locale-toggle";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +34,7 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function SiteHeader() {
+export function SiteHeader({ accountSummary }: { accountSummary: AccountSummary | null }) {
   const pathname = usePathname();
   const [t, tb] = [useTranslations("nav"), useTranslations("brand")];
 
@@ -56,6 +58,19 @@ export function SiteHeader() {
               active ? "bg-green-soft text-green" : "text-ink hover:bg-sunken",
             );
             const Icon = item.icon;
+
+            // Same session-dependent special case as <BottomNav> — everything
+            // else, including "account" when signed out, is unchanged.
+            if (item.key === "account" && accountSummary) {
+              return (
+                <AccountModal key={item.key} summary={accountSummary}>
+                  <button type="button" className={linkClass} data-account-avatar="">
+                    <AccountAvatarIcon summary={accountSummary} className="h-4 w-4" />
+                    {label}
+                  </button>
+                </AccountModal>
+              );
+            }
 
             return item.href ? (
               <Link
