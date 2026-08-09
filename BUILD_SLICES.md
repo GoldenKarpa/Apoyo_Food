@@ -1360,9 +1360,64 @@ it.
 each added identically to both locales). `vitest` 27/27 unchanged. Not re-verified live yet — this
 fix is responding to the user's own real walkthrough, still in progress.
 
+**⚠ `admin.sellers.approveIncompleteProfile` was replaced the same day — see Slice 27.** The hard
+block this key's error message described didn't survive contact with the user: it was the ONE thing
+here that actually WAS a bug, not a missing explanation for correct behavior. Renamed to
+`approveConfirmMissing` as part of that correction.
+
 Files modified: `components/seller/bio-field.tsx` (min-length hint), `components/admin/admin-action-button.tsx`
 (`reasonLabels` prop), `app/food/admin/page.tsx` (wires it for `incompleteProfile`), `app/food/layout.tsx`
 (portal-home link), `messages/{en,es}.json` (782/782), `BUILD_SLICES.md`.
+
+---
+
+### Slice 27 — Admin approval was never supposed to be a hard block
+
+A direct correction from the user, same day as Slice 26: "I don't remember ever stating admin
+approval having criteria. I am more certain I would have wanted admin approval to simply work if
+they decide to approve the person even if a field is missing." Slice 16's own original module
+comment (`lib/seller-profile.ts`) actually agreed with this all along — "Nothing in this module
+authorizes anything... it is advisory in this slice" — but `lib/admin-sellers.ts`'s
+`decideSellerLifecycleAction` turned that advisory list into an unconditional refusal anyway, and
+nothing caught the mismatch between the module's own stated intent and what got built on top of it
+until a real admin hit it.
+
+**Fix: advisory-with-confirmation, not a hard gate.** `decideSellerLifecycleAction` takes a new
+`force` parameter — `false` (the normal first call) still returns
+`{ ok: false, reason: "incompleteProfile", blockers: SetupStepKey[] }` exactly as before, but
+`force: true` skips the check entirely and approves regardless. The invalid-transition check
+(can't approve an already-ACTIVE seller) is UNCONDITIONAL — `force` never touches it; that one is a
+real state-machine rule, not an advisory nudge.
+
+**`<AdminActionButton>` drives the two-step itself**, so the admin page's own JSX stays a single
+button, not a bespoke confirm-dialog per caller: on `incompleteProfile`, it builds a message from
+the actual missing fields (reusing the seller-facing setup wizard's own translated step titles —
+`seller.setup.steps.<key>.title`, so "the bio" is never worded differently for an admin than for the
+seller who's missing it) and shows one `window.confirm`. Confirming retries the SAME action with
+`force: true`; declining leaves the row untouched with no error at all — the admin simply chose not
+to, which isn't a failure state.
+
+**Naming correction, not scope creep:** the previous `reasonLabels` prop (Slice 26) is kept as
+general infrastructure — a plain reason→message override, useful for a genuinely terminal failure —
+but `incompleteProfile` no longer uses it, since it isn't terminal anymore. `approveIncompleteProfile`
+(Slice 26's translation key, whose entire message was "you can't do this") is retired in favor of
+`approveConfirmMissing` ("here's what's missing, do it anyway?" — a question, not a refusal).
+
+**Verification:** `tsc`/lint/`next build` clean, same route list. `scripts/verify-admin.ts`'s own
+pure-decision-function assertions (20/20) still pass unchanged — `force` defaults to `false`, so
+every existing call site's behavior is bit-for-bit identical unless it opts in. Bilingual parity
+**782/782** (net zero — one key renamed, not added). Not yet re-verified live; this is a direct
+response to the user's own real walkthrough, still in progress.
+
+Files modified: `lib/admin-sellers.ts` (`force` param, `blockers` in the failure shape),
+`lib/actions/admin.ts` (`updateSellerStatus` threads `force`), `components/admin/admin-action-button.tsx`
+(the confirm-then-retry flow, `incompleteProfileConfirm` prop), `app/food/admin/page.tsx` (wires
+translated step labels into it), `messages/{en,es}.json` (782/782, key renamed), `BUILD_SLICES.md`.
+Cross-repo (Apoyo-Demia, disclosed): `app/home/page.tsx` — the launchpad's Apparel provider card
+linked to `/apparel/onboarding` (assumed identical to Food's own path, never checked against
+Apparel's actual build), which is `/apparel/onboard` (no "-ing") — 404'd live on a real click.
+Fixed to the real path; Apparel's own dashboard already used it consistently, so this was the one
+place guessing wrong.
 
 ---
 

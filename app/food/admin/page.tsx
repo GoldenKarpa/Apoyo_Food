@@ -35,10 +35,11 @@ export default async function FoodAdminPage({
   const { q } = await searchParams;
   const searchTerm = q?.trim() ?? "";
 
-  const [t, tv, orderingEnabled, pendingSellers, activeSellers, suspendedSellers, openReports, categories, searchResults] =
+  const [t, tv, tSteps, orderingEnabled, pendingSellers, activeSellers, suspendedSellers, openReports, categories, searchResults] =
     await Promise.all([
       getTranslations("seller.admin"),
       getTranslations("seller.admin.vocab"),
+      getTranslations("seller.setup.steps"),
       getOrderingEnabled(),
       prisma.foodSeller.findMany({ where: { status: "PENDING" }, orderBy: { createdAt: "asc" } }),
       prisma.foodSeller.findMany({ where: { status: "ACTIVE" }, orderBy: { createdAt: "asc" } }),
@@ -119,7 +120,15 @@ export default async function FoodAdminPage({
                     label={t("sellers.approve")}
                     variant="primary"
                     errorLabel={t("sellers.actionError")}
-                    reasonLabels={{ incompleteProfile: t("sellers.approveIncompleteProfile") }}
+                    incompleteProfileConfirm={{
+                      template: t("sellers.approveConfirmMissing"),
+                      labels: {
+                        photo: tSteps("photo.title"),
+                        bio: tSteps("bio.title"),
+                        areas: tSteps("areas.title"),
+                        fulfillment: tSteps("fulfillment.title"),
+                      },
+                    }}
                     spec={{ kind: "seller", sellerId: seller.id, sellerAction: "approve" }}
                   />
                   <AdminActionButton

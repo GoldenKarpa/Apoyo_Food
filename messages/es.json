@@ -477,7 +477,7 @@
         "suspendConfirm": "¿Suspender a {name}? Su cocina y sus platos desaparecen del mercado de inmediato.",
         "reinstate": "Reincorporar",
         "actionError": "Eso no funcionó. Recarga la página e inténtalo de nuevo.",
-        "approveIncompleteProfile": "Todavía no se puede aprobar: al perfil de esta cocina le falta algo que un revisor exige (foto, historia, zona de servicio o una forma de entregar la comida). Pide al vendedor que termine de configurar su perfil primero."
+        "approveConfirmMissing": "Al perfil de esta cocina todavía le falta: {fields}. ¿Aprobar de todos modos?"
       },
       "reports": {
         "heading": "Reportes abiertos ({count})",

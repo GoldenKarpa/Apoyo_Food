@@ -17,7 +17,7 @@ import type { SellerFormState } from "@/lib/actions/seller-form-state";
  * what a non-admin SEES (`lib/auth-guards.ts`'s own payload-guard warning).
  */
 
-type ActionResult = { ok: true } | { ok: false; reason: string };
+type ActionResult = { ok: true } | { ok: false; reason: string; blockers?: string[] };
 
 // ── Seller lifecycle ─────────────────────────────────────────────────────────
 
@@ -33,8 +33,19 @@ export type { SellerLifecycleAction as SellerAction } from "@/lib/admin-sellers"
  * BOTH the row's status AND an ACTIVE membership. Approving without this call
  * would flip the row to ACTIVE while leaving the seller unable to actually
  * use the workspace they were just approved for.
+ *
+ * ⚠ `force` (2026-08-09) bypasses `decideSellerLifecycleAction`'s
+ * incomplete-profile check — never the invalid-transition one, which stays a
+ * real, unconditional rule regardless of `force`. The caller
+ * (`components/admin/admin-action-button.tsx`) is responsible for having
+ * already confirmed with the admin, naming what's missing, before retrying
+ * with `force: true`; this function trusts that already happened.
  */
-export async function updateSellerStatus(sellerId: string, action: SellerLifecycleAction): Promise<ActionResult> {
+export async function updateSellerStatus(
+  sellerId: string,
+  action: SellerLifecycleAction,
+  force = false,
+): Promise<ActionResult> {
   const admin = await requireAdmin();
   if (!admin) return { ok: false, reason: "unauthorized" };
 
@@ -44,8 +55,12 @@ export async function updateSellerStatus(sellerId: string, action: SellerLifecyc
   });
   if (!seller) return { ok: false, reason: "noSellerAdmin" };
 
-  const decision = decideSellerLifecycleAction(seller, action);
-  if (!decision.ok) return { ok: false, reason: decision.reason };
+  const decision = decideSellerLifecycleAction(seller, action, force);
+  if (!decision.ok) {
+    return decision.reason === "incompleteProfile"
+      ? { ok: false, reason: decision.reason, blockers: decision.blockers }
+      : { ok: false, reason: decision.reason };
+  }
 
   if (action === "approve") {
     await ensureFoodProviderMembership(seller.userId);

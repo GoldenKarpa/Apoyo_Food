@@ -28,8 +28,8 @@ export type AdminActionSpec =
   | { kind: "takedown"; listingId: string }
   | { kind: "ordering"; enabled: boolean };
 
-async function runAction(spec: AdminActionSpec): Promise<{ ok: boolean; reason?: string }> {
-  if (spec.kind === "seller") return updateSellerStatus(spec.sellerId, spec.sellerAction);
+async function runAction(spec: AdminActionSpec, force = false): Promise<{ ok: boolean; reason?: string; blockers?: string[] }> {
+  if (spec.kind === "seller") return updateSellerStatus(spec.sellerId, spec.sellerAction, force);
   if (spec.kind === "report") return resolveReport(spec.reportId, spec.resolution);
   if (spec.kind === "ordering") return setOrderingEnabled(spec.enabled);
   return takedownListing(spec.listingId);
@@ -41,6 +41,7 @@ export function AdminActionButton({
   confirmMessage,
   errorLabel,
   reasonLabels,
+  incompleteProfileConfirm,
   spec,
 }: {
   label: string;
@@ -49,31 +50,49 @@ export function AdminActionButton({
   confirmMessage?: string;
   errorLabel: string;
   /**
-   * Overrides `errorLabel` for a specific failure `reason` (e.g.
-   * `updateSellerStatus`'s `"incompleteProfile"`). Found live 2026-08-09: an
-   * admin trying to approve a genuinely incomplete profile saw the generic
-   * "reload and try again" — actively misleading, since reloading changes
-   * nothing and the real fix is the SELLER finishing setup. Falls back to
+   * Overrides `errorLabel` for a specific failure `reason`. Falls back to
    * `errorLabel` for any reason not listed here.
    */
   reasonLabels?: Record<string, string>;
+  /**
+   * Seller-approve only. `updateSellerStatus`'s `"incompleteProfile"` reason
+   * is NOT a dead end (corrected 2026-08-09, the user's own explicit
+   * direction: an admin who decides to approve anyway must be able to, not
+   * be permanently blocked) — it's a confirmation naming what's missing. On
+   * confirm, this button retries the SAME action with `force: true`, which
+   * skips the completeness check. `template`'s `{fields}` placeholder is
+   * replaced with the already-translated, comma-joined blocker list (built
+   * from `labels`, keyed by `lib/seller-profile.ts`'s `SetupStepKey`).
+   */
+  incompleteProfileConfirm?: { template: string; labels: Record<string, string> };
   spec: AdminActionSpec;
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
-  async function handleClick() {
-    if (confirmMessage && !window.confirm(confirmMessage)) return;
+  async function handleClick(force = false) {
+    if (!force && confirmMessage && !window.confirm(confirmMessage)) return;
     setPending(true);
     setErrorMessage(null);
-    const result = await runAction(spec);
+    const result = await runAction(spec, force);
     setPending(false);
-    if (!result.ok) {
-      setErrorMessage((result.reason && reasonLabels?.[result.reason]) || errorLabel);
+
+    if (result.ok) {
+      router.refresh();
       return;
     }
-    router.refresh();
+
+    if (!force && result.reason === "incompleteProfile" && result.blockers && incompleteProfileConfirm) {
+      const fields = result.blockers.map((key) => incompleteProfileConfirm.labels[key] ?? key).join(", ");
+      const message = incompleteProfileConfirm.template.replace("{fields}", fields);
+      if (window.confirm(message)) {
+        await handleClick(true);
+      }
+      return;
+    }
+
+    setErrorMessage((result.reason && reasonLabels?.[result.reason]) || errorLabel);
   }
 
   const className =
@@ -81,7 +100,7 @@ export function AdminActionButton({
 
   return (
     <span>
-      <button type="button" className={className} disabled={pending} onClick={handleClick}>
+      <button type="button" className={className} disabled={pending} onClick={() => handleClick()}>
         {pending ? "…" : label}
       </button>
       {errorMessage && (

@@ -1,6 +1,6 @@
 import type { FoodSeller, FoodSellerPhoto, SellerStatus } from "@prisma/client";
 
-import { activationBlockers } from "@/lib/seller-profile";
+import { activationBlockers, type SetupStepKey } from "@/lib/seller-profile";
 import { completionInputFor } from "@/lib/seller";
 
 /**
@@ -34,7 +34,8 @@ const TARGET_STATUS: Record<SellerLifecycleAction, SellerStatus> = {
 
 export type SellerLifecycleResult =
   | { ok: true; status: SellerStatus }
-  | { ok: false; reason: "invalidTransition" | "incompleteProfile" };
+  | { ok: false; reason: "invalidTransition" }
+  | { ok: false; reason: "incompleteProfile"; blockers: SetupStepKey[] };
 
 /**
  * Pure decision function — takes the seller row (with its gallery, for the
@@ -44,20 +45,28 @@ export type SellerLifecycleResult =
  *
  * `approve`'s extra precondition mirrors `lib/seller-profile.ts`'s own
  * `activationBlockers` — the exact same "photo, bio, areas, fulfillment"
- * bar the dashboard already nudges a PENDING seller toward, now actually
- * enforced rather than merely advisory (that module's own doc comment named
- * this as Slice 16's job).
+ * bar the dashboard already nudges a PENDING seller toward.
+ *
+ * ⚠ **Advisory, not a hard gate — corrected 2026-08-09.** This used to refuse
+ * approval outright when blockers existed, with no way through. The user's
+ * own explicit direction: an admin who decides to approve despite a missing
+ * field should be able to, after one extra confirmation naming what's
+ * missing — never permanently blocked. `force=true` (only ever set after the
+ * caller has shown that confirmation — `components/admin/admin-action-button.tsx`)
+ * skips this check entirely; the FIRST call (force=false, the normal case)
+ * still returns the blocker list so the caller has something to show.
  */
 export function decideSellerLifecycleAction(
   seller: FoodSeller & { photos: FoodSellerPhoto[] },
   action: SellerLifecycleAction,
+  force = false,
 ): SellerLifecycleResult {
   if (!VALID_FROM[action].includes(seller.status)) {
     return { ok: false, reason: "invalidTransition" };
   }
-  if (action === "approve") {
+  if (action === "approve" && !force) {
     const blockers = activationBlockers(completionInputFor(seller));
-    if (blockers.length > 0) return { ok: false, reason: "incompleteProfile" };
+    if (blockers.length > 0) return { ok: false, reason: "incompleteProfile", blockers };
   }
   return { ok: true, status: TARGET_STATUS[action] };
 }
