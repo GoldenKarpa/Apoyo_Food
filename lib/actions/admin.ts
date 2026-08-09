@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, ensureFoodProviderMembership } from "@/lib/auth-guards";
 import { decideSellerLifecycleAction, type SellerLifecycleAction } from "@/lib/admin-sellers";
+import { setFoodRegistrationEnabled } from "@/lib/ecosystem";
 import { uniqueCategorySlug } from "@/lib/slug";
 import { MAX_CATEGORY_NAME_LENGTH } from "@/lib/category-form";
 import { setOrderingEnabled as writeOrderingEnabled } from "@/lib/platform-settings";
@@ -18,6 +19,35 @@ import type { SellerFormState } from "@/lib/actions/seller-form-state";
  */
 
 type ActionResult = { ok: true } | { ok: false; reason: string; blockers?: string[] };
+
+// ── Registration toggle ─────────────────────────────────────────────────────
+
+export type SetRegistrationResult = { ok: true; enabled: boolean } | { ok: false; reason: string };
+
+/**
+ * ⚠ Returns the confirmed `enabled` value rather than a bare `{ok:true}` —
+ * `<RegistrationToggle>` uses it to update its own displayed state directly,
+ * instead of trusting `router.refresh()` to re-derive it from a fresh
+ * `getProviderRegistrationConfig()` read. That read goes through
+ * `lib/ecosystem.ts`'s cross-request TTL cache, which this write busts — but
+ * trusting a re-fetch to reflect that bust immediately is the exact staleness
+ * this sidesteps. Ported from Apoyo-Apparel's own action (Slice 16).
+ */
+export async function setRegistrationEnabled(enabled: boolean): Promise<SetRegistrationResult> {
+  const admin = await requireAdmin();
+  if (!admin) return { ok: false, reason: "unauthorized" };
+
+  try {
+    await setFoodRegistrationEnabled(enabled);
+  } catch (err) {
+    console.error("[admin] registration toggle write failed", err);
+    return { ok: false, reason: "ecosystem_unreachable" };
+  }
+
+  revalidatePath("/food/admin");
+  revalidatePath("/");
+  return { ok: true, enabled };
+}
 
 // ── Seller lifecycle ─────────────────────────────────────────────────────────
 

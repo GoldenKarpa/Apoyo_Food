@@ -59,6 +59,14 @@ export interface FilterSheetProps {
   onApply?: (selection: FilterSelection) => void;
   /** Extra trigger classes — the browse toolbar positions it. */
   className?: string;
+  /**
+   * A live count for the staged (not-yet-applied) selection — the caller owns
+   * this because only it knows how to turn a `FilterSelection` back into the
+   * real domain filters it already queries with (Apparel's own
+   * `<FiltersSheet>`, mirrored here). Omitting it degrades gracefully to the
+   * plain "Show results" label with no number.
+   */
+  countFor?: (selection: FilterSelection) => Promise<number>;
 }
 
 function toggle(current: string[], value: string, mode: FilterGroup["mode"]): string[] {
@@ -66,7 +74,7 @@ function toggle(current: string[], value: string, mode: FilterGroup["mode"]): st
   return current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
 }
 
-export function FilterSheet({ groups, value = {}, onApply, className }: FilterSheetProps) {
+export function FilterSheet({ groups, value = {}, onApply, className, countFor }: FilterSheetProps) {
   const t = useTranslations("filters");
   const [open, setOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<FilterSelection>(value);
@@ -79,6 +87,29 @@ export function FilterSheet({ groups, value = {}, onApply, className }: FilterSh
   }, [open]);
 
   const activeCount = Object.values(value).reduce((sum, values) => sum + values.length, 0);
+
+  // The REAL count for the "Show N results" button — a live query against the
+  // staged (not-yet-applied) selection, debounced so toggling chips rapidly
+  // doesn't fire a query per tap. `null` while a fetch is in flight or hasn't
+  // run yet; the button falls back to the plain "Show results" (no number)
+  // label rather than a stale or misleading count.
+  //
+  // ⚠ Do NOT use `Object.values(draft).flat().length` here instead — that is
+  // the count of staged CRITERIA, not the count of matching listings, and
+  // showing it as "Show results (N)" is exactly the bug Apparel's own
+  // `<FiltersSheet>` shipped and documented: the label read "Show results
+  // (1)" after one chip tap no matter how many listings actually matched.
+  const [resultCount, setResultCount] = React.useState<number | null>(null);
+
+  React.useEffect(() => {
+    if (!open || !countFor) return;
+    setResultCount(null);
+    const timer = setTimeout(() => {
+      void countFor(draft).then(setResultCount);
+    }, 250);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, draft, countFor]);
 
   return (
     <BottomSheet open={open} onOpenChange={setOpen}>
@@ -95,7 +126,7 @@ export function FilterSheet({ groups, value = {}, onApply, className }: FilterSh
       </BottomSheetTrigger>
 
       <BottomSheetContent title={t("title")} description={t("description")}>
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 overflow-y-auto">
           {groups.map((group) => {
             const selected = draft[group.key] ?? [];
             return (
@@ -141,7 +172,7 @@ export function FilterSheet({ groups, value = {}, onApply, className }: FilterSh
               setOpen(false);
             }}
           >
-            {t("apply")}
+            {resultCount !== null ? t("applyWithCount", { count: resultCount }) : t("apply")}
           </Button>
           <Button variant="ghost" size="md" onClick={() => setDraft({})}>
             {t("clear")}

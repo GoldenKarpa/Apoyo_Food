@@ -6,13 +6,17 @@ import { useTransition } from "react";
 
 import { FilterSheet, type FilterSelection } from "@/components/filters/filter-sheet";
 import { Chip } from "@/components/ui/chip";
+import { getBrowseResultCount } from "@/lib/actions/browse-count";
 import {
   AVAILABILITY_FILTERS,
   DIETARY_TAGS,
   PRICE_BANDS,
   SORT_OPTIONS,
+  type AvailabilityFilter,
   type BrowseFilters,
+  type PriceBand,
 } from "@/lib/browse";
+import type { RegionKey } from "@prisma/client";
 import { REGION_KEYS } from "@/lib/regions";
 import { cn } from "@/lib/utils";
 
@@ -113,10 +117,27 @@ export function FilterBar({ filters }: { filters: BrowseFilters }) {
     availability: filters.availability ? [filters.availability] : [],
   };
 
-  return (
-    <div className={cn("flex flex-wrap items-center gap-3", isPending && "opacity-70")}>
-      <FilterSheet groups={groups} value={value} onApply={applySelection} />
+  // The sheet's own draft is a `FilterSelection` (group key -> string[]), not
+  // a `BrowseFilters` — this is what lets `countResults` reuse the exact same
+  // `buildWhere()` the page itself queries with, rather than a second,
+  // possibly-drifting notion of what each group means.
+  function countResults(selection: FilterSelection): Promise<number> {
+    const price = selection.price?.[0];
+    const availability = selection.availability?.[0];
+    return getBrowseResultCount({
+      categories: selection.category ?? [],
+      areas: (selection.area ?? []) as RegionKey[],
+      price: price && price in PRICE_BANDS ? (price as PriceBand) : null,
+      dietary: selection.dietary ?? [],
+      availability: (AVAILABILITY_FILTERS as readonly string[]).includes(availability ?? "")
+        ? (availability as AvailabilityFilter)
+        : null,
+      sort: filters.sort,
+    });
+  }
 
+  return (
+    <div className={cn("flex flex-wrap items-center justify-between gap-3", isPending && "opacity-70")}>
       {/* Sort is a first-class control, not buried in the sheet — it is the one
           filter people change repeatedly while looking at results. */}
       <div className="flex flex-wrap gap-2" role="group" aria-label={t("groups.sort")}>
@@ -137,6 +158,10 @@ export function FilterBar({ filters }: { filters: BrowseFilters }) {
           </Chip>
         ))}
       </div>
+
+      {/* Right-aligned, matching Apparel's toolbar — the same control in the
+          same corner on every browse surface. */}
+      <FilterSheet groups={groups} value={value} onApply={applySelection} countFor={countResults} />
     </div>
   );
 }

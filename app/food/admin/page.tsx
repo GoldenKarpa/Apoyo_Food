@@ -2,8 +2,10 @@ import { getTranslations } from "next-intl/server";
 
 import { AdminActionButton } from "@/components/admin/admin-action-button";
 import { CategoryForm } from "@/components/admin/category-form";
+import { RegistrationToggle } from "@/components/admin/registration-toggle";
 import { FoodImage } from "@/components/food-image";
 import { adminMayLoadData } from "@/lib/auth-guards";
+import { getProviderRegistrationConfig } from "@/lib/ecosystem";
 import { getOrderingEnabled } from "@/lib/platform-settings";
 import { prisma } from "@/lib/prisma";
 
@@ -35,11 +37,24 @@ export default async function FoodAdminPage({
   const { q } = await searchParams;
   const searchTerm = q?.trim() ?? "";
 
-  const [t, tv, tSteps, orderingEnabled, pendingSellers, activeSellers, suspendedSellers, openReports, categories, searchResults] =
+  const [
+    t,
+    tv,
+    tSteps,
+    registrationConfig,
+    orderingEnabled,
+    pendingSellers,
+    activeSellers,
+    suspendedSellers,
+    openReports,
+    categories,
+    searchResults,
+  ] =
     await Promise.all([
       getTranslations("seller.admin"),
       getTranslations("seller.admin.vocab"),
       getTranslations("seller.setup.steps"),
+      getProviderRegistrationConfig(),
       getOrderingEnabled(),
       prisma.foodSeller.findMany({ where: { status: "PENDING" }, orderBy: { createdAt: "asc" } }),
       prisma.foodSeller.findMany({ where: { status: "ACTIVE" }, orderBy: { createdAt: "asc" } }),
@@ -69,6 +84,20 @@ export default async function FoodAdminPage({
   return (
     <div>
       <h1 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "1.5rem" }}>{t("title")}</h1>
+
+      <section className="admin-section">
+        <h2>{t("registration.heading")}</h2>
+        <RegistrationToggle
+          enabled={registrationConfig.FOOD}
+          labels={{
+            on: t("registration.on"),
+            off: t("registration.off"),
+            turnOn: t("registration.turnOn"),
+            turnOff: t("registration.turnOff"),
+            error: t("registration.error"),
+          }}
+        />
+      </section>
 
       <section className="admin-section">
         <h2>{t("ordering.heading")}</h2>

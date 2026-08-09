@@ -69,9 +69,10 @@
   },
   "filters": {
     "open": "Filtros",
-    "title": "Filtrar comidas",
+    "title": "Filtros",
     "description": "Reduce la lista. Tus opciones se aplican al tocar Ver resultados.",
     "apply": "Ver resultados",
+    "applyWithCount": "Ver resultados ({count})",
     "clear": "Borrar todo",
     "groups": {
       "category": "Categoría",
@@ -212,7 +213,8 @@
       "title": "Descubre",
       "intro": "Cocineras, panaderos, reposteros y servicios de catering cerca de ti — comidas por encargo, especiales de fin de semana, bandejas para fiestas y menús festivos.",
       "browse": "Ver comidas",
-      "browseSellers": "Ver cocineros"
+      "browseSellers": "Ver cocineros",
+      "sell": "Vende con nosotros"
     },
     "browse": {
       "title": "Explorar",
@@ -463,6 +465,14 @@
         "returnToWorkspace": "Volver a tu espacio de trabajo",
         "signInPrompt": "Inicia sesión con una cuenta de administrador de Apoyo para continuar.",
         "signIn": "Iniciar sesión"
+      },
+      "registration": {
+        "heading": "Registro de vendedores",
+        "on": "Abierto",
+        "off": "Cerrado",
+        "turnOn": "Abrir registro",
+        "turnOff": "Cerrar registro",
+        "error": "Eso no se guardó. Inténtalo de nuevo en un momento."
       },
       "sellers": {
         "pendingHeading": "Pendientes de revisión ({count})",

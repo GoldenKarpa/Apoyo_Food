@@ -69,9 +69,10 @@
   },
   "filters": {
     "open": "Filters",
-    "title": "Filter meals",
+    "title": "Filters",
     "description": "Narrow the list down. Your choices apply when you tap Show results.",
     "apply": "Show results",
+    "applyWithCount": "Show results ({count})",
     "clear": "Clear all",
     "groups": {
       "category": "Category",
@@ -212,7 +213,8 @@
       "title": "Discover",
       "intro": "Home cooks, bakers, dessert makers and caterers near you — meals by pre-order, weekend specials, party trays and holiday menus.",
       "browse": "Browse meals",
-      "browseSellers": "Browse cooks"
+      "browseSellers": "Browse cooks",
+      "sell": "Sell with us"
     },
     "browse": {
       "title": "Browse",
@@ -463,6 +465,14 @@
         "returnToWorkspace": "Back to your workspace",
         "signInPrompt": "Sign in with an Apoyo admin account to continue.",
         "signIn": "Sign in"
+      },
+      "registration": {
+        "heading": "Seller registration",
+        "on": "Open",
+        "off": "Closed",
+        "turnOn": "Open registration",
+        "turnOff": "Close registration",
+        "error": "That didn't save. Try again in a moment."
       },
       "sellers": {
         "pendingHeading": "Pending review ({count})",

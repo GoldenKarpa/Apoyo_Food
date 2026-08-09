@@ -312,3 +312,18 @@
   background: #dcefdc;
   color: #1f6f3f;
 }
+.admin-badge-on {
+  background: #dcefdc;
+  color: #1f6f3f;
+}
+.admin-badge-off {
+  background: var(--aa-surface-2);
+  color: var(--aa-text-muted);
+}
+.admin-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}

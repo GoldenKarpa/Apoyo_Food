@@ -223,3 +223,29 @@ export const getProviderRegistrationConfig = cache(async (): Promise<ProviderReg
   configTtlCache.set(CONFIG_CACHE_KEY, { config, expiresAt: Date.now() + CONFIG_TTL_MS });
   return config;
 });
+
+/**
+ * The write side, ported from Apoyo-Apparel's own `setApparelRegistrationEnabled`
+ * (its Slice 16 — until then this toggle was migration-only, "a data change,
+ * not a deploy" in name only, since nothing ever wrote it outside a
+ * hand-authored SQL migration in Apoyo-Demia). Flips FOOD's own row via
+ * portal-web's existing PATCH, scoped by the exact same `canWriteVertical`
+ * containment membership writes already enforce — `food-app`'s token can only
+ * ever flip its own vertical's row, never another's.
+ *
+ * Throws on failure rather than swallowing it (unlike the read side): the
+ * admin control needs to know whether the flip actually landed, so it can
+ * show an error instead of silently claiming success.
+ */
+export async function setFoodRegistrationEnabled(enabled: boolean): Promise<void> {
+  const res = await fetch(ecosystemUrl("/config/registration"), {
+    method: "PATCH",
+    headers: ecosystemHeaders(),
+    body: JSON.stringify({ vertical: "FOOD", enabled }),
+  });
+  if (!res.ok) {
+    throw new Error(`registration config write failed: ${res.status}`);
+  }
+  // Bust the TTL cache so a read immediately after this write is fresh.
+  configTtlCache.delete(CONFIG_CACHE_KEY);
+}

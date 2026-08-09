@@ -20,6 +20,8 @@ import {
   sellersInArea,
   trendingListings,
 } from "@/lib/discovery";
+import { getProviderRegistrationConfig } from "@/lib/ecosystem";
+import { sellerSurfaceUrl } from "@/lib/links";
 import { AREA_COOKIE, isRegionKey } from "@/lib/regions";
 import { getFoodSession } from "@/lib/session";
 import { seenStoryIds } from "@/lib/stories";
@@ -54,7 +56,7 @@ export default async function HomePage() {
 
   const session = await getFoodSession();
 
-  const [locale, t, ts, fresh, soon, categories, newest, trending, nearby, seasonal, following] =
+  const [locale, t, ts, fresh, soon, categories, newest, trending, nearby, seasonal, following, registrationConfig] =
     await Promise.all([
       getLocale(),
       getTranslations("client.home"),
@@ -67,6 +69,7 @@ export default async function HomePage() {
       sellersInArea(area),
       seasonalListings(),
       session ? followedSellersListings(session.userId) : Promise.resolve([]),
+      getProviderRegistrationConfig(),
     ]);
 
   const seenIds = session ? await seenStoryIds(session.userId, fresh.map((entry) => entry.id)) : new Set<string>();
@@ -83,6 +86,15 @@ export default async function HomePage() {
           <Button asChild size="lg" variant="outline">
             <Link href="/browse/sellers">{t("browseSellers")}</Link>
           </Button>
+          {/* Gated on the same FOOD toggle the footer CTA reads (§6b, CTA
+              visibility only — see lib/ecosystem.ts) so the landing page never
+              advertises a registration flow that's currently closed. */}
+          {registrationConfig.FOOD && (
+            <Button asChild size="lg" variant="outline">
+              {/* Cross-origin in production; relative in local dev. */}
+              <a href={sellerSurfaceUrl("/food/onboarding")}>{t("sell")}</a>
+            </Button>
+          )}
         </div>
       </section>
 
