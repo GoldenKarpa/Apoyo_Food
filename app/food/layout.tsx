@@ -28,7 +28,11 @@ import { getAccountSummary } from "@/lib/get-account-summary";
  * nothing account-related before this change).
  */
 export default async function FoodSurfaceLayout({ children }: { children: React.ReactNode }) {
-  const [t, accountSummary] = await Promise.all([getTranslations("brand"), getAccountSummary()]);
+  const [t, tSeller, accountSummary] = await Promise.all([
+    getTranslations("brand"),
+    getTranslations("seller"),
+    getAccountSummary(),
+  ]);
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -36,8 +40,12 @@ export default async function FoodSurfaceLayout({ children }: { children: React.
         <div className="screen-pad flex min-h-[64px] items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="font-display text-h1 font-semibold text-green">{t("name")}</span>
+            {/* Names what this surface IS, rather than echoing the URL path it
+                happens to live under. The literal "/food" read as a glitch —
+                as though the wordmark had lost a word — to the first person
+                who saw it outside this codebase. */}
             <span className="rounded-pill bg-green-soft px-3 py-1 text-caption font-medium text-ink">
-              /food
+              {tSeller("workspaceBadge")}
             </span>
           </div>
           <div className="flex items-center gap-3">

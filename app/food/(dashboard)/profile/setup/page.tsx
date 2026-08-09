@@ -14,6 +14,7 @@ import { GalleryManager } from "@/components/seller/gallery-manager";
 import { LanguagesField } from "@/components/seller/languages-field";
 import { PhotoField } from "@/components/seller/photo-field";
 import { SpecialtiesField } from "@/components/seller/specialties-field";
+import { SellerStatusNote } from "@/components/seller/status-banner";
 import { loadSellerWorkspace } from "@/lib/seller";
 import { isSetupStepKey, SETUP_STEPS, type SetupStepKey } from "@/lib/seller-profile";
 
@@ -86,6 +87,11 @@ export default async function SellerSetupPage({
         <h1 className="font-display text-display font-semibold text-ink">{t("title")}</h1>
         <p className="max-w-prose text-body text-ink">{t("intro")}</p>
       </header>
+
+      {/* Standing, stated where a new seller actually is — this flow is where
+          they spend their first session, and it used to say nothing about
+          being unreviewed. See <SellerStatusNote>'s own comment. */}
+      <SellerStatusNote status={seller.status} />
 
       <SetupProgress steps={steps} current={current} percent={percent} />
 

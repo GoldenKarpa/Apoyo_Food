@@ -268,7 +268,7 @@
     "search": {
       "title": "Search",
       "label": "Search meals and cooks",
-      "placeholder": "Pastelón, doubles, black cake…",
+      "placeholder": "Doubles, curry chicken, black cake…",
       "submit": "Search",
       "prompt": "Search by dish, ingredient or cook.",
       "meals": "{count, plural, one {# meal} other {# meals}}",
@@ -440,6 +440,7 @@
     }
   },
   "seller": {
+    "workspaceBadge": "Seller workspace",
     "dashboard": {
       "title": "Seller dashboard",
       "body": "Your order inbox, listings, Fresh Today posts and profile live here.",
@@ -588,7 +589,7 @@
     },
     "setup": {
       "title": "Finish your profile",
-      "intro": "Every step saves on its own and every step can be skipped. Come back whenever you like — this page picks up where you left off.",
+      "intro": "Each step saves when you press Continue, and any step can be skipped. Come back whenever you like — this page picks up where you left off.",
       "stepOf": "Step {position} of {total}",
       "percentComplete": "{percent}% complete",
       "stepDone": "(done)",
@@ -609,7 +610,7 @@
         },
         "bio": {
           "title": "Your story",
-          "body": "Who cooks here, and what makes it worth ordering. Write it in the language you actually speak — buyers reading the other one get an automatic translation where it matters."
+          "body": "Who cooks here, and what makes it worth ordering. Write it in whichever language you actually speak — buyers see it exactly as you write it."
         },
         "areas": {
           "title": "Service areas",
@@ -644,14 +645,14 @@
     },
     "fields": {
       "bioLabel": "Your story",
-      "bioPlaceholder": "Cocino comida trinitaria en casa desde hace quince años…",
+      "bioPlaceholder": "I've cooked Trini food at home for fifteen years…",
       "bioCount": "{count} of {max} characters",
       "areasHint": "Choose up to {max} areas — tap the map or the buttons beneath it.",
       "areasCount": "{count} of {max} chosen",
       "languagesLabel": "Languages you can be reached in",
       "fulfillmentLabel": "How buyers can get your food",
       "specialtiesLabel": "Add a specialty",
-      "specialtiesPlaceholder": "pastelón",
+      "specialtiesPlaceholder": "curry chicken",
       "specialtiesAdd": "Add",
       "specialtiesRemove": "Remove {name}",
       "specialtiesCount": "{count} of {max}",
@@ -767,7 +768,7 @@
       "editTitle": "Edit dish",
       "back": "Back to listings",
       "titleLabel": "Dish name",
-      "titlePlaceholder": "Pastelón de plátano",
+      "titlePlaceholder": "Curry chicken with roti",
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "What it is, what's in it, and anything a buyer should know before ordering.",
       "kindLabel": "Dish kind",

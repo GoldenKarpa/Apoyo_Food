@@ -440,6 +440,7 @@
     }
   },
   "seller": {
+    "workspaceBadge": "Panel de vendedor",
     "dashboard": {
       "title": "Panel del vendedor",
       "body": "Aquí están tus pedidos, tus platos, tus publicaciones de En la cocina hoy y tu perfil.",
@@ -588,7 +589,7 @@
     },
     "setup": {
       "title": "Completa tu perfil",
-      "intro": "Cada paso se guarda solo y cada paso se puede saltar. Vuelve cuando quieras: esta página retoma donde lo dejaste.",
+      "intro": "Cada paso se guarda al pulsar Continuar y cualquier paso se puede saltar. Vuelve cuando quieras: esta página retoma donde lo dejaste.",
       "stepOf": "Paso {position} de {total}",
       "percentComplete": "{percent}% completado",
       "stepDone": "(hecho)",
@@ -609,7 +610,7 @@
         },
         "bio": {
           "title": "Tu historia",
-          "body": "Quién cocina aquí y por qué vale la pena pedirte. Escríbelo en el idioma que hablas de verdad; a quien lea en el otro se le traduce automáticamente donde hace falta."
+          "body": "Quién cocina aquí y por qué vale la pena pedirte. Escríbelo en el idioma que hablas de verdad: los compradores lo ven tal como lo escribes."
         },
         "areas": {
           "title": "Zonas de servicio",

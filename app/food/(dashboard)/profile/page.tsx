@@ -12,6 +12,7 @@ import { FulfillmentField } from "@/components/seller/fulfillment-field";
 import { GalleryManager } from "@/components/seller/gallery-manager";
 import { LanguagesField } from "@/components/seller/languages-field";
 import { PhotoField } from "@/components/seller/photo-field";
+import { SellerStatusNote } from "@/components/seller/status-banner";
 import { SpecialtiesField } from "@/components/seller/specialties-field";
 import { loadSellerWorkspace } from "@/lib/seller";
 
@@ -68,6 +69,10 @@ export default async function SellerProfilePage() {
           </Button>
         </div>
       </header>
+
+      {/* Same reason as the guided-setup flow: standing must be visible where
+          the work happens, not only on the dashboard root. */}
+      <SellerStatusNote status={seller.status} />
 
       <Section title={ts("steps.photo.title")}>
         <PhotoField

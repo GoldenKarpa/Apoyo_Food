@@ -45,3 +45,39 @@ export async function SellerStatusBanner({
     </section>
   );
 }
+
+/**
+ * The same standing, without the `<h1>` — for pages that already own their own
+ * heading (the profile editor and the guided setup flow).
+ *
+ * ⚠ Added 2026-08-08 because standing was stated on the dashboard root ONLY,
+ * and a brand-new seller does not linger there: onboarding drops them straight
+ * into `/food/profile/setup` and they work through eight steps without ever
+ * passing the one page that said "you are pending review". Reported live by a
+ * first-time seller who reasonably concluded no approval step existed at all —
+ * a genuinely alarming read, since it looks like anyone could publish food
+ * unreviewed. (They cannot: every buyer-facing query filters on
+ * `seller.status === "ACTIVE"`.) The gap was that nothing SAID so where they
+ * were actually standing.
+ *
+ * ACTIVE renders nothing: "you are approved and live" is the unremarkable
+ * default, and a persistent green bar on every profile edit is noise. Only the
+ * states that carry a consequence — PENDING and SUSPENDED — speak up.
+ */
+export async function SellerStatusNote({ status }: { status: SellerStatus }) {
+  if (status === "ACTIVE") return null;
+
+  const t = await getTranslations("seller.status");
+  const key = status.toLowerCase() as Lowercase<SellerStatus>;
+
+  return (
+    <section className="flex flex-col gap-2 rounded-card border border-hairline bg-sunken p-4">
+      <StatusChip tone={TONES[status]} className="self-start">
+        {t(`${key}.label`)}
+      </StatusChip>
+      {/* Full `ink`, never `ink-muted`, on `sunken` — the Slice 1 finding
+          (ink-muted measures 4.37:1 there). */}
+      <p className="max-w-prose text-label text-ink">{t(`${key}.body`)}</p>
+    </section>
+  );
+}
