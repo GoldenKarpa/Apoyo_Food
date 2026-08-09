@@ -1,3 +1,5 @@
+import { SELLER_MEDIA_UPLOAD_URL } from "@/lib/media-url";
+
 /**
  * The browser half of seller media upload, shared by `<PhotoField>`,
  * `<GalleryManager>` and (Slice 14) `<ListingPhotoManager>`.
@@ -9,6 +11,13 @@
  * they are already confused about why their photo did not upload. The status
  * code is mapped to a message key instead, and the catalogue says it in their
  * language.
+ *
+ * ⚠ Defaults to `SELLER_MEDIA_UPLOAD_URL` (`/api/food/seller/media`,
+ * `lib/media-url.ts`), not the bare `/api/seller/media` route — every caller
+ * of this helper renders exclusively on the seller surface, which in
+ * production is reachable ONLY via `portal.apoyolime.com/food` (ecosystem
+ * ruling E14). `<ListingPhotoManager>` overrides it to the listing-media
+ * sibling for the same reason.
  */
 
 export type SellerUploadErrorKey = "tooLarge" | "invalid" | "rateLimited" | "unauthorized" | "failed";
@@ -17,10 +26,11 @@ export type SellerUploadResult = { ok: true } | { ok: false; error: SellerUpload
 
 export interface UploadOptions {
   /**
-   * Defaults to `/api/seller/media`. Slice 14's listing photos go through
-   * `/api/seller/listing-media` instead — a different ownership check (listing
-   * -> seller, one relation hop further out than a seller's own media), same
-   * request/response shape, so this is an override rather than a second helper.
+   * Defaults to `SELLER_MEDIA_UPLOAD_URL`. Slice 14's listing photos pass
+   * `SELLER_LISTING_MEDIA_UPLOAD_URL` instead — a different ownership check
+   * (listing -> seller, one relation hop further out than a seller's own
+   * media), same request/response shape, so this is an override rather than a
+   * second helper.
    */
   endpoint?: string;
   /** Extra form fields the target route needs — e.g. `{ listingId }`. */
@@ -41,7 +51,7 @@ export async function uploadSellerMedia(
 
   let response: Response;
   try {
-    response = await fetch(options.endpoint ?? "/api/seller/media", { method: "POST", body });
+    response = await fetch(options.endpoint ?? SELLER_MEDIA_UPLOAD_URL, { method: "POST", body });
   } catch {
     // A dropped connection mid-upload is a normal event on a phone.
     return { ok: false, error: "failed" };

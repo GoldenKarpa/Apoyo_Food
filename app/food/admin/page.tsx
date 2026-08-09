@@ -241,7 +241,14 @@ export default async function FoodAdminPage({
                 <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
                   {photo && (
                     <div style={{ width: "3rem", flexShrink: 0 }}>
-                      <FoodImage src={photo.pathThumb} alt="" aspect="thumb" blurDataUrl={photo.blurDataUrl} sizes="48px" />
+                      <FoodImage
+                        src={photo.pathThumb}
+                        alt=""
+                        aspect="thumb"
+                        blurDataUrl={photo.blurDataUrl}
+                        sizes="48px"
+                        surface="seller"
+                      />
                     </div>
                   )}
                   <div>

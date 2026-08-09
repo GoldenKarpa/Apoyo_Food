@@ -139,7 +139,14 @@ export function HighlightManager({ highlights }: { highlights: HighlightRow[] })
                 <ul className="mt-3 flex flex-wrap gap-3">
                   {highlight.stories.map((story) => (
                     <li key={story.id} className="relative w-20">
-                      <FoodImage src={story.pathThumb} alt="" aspect="thumb" blurDataUrl={story.blurDataUrl} sizes="80px" />
+                      <FoodImage
+                        src={story.pathThumb}
+                        alt=""
+                        aspect="thumb"
+                        blurDataUrl={story.blurDataUrl}
+                        sizes="80px"
+                        surface="seller"
+                      />
                       <button
                         type="button"
                         disabled={pending}

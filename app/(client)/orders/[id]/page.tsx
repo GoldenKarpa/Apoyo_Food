@@ -142,7 +142,12 @@ export default async function ClientOrderDetailPage({ params }: { params: Promis
 
       <section className="flex flex-col gap-3">
         <h2 className="text-h2 font-semibold text-ink">{t("threadHeading")}</h2>
-        <OrderThread messages={order.messages} viewerUserId={session.userId} viewerLocale={locale as Locale} />
+        <OrderThread
+          messages={order.messages}
+          viewerUserId={session.userId}
+          viewerLocale={locale as Locale}
+          surface="buyer"
+        />
         <OrderMessageComposer orderId={order.id} actor="client" />
       </section>
       <OrderThreadPoller />

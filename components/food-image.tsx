@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
+import { sellerMediaUrl } from "@/lib/media-url";
 
 /**
  * The one way Food renders stored media (architecture Part F3).
@@ -21,6 +22,12 @@ import { cn } from "@/lib/utils";
  * `src` is a STORAGE KEY (e.g. `listings/<id>-card.webp`), not a URL —
  * `lib/media/image-loader.ts` turns it into one and picks the right variant for
  * the rendered width, so callers never build media URLs by hand.
+ *
+ * ⚠ `surface` picks WHICH read path that URL uses (ecosystem ruling E14).
+ * Defaults to `"buyer"` (Food's own domain, unprefixed) — every pre-existing
+ * call site keeps working unchanged. Pass `surface="seller"` for anything
+ * rendered under `app/food/*`, which in production is reachable ONLY via
+ * `portal.apoyolime.com/food`; the buyer-prefixed path 404s from there.
  */
 
 const ASPECT_CLASS = {
@@ -48,6 +55,8 @@ export interface FoodImageProps {
   priority?: boolean;
   className?: string;
   imageClassName?: string;
+  /** Which surface is rendering this — picks the reachable read path (E14). Defaults to the buyer storefront. */
+  surface?: "buyer" | "seller";
 }
 
 export function FoodImage({
@@ -59,6 +68,7 @@ export function FoodImage({
   priority = false,
   className,
   imageClassName,
+  surface = "buyer",
 }: FoodImageProps) {
   return (
     <div
@@ -71,7 +81,7 @@ export function FoodImage({
       )}
     >
       <Image
-        src={src}
+        src={surface === "seller" ? sellerMediaUrl(src) : src}
         alt={alt}
         fill
         sizes={sizes}

@@ -11,6 +11,7 @@ import { StatusChip } from "@/components/ui/chip";
 import { moveListingPhoto, removeListingPhoto } from "@/lib/actions/listing-photos";
 import { uploadSellerMedia, type SellerUploadErrorKey } from "@/components/seller/upload";
 import { MAX_LISTING_PHOTOS } from "@/lib/listing-form";
+import { SELLER_LISTING_MEDIA_UPLOAD_URL } from "@/lib/media-url";
 
 export interface ListingPhotoRow {
   id: string;
@@ -25,12 +26,14 @@ export interface ListingPhotoRow {
  * everywhere on the site — so it carries a visible label here rather than
  * being a fact a seller has to infer from photo order.
  *
- * ⚠ Uploads go through `/api/seller/listing-media`, not `/api/seller/media` —
- * a different route because the ownership check is one relation hop further
- * out (listing -> seller, not seller directly). `uploadSellerMedia` still
- * works for the request/response shape; only the endpoint and the `listingId`
- * field differ, so it takes an explicit `endpoint` override rather than
- * growing a second near-identical helper.
+ * ⚠ Uploads go through the seller LISTING-media route, not the seller media
+ * one — a different route because the ownership check is one relation hop
+ * further out (listing -> seller, not seller directly). `uploadSellerMedia`
+ * still works for the request/response shape; only the endpoint (this form
+ * always renders on the seller surface, so it's `SELLER_LISTING_MEDIA_UPLOAD_URL`,
+ * `lib/media-url.ts`, ecosystem ruling E14) and the `listingId` field differ,
+ * so it takes an explicit `endpoint` override rather than growing a second
+ * near-identical helper.
  */
 export function ListingPhotoManager({ listingId, photos }: { listingId: string; photos: ListingPhotoRow[] }) {
   const t = useTranslations("seller.listingForm.photos");
@@ -48,7 +51,7 @@ export function ListingPhotoManager({ listingId, photos }: { listingId: string; 
     if (!file) return;
     setError(null);
     const result = await uploadSellerMedia("gallery", file, {
-      endpoint: "/api/seller/listing-media",
+      endpoint: SELLER_LISTING_MEDIA_UPLOAD_URL,
       extraFields: { listingId },
     });
     if (!result.ok) {
@@ -82,6 +85,7 @@ export function ListingPhotoManager({ listingId, photos }: { listingId: string; 
                   aspect="meal"
                   blurDataUrl={photo.blurDataUrl}
                   sizes="(min-width: 768px) 180px, 45vw"
+                  surface="seller"
                 />
                 {index === 0 && (
                   <StatusChip tone="accepted" className="absolute left-2 top-2">

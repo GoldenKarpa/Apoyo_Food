@@ -13,6 +13,7 @@ import { createStory } from "@/lib/actions/create-story";
 import { SELLER_FORM_IDLE, type SellerFormState } from "@/lib/actions/seller-form-state";
 import type { SellerUploadErrorKey } from "@/components/seller/upload";
 import { MAX_CAPTION_LENGTH } from "@/lib/story-form";
+import { mediaUploadUrl } from "@/lib/media-url";
 
 export interface StoryListingOption {
   id: string;
@@ -27,14 +28,16 @@ export interface StoryListingOption {
  * linked listing are additional, optional interactions, not additional taps
  * in the sense Part E2 is counting.
  *
- * ⚠ The photo uploads to `/api/media/upload` (`kind: "story"`), NOT a
- * story-specific route — Slice 4's own comment reserved that generic route
+ * ⚠ The photo uploads to the generic media route (`kind: "story"`), NOT a
+ * story-specific one — Slice 4's own comment reserved that generic route
  * for exactly this shape: an entity whose photo has to exist before the
  * entity does, so there is nothing yet to scope an ownership check against.
  * `createStory` re-validates the returned keys before writing them anywhere
  * (`lib/story-form.ts`'s `isStoryStorageKey`) — the upload alone proves
  * nothing about ownership of the FINAL post, only that a signed-in user
- * produced these bytes.
+ * produced these bytes. This form only ever renders on the seller surface, so
+ * the upload always targets `mediaUploadUrl("seller")` (ecosystem ruling E14)
+ * — see `lib/media-url.ts`.
  */
 export function StoryPostForm({ listings }: { listings: StoryListingOption[] }) {
   const t = useTranslations("seller.stories.post");
@@ -60,7 +63,7 @@ export function StoryPostForm({ listings }: { listings: StoryListingOption[] }) 
     body.set("file", file);
     let response: Response;
     try {
-      response = await fetch("/api/media/upload", { method: "POST", body });
+      response = await fetch(mediaUploadUrl("seller"), { method: "POST", body });
     } catch {
       setUploading(false);
       setUploadError("failed");
@@ -122,6 +125,7 @@ export function StoryPostForm({ listings }: { listings: StoryListingOption[] }) 
             blurDataUrl={photo.blurDataUrl}
             sizes="120px"
             className="w-28 shrink-0"
+            surface="seller"
           />
           <Button type="button" variant="ghost" size="sm" onClick={reset}>
             {t("changePhoto")}

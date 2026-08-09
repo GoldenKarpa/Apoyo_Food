@@ -1215,6 +1215,86 @@ Files modified: `components/seller/status-banner.tsx` (`SellerStatusNote`), `app
 
 ---
 
+### Slice 25 — Fixing Slice 24's open item: the seller-media routing miss (ecosystem ruling E14)
+
+Root cause was `user-pm2 logs food-web --err` from the VPS, not a code hunt: **completely clean.**
+The request never reached `food-web` at all. nginx on `portal.apoyolime.com` proxies only `/food`
+and `/food/` to this app — a bare `POST /api/seller/media` from a page rendered there falls through
+to the portal host's catch-all and is answered by a **different app entirely**. `UPLOADS_BASE_PATH`
+and its permissions, both suspected in Slice 24, were never involved. A second, unnoticed half of
+the same cause: image *reads* on the seller surface were equally broken, unreported only because no
+seller had a photo yet. Full diagnosis: `DEPLOYMENT.md` §6b's now-resolved CONFIRMED-IN-PRODUCTION
+block; ecosystem ruling **E14** (this bug is the second of two verticals to hit this exact shape —
+Apparel found and fixed it first, at its own Slice 14).
+
+**The fix is Apparel's already-proven remedy, not an invention.** nginx now also proxies a
+**namespaced** `/api/food/*` prefix (collision-free — a bare `/api/media`/`/api/account`/`/api/health`
+prefix would silently steal that name from Apparel and/or Salon, which share this host). Four
+**additive** routes under `app/api/food/…` each delegate to the exact same handler as their bare
+twin — `lib/media/serve.ts`, `lib/media/upload.ts`, `lib/media/seller-media.ts`,
+`lib/media/seller-listing-media.ts`, extracted from what were previously route-file-only functions
+so the bare and namespaced routes physically cannot drift apart. The bare routes are untouched —
+local dev and direct `food.apoyolime.com` access still use them, and no live buyer-surface URL moved.
+
+**`lib/media-url.ts` — the picker named as Food's own gap in E14 (Food hand-built `/api/media/...`
+at every call site, which is precisely how this survived five slices).** Read helpers
+(`mediaUrl`/`sellerMediaUrl`), an upload-endpoint picker for the ONE upload route with real callers
+on BOTH surfaces (`mediaUploadUrl("buyer" | "seller")` — `<OrderMessageComposer>` already carried an
+`actor: "seller" | "client"` prop from Slice 18, so this reused it rather than inventing a new
+discriminator), and two constants for the seller-only upload routes that never have a buyer caller.
+
+**`<FoodImage>` gained a `surface?: "buyer" | "seller"` prop, defaulting to `"buyer"`.** Every
+pre-existing call site — every buyer-surface component, roughly a dozen files — needed ZERO changes.
+Only the components that render EXCLUSIVELY under `app/food/*` (`<PhotoField>`, `<GalleryManager>`,
+`<ListingPhotoManager>`, `<HighlightManager>`, `<ActiveStoriesList>`, `<StoryPostForm>`, the admin
+takedown list, the seller listings list) now pass `surface="seller"` explicitly. `<OrderThread>` and
+`<OrderMessageComposer>` are the one pair genuinely shared by both surfaces, so each page that
+renders them passes a real `surface`/`actor` value instead of a hardcoded default.
+
+**⚠ A subtlety the naive fix would have gotten wrong: `next/image`'s custom loader
+(`lib/media/image-loader.ts`) already had an "already-absolute, skip" branch** for root-relative
+paths, added for static assets. Simply prefixing a seller-surface `src` with `/api/food/media` before
+handing it to `<Image>` would have silently hit that branch and skipped `resolveVariantKey` entirely
+— every seller-surface photo would have served whichever single variant was originally stored,
+losing responsive thumb/card/full selection with no error anywhere. Fixed by teaching the loader to
+recognise the seller prefix specifically, strip it, run the existing variant logic, then reattach it
+— seller-surface images now get correctly-sized variants exactly like buyer-surface ones.
+
+**Also removed:** `lib/storage.ts`'s own `mediaUrl`/`mediaBaseUrl` — dead code, zero imports anywhere
+in the codebase, and a second, competing, unused definition of the exact concept `lib/media-url.ts`
+now owns for real. Leaving it would have been the same class of trap that caused this bug.
+
+**Verification, and its own real limit:** `tsc`/lint/`next build` clean (all 4 new routes appear in
+the build's own route table). `vitest` 27/27 unchanged. Re-ran, against a real production build,
+every existing e2e script that exercises a component this slice touched: `verify:order-thread-e2e`
+**21/21** (both surfaces send messages; the buyer's photo attachment round-trips and renders),
+`verify:listing-editor` **38/38** (`<ListingPhotoManager>`'s upload and both surfaces' reads),
+`verify:onboarding` (`<PhotoField>`'s avatar/cover upload). **What none of this can prove: the actual
+nginx path split.** One origin serves both surfaces in local dev by construction (every prior
+slice's own stated limit) — a local pass proves the refactor didn't regress the buyer-default path,
+never that `/api/food/*` is reachable from `portal.apoyolime.com`. That proof is the pending VPS
+deploy: `deploy.sh` plus the nginx drop-in addition in `DEPLOYMENT.md` §6b, then a real upload from
+the live seller dashboard.
+
+Files created: `lib/media-url.ts`, `lib/media/serve.ts`, `lib/media/upload.ts`,
+`lib/media/seller-media.ts`, `lib/media/seller-listing-media.ts`,
+`app/api/food/media/[...path]/route.ts`, `app/api/food/media/upload/route.ts`,
+`app/api/food/seller/media/route.ts`, `app/api/food/seller/listing-media/route.ts`.
+Files modified: `app/api/media/[...path]/route.ts`, `app/api/media/upload/route.ts`,
+`app/api/seller/media/route.ts`, `app/api/seller/listing-media/route.ts` (all four now thin wrappers
+around the extracted handlers), `lib/storage.ts` (dead `mediaUrl`/`mediaBaseUrl` removed),
+`lib/media/image-loader.ts` (seller-prefix-aware), `components/food-image.tsx` (`surface` prop),
+`components/order-thread.tsx` + `components/order-message-composer.tsx` (surface/actor-driven
+picker calls), `components/seller/upload.ts` (default endpoint), `components/seller/photo-field.tsx`,
+`components/seller/gallery-manager.tsx`, `components/seller/listing-photo-manager.tsx`,
+`components/seller/highlight-manager.tsx`, `components/seller/active-stories-list.tsx`,
+`components/seller/story-post-form.tsx`, `app/food/admin/page.tsx`,
+`app/food/(dashboard)/listings/page.tsx`, `app/(client)/orders/[id]/page.tsx`,
+`app/food/(dashboard)/orders/[id]/page.tsx` (`surface` prop threaded), `lib/actions/order-message.ts`
++ `lib/actions/create-story.ts` (doc comments), `.env.example`, `DEPLOYMENT.md`, `BUILD_SLICES.md`.
+
+---
+
 ## Phases 4+ (architected in `Apoyo_Food_Architecture.md` Part I — slice when reached)
 
 4 Saved & repeat (collections, order-again recs) · 5 Advanced search & trending materialization · 6 Seller dashboard & insights (k-anonymity floor — the signature feature) · 7 Reviews & portal reputation events · 8 Customer requests board · 9 Verification, geocoding, web-push, ws chat upgrade.

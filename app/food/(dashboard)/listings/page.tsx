@@ -66,6 +66,7 @@ export default async function SellerListingsPage() {
                   blurDataUrl={listing.photos[0].blurDataUrl}
                   sizes="64px"
                   className="h-16 w-16 shrink-0"
+                  surface="seller"
                 />
               ) : (
                 <div aria-hidden className="h-16 w-16 shrink-0 rounded-image bg-sunken" />

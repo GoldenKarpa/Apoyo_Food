@@ -14,10 +14,12 @@ import type { SellerFormState } from "@/lib/actions/seller-form-state";
  * Post a Fresh Today entry (architecture Part E2: "photo -> optional caption
  * -> optional linked listing -> post", "≤3 taps").
  *
- * ⚠ The photo is uploaded BEFORE this action runs, through `/api/media/upload`
- * with `kind: "story"` — Slice 4's original generic route, reserved from its
- * own Slice 4 comment for exactly this case: an entity whose photo needs to
- * exist before the entity itself does. `isStoryStorageKey` below is the
+ * ⚠ The photo is uploaded BEFORE this action runs, through the generic media
+ * route (`kind: "story"`, `mediaUploadUrl("seller")` per ecosystem ruling
+ * E14 — this always runs on the seller surface) — Slice 4's original generic
+ * route, reserved from its own Slice 4 comment for exactly this case: an
+ * entity whose photo needs to exist before the entity itself does.
+ * `isStoryStorageKey` below is the
  * trust-boundary check this action applies to whatever keys the client hands
  * back — a tampered request naming a key from a different category
  * (`sellers/...`, `listings/...`) is rejected outright, not written into a

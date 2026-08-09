@@ -10,21 +10,32 @@ import { Textarea } from "@/components/ui/textarea";
 import { FoodImage } from "@/components/food-image";
 import { sendOrderMessage } from "@/lib/actions/order-message";
 import { MAX_MESSAGE_LENGTH } from "@/lib/order-message-form";
+import { mediaUploadUrl } from "@/lib/media-url";
 
 /**
  * The composer's own upload call — deliberately NOT `uploadSellerMedia`
- * (`components/seller/upload.ts`): that helper defaults to the SELLER-only
- * `/api/seller/media` route, but a message can come from either party, so
- * this posts straight to the generic `/api/media/upload` route (`kind:
- * "message"`) that any authenticated session may use — the same reasoning
- * Slice 15 gave for reusing that route for Fresh Today photos.
+ * (`components/seller/upload.ts`): that helper always targets a seller-only
+ * route, but a message can come from either party, so this posts straight to
+ * the generic media-upload route (`kind: "message"`) that any authenticated
+ * session may use — the same reasoning Slice 15 gave for reusing that route
+ * for Fresh Today photos.
+ *
+ * ⚠ This composer renders on BOTH surfaces (`actor` says which), so unlike
+ * `<StoryPostForm>` it cannot hardcode a surface — `mediaUploadUrl(actor)`
+ * picks `/api/media/upload` (buyer, client.apoyolime.com's own domain) or
+ * `/api/food/media/upload` (seller, portal.apoyolime.com/food) per ecosystem
+ * ruling E14. Getting this wrong breaks only in production, since one origin
+ * serves both surfaces in local dev.
  */
-async function uploadAttachment(file: File): Promise<{ ok: true; key: string } | { ok: false }> {
+async function uploadAttachment(
+  file: File,
+  actor: "seller" | "client",
+): Promise<{ ok: true; key: string } | { ok: false }> {
   const body = new FormData();
   body.set("kind", "message");
   body.set("file", file);
   try {
-    const res = await fetch("/api/media/upload", { method: "POST", body });
+    const res = await fetch(mediaUploadUrl(actor === "seller" ? "seller" : "buyer"), { method: "POST", body });
     if (!res.ok) return { ok: false };
     // Every ingest preset returns `PhotoVariantPaths` (`lib/media/ingest.ts`'s
     // `toPhotoPaths`) — the route hands that back as-is, so the response is
@@ -63,7 +74,7 @@ export function OrderMessageComposer({ orderId, actor }: { orderId: string; acto
     if (!file) return;
     setUploading(true);
     setError(false);
-    const result = await uploadAttachment(file);
+    const result = await uploadAttachment(file, actor);
     setUploading(false);
     if (result.ok) setAttachment(result.key);
     else setError(true);
@@ -91,7 +102,13 @@ export function OrderMessageComposer({ orderId, actor }: { orderId: string; acto
     <div className="flex flex-col gap-2 rounded-card border border-hairline bg-card p-4">
       {attachment && (
         <div className="relative w-24">
-          <FoodImage src={attachment} alt="" aspect="thumb" sizes="96px" />
+          <FoodImage
+            src={attachment}
+            alt=""
+            aspect="thumb"
+            sizes="96px"
+            surface={actor === "seller" ? "seller" : "buyer"}
+          />
           <button
             type="button"
             aria-label={t("removeAttachment")}

@@ -72,6 +72,7 @@ export function PhotoField({
           blurDataUrl={blurDataUrl}
           sizes="(min-width: 768px) 480px, 100vw"
           className={kind === "avatar" ? "w-40 max-w-full" : "w-full max-w-xl"}
+          surface="seller"
         />
       ) : (
         <div

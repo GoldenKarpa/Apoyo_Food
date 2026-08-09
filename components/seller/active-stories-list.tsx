@@ -77,7 +77,14 @@ export function ActiveStoriesList({
         const hoursLeft = Math.max(0, Math.round((new Date(story.expiresAt).getTime() - Date.now()) / 3_600_000));
         return (
           <li key={story.id} className="flex flex-col gap-2 rounded-card border border-hairline bg-card p-3">
-            <FoodImage src={story.pathThumb} alt="" aspect="story" blurDataUrl={story.blurDataUrl} sizes="200px" />
+            <FoodImage
+              src={story.pathThumb}
+              alt=""
+              aspect="story"
+              blurDataUrl={story.blurDataUrl}
+              sizes="200px"
+              surface="seller"
+            />
             {story.caption && <p className="line-clamp-2 text-label text-ink">{story.caption}</p>}
             {story.linkedListing && (
               <p className="text-caption text-ink-muted">{t("linkedTo", { title: story.linkedListing.title })}</p>

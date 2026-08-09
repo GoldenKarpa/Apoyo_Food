@@ -36,9 +36,10 @@ const schema = z.object({
 });
 
 /**
- * ⚠ The photo, if any, is uploaded BEFORE this action runs (through
- * `/api/media/upload`, `kind: "message"`) — the same "ingest first, attach
- * second" shape Slice 15 established for Fresh Today, for the identical
+ * ⚠ The photo, if any, is uploaded BEFORE this action runs (through the
+ * generic media route, `kind: "message"`, `mediaUploadUrl(actor)` per
+ * ecosystem ruling E14 since this composer runs on both surfaces) — the same
+ * "ingest first, attach second" shape Slice 15 established for Fresh Today, for the identical
  * reason: the message doesn't exist yet to attach a photo TO. `attachmentPath`
  * is re-validated here as the trust boundary — a tampered request naming a
  * key from a different category (`sellers/...`, `listings/...`) is rejected,

@@ -138,23 +138,3 @@ export async function deleteMedia(key: string): Promise<void> {
   if (!resolved) return;
   await fs.unlink(resolved).catch(() => {});
 }
-
-/**
- * Public URL base for stored media. This single value is what "points
- * `next/image` at whichever driver is active" (Slice 4) actually means:
- *   - local disk (today) → `/api/media`, served by app/api/media/[...path]
- *   - R2 + CDN (later)   → e.g. `https://media.apoyolime.com`, no app route in
- *                          the request path at all
- * Swapping storage backends is therefore a config change plus this module's
- * internals, never a change at any call site.
- *
- * ⚠ Must be NEXT_PUBLIC_: `lib/media/image-loader.ts` runs in the client bundle.
- */
-export function mediaBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_MEDIA_BASE_URL || "/api/media";
-}
-
-/** Public URL for a storage key. */
-export function mediaUrl(key: string): string {
-  return `${mediaBaseUrl()}/${key}`;
-}

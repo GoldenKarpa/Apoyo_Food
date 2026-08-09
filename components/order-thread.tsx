@@ -30,10 +30,13 @@ export async function OrderThread({
   messages,
   viewerUserId,
   viewerLocale,
+  surface,
 }: {
   messages: OrderThreadMessage[];
   viewerUserId: string;
   viewerLocale: Locale;
+  /** Which surface is rendering this thread — picks the reachable attachment read path (E14). */
+  surface: "buyer" | "seller";
 }) {
   const t = await getTranslations("orderThread");
 
@@ -56,7 +59,7 @@ export async function OrderThread({
             >
               {message.attachmentPath && (
                 <div className="mb-2 w-40">
-                  <FoodImage src={message.attachmentPath} alt="" aspect="thumb" sizes="160px" />
+                  <FoodImage src={message.attachmentPath} alt="" aspect="thumb" sizes="160px" surface={surface} />
                 </div>
               )}
               {resolved && (

@@ -72,6 +72,7 @@ export function GalleryManager({ photos }: { photos: FoodSellerPhoto[] }) {
                 aspect="meal"
                 blurDataUrl={photo.blurDataUrl}
                 sizes="(min-width: 768px) 240px, 45vw"
+                surface="seller"
               />
               <div className="flex items-center gap-1">
                 <Button
