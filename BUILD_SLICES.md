@@ -1268,13 +1268,26 @@ now owns for real. Leaving it would have been the same class of trap that caused
 the build's own route table). `vitest` 27/27 unchanged. Re-ran, against a real production build,
 every existing e2e script that exercises a component this slice touched: `verify:order-thread-e2e`
 **21/21** (both surfaces send messages; the buyer's photo attachment round-trips and renders),
-`verify:listing-editor` **38/38** (`<ListingPhotoManager>`'s upload and both surfaces' reads),
-`verify:onboarding` (`<PhotoField>`'s avatar/cover upload). **What none of this can prove: the actual
-nginx path split.** One origin serves both surfaces in local dev by construction (every prior
-slice's own stated limit) — a local pass proves the refactor didn't regress the buyer-default path,
-never that `/api/food/*` is reachable from `portal.apoyolime.com`. That proof is the pending VPS
-deploy: `deploy.sh` plus the nginx drop-in addition in `DEPLOYMENT.md` §6b, then a real upload from
-the live seller dashboard.
+`verify:listing-editor` **38/38** (`<ListingPhotoManager>`'s upload and both surfaces' reads).
+`verify:onboarding` was attempted too but crashed on an unrelated, pre-existing gap in this local
+environment (needs a local `portal-web` on a throwaway identity DB to read the FOOD registration
+toggle — never stood up here) — the crash was at a registration-CTA check, before any upload step,
+so it neither confirms nor regresses anything this slice touched. **What none of this could prove
+locally: the actual nginx path split** — one origin serves both surfaces in local dev by
+construction (every prior slice's own stated limit).
+
+✅ **Deployed and confirmed live, 2026-08-09.** `deploy.sh` ran clean; the nginx drop-in addition
+(`= /api/food` + `/api/food/`, alongside the existing `/food` pair) passed `nginx -t` and reloaded
+with no error; `food-web` restarted with a flat restart count across two `pm2 list` snapshots.
+External proof (no SSH — plain HTTPS from outside the VPS): an unauthenticated
+`POST https://portal.apoyolime.com/api/food/seller/media` returns **401
+`{"error":"UNAUTHORIZED"}`** — the exact shape only `handleSellerMediaUpload` produces, proving the
+request now reaches food-web through the new route rather than falling through to a different app —
+while the bare `food.apoyolime.com` route still answers identically, unaffected. A GET on the
+namespaced media-serve route with a bogus key returns a clean 404 carrying this app's own security
+headers, not a Hestia/portal-web page. **Still open:** a real seller completing a real upload through
+the browser — the routing bug is fixed and confirmed, but that last proof is the user's own
+walkthrough step to run.
 
 Files created: `lib/media-url.ts`, `lib/media/serve.ts`, `lib/media/upload.ts`,
 `lib/media/seller-media.ts`, `lib/media/seller-listing-media.ts`,
