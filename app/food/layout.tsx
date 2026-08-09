@@ -1,8 +1,10 @@
 import { getTranslations } from "next-intl/server";
+import { LayoutGrid } from "lucide-react";
 
 import { LocaleToggle } from "@/components/locale-toggle";
 import { AccountAvatarIcon, AccountModal } from "@/components/chrome/account-modal";
 import { getAccountSummary } from "@/lib/get-account-summary";
+import { portalPageUrl } from "@/lib/links";
 
 /**
  * Seller dashboard + admin shell — served at portal.apoyolime.com/food/… and
@@ -49,6 +51,21 @@ export default async function FoodSurfaceLayout({ children }: { children: React.
             </span>
           </div>
           <div className="flex items-center gap-3">
+            {/* Found live 2026-08-09: nothing on this surface led back to
+                portal's own launchpad (the vertical-card picker at /home) —
+                once in, a seller had no way back short of hand-editing the
+                URL. `portalPageUrl` targets portal-web's OWN pages, not a
+                sibling vertical's, so this is not the "never guess at
+                another vertical's door" rule (see that helper's own comment) —
+                Portal is the ecosystem hub every vertical is expected to
+                link back to. */}
+            <a
+              href={portalPageUrl("/home")}
+              className="tap-target flex items-center gap-1 rounded-pill px-2 py-1 text-caption font-medium text-ink hover:bg-sunken"
+            >
+              <LayoutGrid aria-hidden className="size-4" />
+              {tSeller("portalHome")}
+            </a>
             {/* Sellers are Spanish-first, but the toggle is still always
                 visible here — the seller surface merely DEFAULTS to es
                 (i18n/request.ts). */}

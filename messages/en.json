@@ -441,6 +441,7 @@
   },
   "seller": {
     "workspaceBadge": "Seller workspace",
+    "portalHome": "Portal",
     "dashboard": {
       "title": "Seller dashboard",
       "body": "Your order inbox, listings, Fresh Today posts and profile live here.",
@@ -475,7 +476,8 @@
         "suspend": "Suspend",
         "suspendConfirm": "Suspend {name}? Their kitchen and listings disappear from the marketplace immediately.",
         "reinstate": "Reinstate",
-        "actionError": "That did not work. Reload the page and try again."
+        "actionError": "That did not work. Reload the page and try again.",
+        "approveIncompleteProfile": "Can't approve yet — this kitchen's profile is still missing something an approver requires (photo, story, service area, or a way to hand food over). Ask the seller to finish setup first."
       },
       "reports": {
         "heading": "Open reports ({count})",
@@ -647,6 +649,7 @@
       "bioLabel": "Your story",
       "bioPlaceholder": "I've cooked Trini food at home for fifteen years…",
       "bioCount": "{count} of {max} characters",
+      "bioMinHint": "Write at least {min} characters — this is what buyers read before trusting a stranger's kitchen.",
       "areasHint": "Choose up to {max} areas — tap the map or the buttons beneath it.",
       "areasCount": "{count} of {max} chosen",
       "languagesLabel": "Languages you can be reached in",

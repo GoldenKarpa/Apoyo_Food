@@ -28,7 +28,7 @@ export type AdminActionSpec =
   | { kind: "takedown"; listingId: string }
   | { kind: "ordering"; enabled: boolean };
 
-async function runAction(spec: AdminActionSpec): Promise<{ ok: boolean }> {
+async function runAction(spec: AdminActionSpec): Promise<{ ok: boolean; reason?: string }> {
   if (spec.kind === "seller") return updateSellerStatus(spec.sellerId, spec.sellerAction);
   if (spec.kind === "report") return resolveReport(spec.reportId, spec.resolution);
   if (spec.kind === "ordering") return setOrderingEnabled(spec.enabled);
@@ -40,6 +40,7 @@ export function AdminActionButton({
   variant = "default",
   confirmMessage,
   errorLabel,
+  reasonLabels,
   spec,
 }: {
   label: string;
@@ -47,20 +48,29 @@ export function AdminActionButton({
   /** A plain `window.confirm` — disruptive actions only (suspend, takedown). */
   confirmMessage?: string;
   errorLabel: string;
+  /**
+   * Overrides `errorLabel` for a specific failure `reason` (e.g.
+   * `updateSellerStatus`'s `"incompleteProfile"`). Found live 2026-08-09: an
+   * admin trying to approve a genuinely incomplete profile saw the generic
+   * "reload and try again" — actively misleading, since reloading changes
+   * nothing and the real fix is the SELLER finishing setup. Falls back to
+   * `errorLabel` for any reason not listed here.
+   */
+  reasonLabels?: Record<string, string>;
   spec: AdminActionSpec;
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
-  const [error, setError] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   async function handleClick() {
     if (confirmMessage && !window.confirm(confirmMessage)) return;
     setPending(true);
-    setError(false);
+    setErrorMessage(null);
     const result = await runAction(spec);
     setPending(false);
     if (!result.ok) {
-      setError(true);
+      setErrorMessage((result.reason && reasonLabels?.[result.reason]) || errorLabel);
       return;
     }
     router.refresh();
@@ -74,9 +84,9 @@ export function AdminActionButton({
       <button type="button" className={className} disabled={pending} onClick={handleClick}>
         {pending ? "…" : label}
       </button>
-      {error && (
+      {errorMessage && (
         <span className="admin-muted" style={{ display: "block", marginTop: "0.25rem", color: "#b3413a" }}>
-          {errorLabel}
+          {errorMessage}
         </span>
       )}
     </span>

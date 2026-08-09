@@ -1308,6 +1308,64 @@ picker calls), `components/seller/upload.ts` (default endpoint), `components/sel
 
 ---
 
+### Slice 26 — Two silent-failure UX gaps, found live walking a real seller through onboarding+approval
+
+Not planned. The user hit what looked like two separate bugs — a setup-wizard step that would not
+tick despite the field visibly saving, and an admin "Approve" button that failed with a generic
+error — while walking the real onboarding→admin-approval loop the Slice 25 media fix unblocked.
+Both traced to the SAME non-bug: `MIN_BIO_LENGTH = 20` (`lib/seller-profile.ts`), and the seller's
+test bio ("kjnhbgvfcdkj", 12 characters) was genuinely under it. `isStepDone("bio")` and
+`activationBlockers` were both working exactly as designed — a 12-character string is not a real
+kitchen story, and Slice 16's whole point was that an approver should never see one that thin. **The
+real bug was that nothing said so anywhere** — the field showed a live max-length counter and a
+"✓ Saved" confirmation (correctly — the save DID succeed) but no hint that a floor existed, and the
+admin's rejection was the same generic `sellers.actionError` ("reload the page and try again")
+every OTHER admin-action failure uses — actively misleading here, since reloading changes nothing
+and the real fix is the seller finishing setup, not the admin retrying.
+
+**Two fixes, both additive, both worth generalizing later:**
+1. `<BioField>` (shared by the setup wizard and the standalone profile editor — one component, both
+   surfaces already correct) now shows a second, muted hint line — "write at least {min}
+   characters…" — for as long as the trimmed bio stays under `MIN_BIO_LENGTH`, and says nothing
+   once it clears the bar. Mirrors the existing max-length counter's own always-visible pattern, just
+   for the floor instead of the ceiling.
+2. `<AdminActionButton>` gained an optional `reasonLabels` prop — a map from a Server Action's
+   `reason` string to a specific message, falling back to the existing generic `errorLabel` for
+   anything not listed. Wired for exactly one case so far: `updateSellerStatus`'s `"incompleteProfile"`
+   reason now tells the admin the profile is missing something an approver requires, instead of
+   suggesting a reload. The other three admin actions (suspend/reinstate, report resolution, listing
+   takedown) are unchanged — none of their failure reasons currently need a specific message, and the
+   prop is opt-in per button.
+
+**A third, smaller finding from the same walkthrough:** nothing on the seller dashboard led back to
+portal's own launchpad (`/home`, the vertical-card picker) — once a seller landed on
+`portal.apoyolime.com/food/*`, the only way back was hand-editing the URL. Added a small "Portal"
+link (`<LayoutGrid>` icon) to the seller header, next to the locale toggle, pointing at
+`portalPageUrl("/home")`. **Not a violation of the "never guess at a sibling vertical's door" rule**
+— same exception `lib/links.ts`'s own header comment already documents for `portalPageUrl`: Portal
+is the ecosystem's own hub, not a sibling vertical, and every vertical is expected to link back to
+it.
+
+**Two things reported live in the same session that turned out NOT to be bugs, for the record:**
+- A signed-in session bouncing from `portal.apoyolime.com` to `food.apoyolime.com` unprompted — this
+  is Apoyo-Demia's own middleware sending a non-provider session back to its own vertical, reading
+  the JWT's embedded `memberships` claim, which is documented ecosystem-wide as refreshed only at
+  re-issue (`lib/session.ts`'s own standing note). A session that predates completing onboarding will
+  read as non-provider until it naturally refreshes; this is accepted staleness, not a defect.
+- `portal.apoyolime.com/apparel/onboarding` 404ing — Apparel's own onboarding page, a different
+  repo's own scope, not investigated further here.
+
+**Verification:** `tsc`/lint/`next build` clean, same route list. Bilingual parity **782/782**
+(3 new keys: `fields.bioMinHint`, `admin.sellers.approveIncompleteProfile`, `seller.portalHome`,
+each added identically to both locales). `vitest` 27/27 unchanged. Not re-verified live yet — this
+fix is responding to the user's own real walkthrough, still in progress.
+
+Files modified: `components/seller/bio-field.tsx` (min-length hint), `components/admin/admin-action-button.tsx`
+(`reasonLabels` prop), `app/food/admin/page.tsx` (wires it for `incompleteProfile`), `app/food/layout.tsx`
+(portal-home link), `messages/{en,es}.json` (782/782), `BUILD_SLICES.md`.
+
+---
+
 ## Phases 4+ (architected in `Apoyo_Food_Architecture.md` Part I — slice when reached)
 
 4 Saved & repeat (collections, order-again recs) · 5 Advanced search & trending materialization · 6 Seller dashboard & insights (k-anonymity floor — the signature feature) · 7 Reviews & portal reputation events · 8 Customer requests board · 9 Verification, geocoding, web-push, ws chat upgrade.

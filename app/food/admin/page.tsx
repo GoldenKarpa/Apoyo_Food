@@ -119,6 +119,7 @@ export default async function FoodAdminPage({
                     label={t("sellers.approve")}
                     variant="primary"
                     errorLabel={t("sellers.actionError")}
+                    reasonLabels={{ incompleteProfile: t("sellers.approveIncompleteProfile") }}
                     spec={{ kind: "seller", sellerId: seller.id, sellerAction: "approve" }}
                   />
                   <AdminActionButton

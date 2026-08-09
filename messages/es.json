@@ -441,6 +441,7 @@
   },
   "seller": {
     "workspaceBadge": "Panel de vendedor",
+    "portalHome": "Portal",
     "dashboard": {
       "title": "Panel del vendedor",
       "body": "Aquí están tus pedidos, tus platos, tus publicaciones de En la cocina hoy y tu perfil.",
@@ -475,7 +476,8 @@
         "suspend": "Suspender",
         "suspendConfirm": "¿Suspender a {name}? Su cocina y sus platos desaparecen del mercado de inmediato.",
         "reinstate": "Reincorporar",
-        "actionError": "Eso no funcionó. Recarga la página e inténtalo de nuevo."
+        "actionError": "Eso no funcionó. Recarga la página e inténtalo de nuevo.",
+        "approveIncompleteProfile": "Todavía no se puede aprobar: al perfil de esta cocina le falta algo que un revisor exige (foto, historia, zona de servicio o una forma de entregar la comida). Pide al vendedor que termine de configurar su perfil primero."
       },
       "reports": {
         "heading": "Reportes abiertos ({count})",
@@ -647,6 +649,7 @@
       "bioLabel": "Tu historia",
       "bioPlaceholder": "Cocino comida trinitaria en casa desde hace quince años…",
       "bioCount": "{count} de {max} caracteres",
+      "bioMinHint": "Escribe al menos {min} caracteres: esto es lo que leen los compradores antes de confiar en la cocina de un desconocido.",
       "areasHint": "Elige hasta {max} zonas: toca el mapa o los botones de abajo.",
       "areasCount": "{count} de {max} elegidas",
       "languagesLabel": "Idiomas en los que se te puede escribir",

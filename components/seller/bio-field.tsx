@@ -7,7 +7,7 @@ import { FieldForm } from "@/components/seller/field-form";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateSellerBio } from "@/lib/actions/update-seller-profile";
-import { MAX_BIO_LENGTH } from "@/lib/seller-profile";
+import { MAX_BIO_LENGTH, MIN_BIO_LENGTH } from "@/lib/seller-profile";
 
 /**
  * The kitchen's story.
@@ -46,6 +46,16 @@ export function BioField({ initial, nextHref }: { initial: string; nextHref?: st
         <p className="text-caption text-ink" aria-live="polite">
           {t("fields.bioCount", { count: bio.length, max: MAX_BIO_LENGTH })}
         </p>
+        {/* Found live 2026-08-09: a bio under MIN_BIO_LENGTH silently never
+            ticks the setup checklist and silently blocks admin approval —
+            "silently" being the actual bug. The max is always visible above;
+            this is the matching hint for the floor, shown only while it isn't
+            yet met (never scolds a seller who has already cleared it). */}
+        {bio.trim().length < MIN_BIO_LENGTH && (
+          <p className="text-caption text-ink-muted">
+            {t("fields.bioMinHint", { min: MIN_BIO_LENGTH })}
+          </p>
+        )}
       </div>
     </FieldForm>
   );
