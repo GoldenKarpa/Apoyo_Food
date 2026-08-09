@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { ComingSoon } from "@/components/coming-soon";
-import { AccountAvatarIcon, AccountModal } from "@/components/chrome/account-modal";
+import { AccountAvatarIcon, AccountModal, SignedOutAccountModal } from "@/components/chrome/account-modal";
 import { NAV_ITEMS, type NavItem } from "@/components/chrome/nav-config";
 import type { AccountSummary } from "@/lib/account-summary";
 import { cn } from "@/lib/utils";
@@ -85,23 +85,33 @@ export function BottomNav({ accountSummary }: { accountSummary: AccountSummary |
             active ? "text-green" : "text-ink",
           );
 
-          // The signed-in account avatar is the ONE nav item whose rendering
-          // depends on session state — everything else (including "account"
-          // itself when signed out) is exactly the same static ComingSoon/Link
-          // branch this file has always had.
-          if (item.key === "account" && accountSummary) {
+          // The account item is the ONE nav item whose rendering depends on
+          // session state — everything else is exactly the same static
+          // ComingSoon/Link branch this file has always had. Signed in: the
+          // avatar + identity sheet (Slice 21). Signed out: a sheet with real
+          // sign-in/register doors (Slice 23) — which still carries the old
+          // stub's Phase-4 note, but is no longer a dead end.
+          if (item.key === "account") {
             return (
               <li key={item.key} className="flex flex-1">
-                <AccountModal summary={accountSummary}>
-                  <button type="button" className={tabClass} data-account-avatar="">
-                    <TabInner
-                      item={item}
-                      label={label}
-                      active={false}
-                      icon={<AccountAvatarIcon summary={accountSummary} className="h-5 w-5" />}
-                    />
-                  </button>
-                </AccountModal>
+                {accountSummary ? (
+                  <AccountModal summary={accountSummary}>
+                    <button type="button" className={tabClass} data-account-avatar="">
+                      <TabInner
+                        item={item}
+                        label={label}
+                        active={false}
+                        icon={<AccountAvatarIcon summary={accountSummary} className="h-5 w-5" />}
+                      />
+                    </button>
+                  </AccountModal>
+                ) : (
+                  <SignedOutAccountModal>
+                    <button type="button" className={tabClass} data-account-signed-out="">
+                      <TabInner item={item} label={label} active={false} />
+                    </button>
+                  </SignedOutAccountModal>
+                )}
               </li>
             );
           }

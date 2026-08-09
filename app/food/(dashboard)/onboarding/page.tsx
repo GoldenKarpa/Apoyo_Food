@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { OnboardForm } from "@/components/seller/onboard-form";
 import { SignedOutNotice } from "@/components/seller/signed-out-notice";
 import { loadSellerWorkspace } from "@/lib/seller";
+import { portalPageUrl } from "@/lib/links";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("seller.onboarding");
@@ -32,7 +33,19 @@ export default async function SellerOnboardingPage() {
   const t = await getTranslations("seller.onboarding");
   const workspace = await loadSellerWorkspace();
 
-  if (workspace.state === "signed-out") return <SignedOutNotice loginHref="/login" />;
+  // Both doors, deliberately (Slice 23): an expired-session seller needs to
+  // sign in; a first-time visitor who just clicked "Sell your food" needs to
+  // register, which per ecosystem convention happens at portal. `?source=food`
+  // mirrors Salon's own `?source=salon` — portal's launchpad reads it to skip
+  // the manual vertical-card click on the way back.
+  if (workspace.state === "signed-out") {
+    return (
+      <SignedOutNotice
+        loginHref="/login"
+        registerHref={portalPageUrl("/register?source=food")}
+      />
+    );
+  }
   if (workspace.seller) redirect("/food");
 
   return (

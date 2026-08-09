@@ -27,24 +27,54 @@ import { getTranslations } from "next-intl/server";
  * `portal.apoyolime.com/food/*` to `food.apoyolime.com/login` would need its
  * own `lib/links.ts`-style absolute-URL builder, real but separable work,
  * not built here.
+ *
+ * `registerHref` (Slice 23) is the PROVIDER door, and it exists because the
+ * two audiences hitting a signed-out seller page are genuinely different
+ * people: someone who already sells here and merely lost their session needs
+ * `loginHref`; someone who just clicked "Sell your food" for the first time
+ * needs to REGISTER, and per the ecosystem's own established convention that
+ * happens at portal, not here (see `lib/links.ts`'s `portalPageUrl` for why
+ * that is not a cross-vertical-guess violation, and for the Salon precedent it
+ * follows). Salon's own equivalent page hard-`redirect()`s signed-out visitors
+ * straight to portal; this notice deliberately offers BOTH doors instead,
+ * because a blind redirect to a registration form is actively wrong for the
+ * returning-seller half of that audience — Salon's page is only ever reached
+ * as an explicit "apply" action, whereas this one is also where an expired
+ * session lands.
  */
 export async function SignedOutNotice({
   namespace = "seller.signedOut",
   loginHref,
-}: { namespace?: string; loginHref?: string } = {}) {
+  registerHref,
+}: { namespace?: string; loginHref?: string; registerHref?: string } = {}) {
   const t = await getTranslations(namespace);
 
   return (
     <section className="rounded-card border border-hairline bg-card p-6">
       <h1 className="font-display text-h1 font-semibold text-ink">{t("title")}</h1>
       <p className="mt-3 max-w-prose text-body text-ink">{t("body")}</p>
-      {loginHref && (
-        <Link
-          href={loginHref}
-          className="mt-4 inline-block font-medium text-green underline-offset-4 hover:underline"
-        >
-          {t("signIn")}
-        </Link>
+      {(loginHref || registerHref) && (
+        <div className="mt-4 flex flex-wrap items-center gap-4">
+          {loginHref && (
+            <Link
+              href={loginHref}
+              className="font-medium text-green underline-offset-4 hover:underline"
+            >
+              {t("signIn")}
+            </Link>
+          )}
+          {/* A plain <a>, not next/link: this leaves the app entirely for
+              another origin, and prefetching/client-navigating a cross-origin
+              URL is meaningless at best. */}
+          {registerHref && (
+            <a
+              href={registerHref}
+              className="font-medium text-green underline-offset-4 hover:underline"
+            >
+              {t("register")}
+            </a>
+          )}
+        </div>
       )}
     </section>
   );

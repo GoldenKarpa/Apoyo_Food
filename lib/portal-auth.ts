@@ -115,3 +115,50 @@ export async function loginPortalCredentials(input: {
     return { ok: false, error: "network_error" };
   }
 }
+
+/**
+ * Sign out — **ecosystem-wide, and there is no other kind** (Slice 23).
+ *
+ * The session is one cookie on `.apoyolime.com`, minted by portal-web and
+ * merely decoded here (`lib/session.ts`), so there is no Food-only session to
+ * end: clearing it signs the person out of Food, Salon, Apparel, Social and
+ * portal at once. Food cannot clear it locally either — the cookie is scoped
+ * to the parent domain and set by a different origin, so only portal-web's own
+ * endpoint can expire it. The UI's job is therefore to SAY so before calling
+ * this, which `<AccountModal>`'s confirmation step does.
+ *
+ * Same `redirect: "manual"` + opaque-response handling as
+ * `loginPortalCredentials` above, for the identical fetch-spec reason
+ * documented there: next-auth's signout responds with a redirect, and once the
+ * request is cross-origin that redirect stays subject to CORS. The
+ * `Set-Cookie` that expires the session is still processed regardless of the
+ * response being unreadable to JS, so the caller re-checks the session rather
+ * than trusting this call's own outcome.
+ */
+export async function signOutPortal(): Promise<PortalAuthResult> {
+  try {
+    const csrfToken = await getPortalCsrfToken();
+    if (!csrfToken) return { ok: false, error: "network_error" };
+
+    try {
+      await fetch(`${PORTAL_BASE_URL}/api/auth/signout`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ csrfToken, callbackUrl: "/" }).toString(),
+        redirect: "manual",
+      });
+    } catch {
+      // Ignored — see the doc comment above.
+    }
+
+    // Ground truth, exactly as the login path does it: ask portal whether a
+    // session still exists rather than believing the opaque response.
+    const sessionRes = await fetch(`${PORTAL_BASE_URL}/api/auth/session`, { credentials: "include" });
+    if (!sessionRes.ok) return { ok: false, error: "network_error" };
+    const session = (await sessionRes.json()) as { user?: { id: string } } | null;
+    return session?.user?.id ? { ok: false, error: "network_error" } : { ok: true };
+  } catch {
+    return { ok: false, error: "network_error" };
+  }
+}

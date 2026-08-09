@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { ComingSoon } from "@/components/coming-soon";
-import { AccountAvatarIcon, AccountModal } from "@/components/chrome/account-modal";
+import { AccountAvatarIcon, AccountModal, SignedOutAccountModal } from "@/components/chrome/account-modal";
 import { NAV_ITEMS } from "@/components/chrome/nav-config";
 import type { AccountSummary } from "@/lib/account-summary";
 import { LocaleToggle } from "@/components/locale-toggle";
@@ -59,16 +59,22 @@ export function SiteHeader({ accountSummary }: { accountSummary: AccountSummary 
             );
             const Icon = item.icon;
 
-            // Same session-dependent special case as <BottomNav> — everything
-            // else, including "account" when signed out, is unchanged.
-            if (item.key === "account" && accountSummary) {
-              return (
+            // Same session-dependent special case as <BottomNav>, both states.
+            if (item.key === "account") {
+              return accountSummary ? (
                 <AccountModal key={item.key} summary={accountSummary}>
                   <button type="button" className={linkClass} data-account-avatar="">
                     <AccountAvatarIcon summary={accountSummary} className="h-4 w-4" />
                     {label}
                   </button>
                 </AccountModal>
+              ) : (
+                <SignedOutAccountModal key={item.key}>
+                  <button type="button" className={linkClass} data-account-signed-out="">
+                    <Icon aria-hidden className="h-4 w-4" />
+                    {label}
+                  </button>
+                </SignedOutAccountModal>
               );
             }
 

@@ -19,7 +19,21 @@
       "admin": "Admin"
     },
     "moreComingTitle": "More is coming here",
-    "moreComingBody": "Saved addresses, your language, notification settings and the rest of your Apoyo profile will live here."
+    "moreComingBody": "Saved addresses, your language, notification settings and the rest of your Apoyo profile will live here.",
+    "signedOut": {
+      "title": "Your account",
+      "body": "Browse the whole marketplace without an account — you are only asked to sign in when you commit to something.",
+      "signIn": "Sign in",
+      "register": "Create an account"
+    },
+    "signOut": {
+      "action": "Sign out",
+      "confirmBody": "This signs you out of every Apoyo site — Food, Salon, Apparel, Social and the portal all share one account.",
+      "confirmAction": "Sign out everywhere",
+      "cancel": "Stay signed in",
+      "pending": "Signing out…",
+      "failed": "We could not sign you out. Check your connection and try again."
+    }
   },
   "nav": {
     "primary": "Main navigation",
@@ -537,7 +551,8 @@
     "signedOut": {
       "title": "Sign in to reach your kitchen",
       "body": "The seller workspace needs an Apoyo account. Sign in on any Apoyo site with the account you already use, then come back to this page — the same session works everywhere in the ecosystem.",
-      "signIn": "Sign in"
+      "signIn": "Sign in",
+      "register": "New here? Register as a provider"
     },
     "become": {
       "title": "Sell your food on Apoyo",

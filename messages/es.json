@@ -19,7 +19,21 @@
       "admin": "Admin"
     },
     "moreComingTitle": "Aquí llegará más",
-    "moreComingBody": "Tus direcciones guardadas, tu idioma, los avisos y el resto de tu perfil de Apoyo vivirán aquí."
+    "moreComingBody": "Tus direcciones guardadas, tu idioma, los avisos y el resto de tu perfil de Apoyo vivirán aquí.",
+    "signedOut": {
+      "title": "Tu cuenta",
+      "body": "Explora todo el mercado sin cuenta — solo se te pide iniciar sesión cuando confirmas algo.",
+      "signIn": "Iniciar sesión",
+      "register": "Crear una cuenta"
+    },
+    "signOut": {
+      "action": "Cerrar sesión",
+      "confirmBody": "Esto cierra tu sesión en todos los sitios de Apoyo — Food, Salon, Apparel, Social y el portal comparten una sola cuenta.",
+      "confirmAction": "Cerrar sesión en todo",
+      "cancel": "Seguir con la sesión abierta",
+      "pending": "Cerrando sesión…",
+      "failed": "No pudimos cerrar tu sesión. Revisa tu conexión e inténtalo de nuevo."
+    }
   },
   "nav": {
     "primary": "Navegación principal",
@@ -537,7 +551,8 @@
     "signedOut": {
       "title": "Inicia sesión para entrar a tu cocina",
       "body": "El panel del vendedor necesita una cuenta de Apoyo. Inicia sesión en cualquier sitio de Apoyo con la cuenta que ya usas y vuelve a esta página: la misma sesión funciona en todo el ecosistema.",
-      "signIn": "Iniciar sesión"
+      "signIn": "Iniciar sesión",
+      "register": "¿Eres nuevo? Regístrate como vendedor"
     },
     "become": {
       "title": "Vende tu comida en Apoyo",

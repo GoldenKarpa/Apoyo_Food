@@ -1,7 +1,12 @@
 "use client";
 
+import * as React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
 import { useTranslations } from "next-intl";
+
+import { signOutPortal } from "@/lib/portal-auth";
 
 import {
   BottomSheet,
@@ -15,6 +20,65 @@ import { Chip, StatusChip } from "@/components/ui/chip";
 import { ComingSoonBadge } from "@/components/coming-soon";
 import { accountInitial, type AccountSummary, type OtherProviderVertical } from "@/lib/account-summary";
 import { cn } from "@/lib/utils";
+
+/**
+ * Sign-out, with the ecosystem-wide warning stated BEFORE the click that fires
+ * it, not after (Slice 23). Two-step by design: the first press swaps this
+ * control for an explicit "this signs you out of every Apoyo site" confirmation,
+ * because the blast radius genuinely exceeds what a button labelled "Sign out"
+ * inside Food's own chrome would imply — see `signOutPortal`'s own comment for
+ * why an ecosystem-wide sign-out is the ONLY kind available here.
+ *
+ * On success the page is refreshed rather than redirected: `getAccountSummary()`
+ * runs in the shared layout on the server, so a refresh is what actually
+ * re-renders the nav into its signed-out state. Staying put also keeps a
+ * browsing visitor where they were — nothing on the public marketplace requires
+ * a session, so there is nothing to flee from.
+ */
+function SignOutControl() {
+  const t = useTranslations("account.signOut");
+  const router = useRouter();
+  const [confirming, setConfirming] = React.useState(false);
+  const [pending, setPending] = React.useState(false);
+  const [failed, setFailed] = React.useState(false);
+
+  async function handleSignOut() {
+    setPending(true);
+    setFailed(false);
+    const result = await signOutPortal();
+    if (result.ok) {
+      router.refresh();
+      return;
+    }
+    // Left on-screen deliberately: a failed sign-out that silently did nothing
+    // would leave someone believing they had signed out on a shared device.
+    setPending(false);
+    setFailed(true);
+  }
+
+  if (!confirming) {
+    return (
+      <Button variant="ghost" size="lg" onClick={() => setConfirming(true)} data-signout-start="">
+        {t("action")}
+      </Button>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3 rounded-card border border-hairline p-4">
+      <p className="text-label text-ink">{t("confirmBody")}</p>
+      {failed && <p className="text-label text-error">{t("failed")}</p>}
+      <div className="flex flex-wrap gap-2">
+        <Button variant="primary" onClick={handleSignOut} disabled={pending} data-signout-confirm="">
+          {pending ? t("pending") : t("confirmAction")}
+        </Button>
+        <Button variant="ghost" onClick={() => setConfirming(false)} disabled={pending}>
+          {t("cancel")}
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 /** Display names for the badge row — proper nouns, deliberately identical across locales (the same convention "Apoyo Food" itself already gets in the Spanish footer copy). */
 const VERTICAL_LABELS: Record<"FOOD" | OtherProviderVertical, string> = {
@@ -60,6 +124,54 @@ export function AccountAvatarIcon({
     >
       {initial}
     </span>
+  );
+}
+
+/**
+ * What the Account nav item opens for a SIGNED-OUT visitor (Slice 23).
+ *
+ * Replaces the plain `<ComingSoon feature="buyerAccount">` stub that used to
+ * render here. That stub was correct about the unbuilt Phase-4 account page,
+ * but it was also the ONLY thing the Account button did when signed out — so a
+ * visitor who wanted to sign in or create an account was told "coming soon"
+ * and given nowhere to go, on the one control in the whole app named after the
+ * thing they were looking for. Found live during real onboarding testing:
+ * nothing anywhere in the app linked to `/login` or `/register` from a
+ * signed-out state.
+ *
+ * Keeps the stub's own phase note (this is still not the real account page)
+ * while adding the two doors that DO exist — the same "carry the context
+ * forward rather than drop it" call `<AccountModal>`'s own more-is-coming note
+ * documents.
+ */
+export function SignedOutAccountModal({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("account.signedOut");
+  const tc = useTranslations("comingSoon");
+
+  return (
+    <BottomSheet>
+      <BottomSheetTrigger asChild>{children}</BottomSheetTrigger>
+      <BottomSheetContent title={t("title")} description={t("body")}>
+        <div className="flex flex-col gap-3">
+          <BottomSheetClose asChild>
+            <Button variant="primary" size="lg" asChild>
+              <Link href="/login">{t("signIn")}</Link>
+            </Button>
+          </BottomSheetClose>
+          <BottomSheetClose asChild>
+            <Button variant="outline" size="lg" asChild>
+              <Link href="/register">{t("register")}</Link>
+            </Button>
+          </BottomSheetClose>
+        </div>
+
+        {/* The retired stub's own Phase-4 note, kept rather than dropped. */}
+        <div className="flex items-center gap-2 rounded-card bg-sunken p-4">
+          <ComingSoonBadge />
+          <p className="text-label text-ink">{tc("phaseNote", { phase: 4 })}</p>
+        </div>
+      </BottomSheetContent>
+    </BottomSheet>
   );
 }
 
@@ -141,6 +253,8 @@ export function AccountModal({ summary, children }: { summary: AccountSummary; c
           </div>
           <p className="text-caption text-ink-muted">{t("moreComingBody")}</p>
         </div>
+
+        <SignOutControl />
 
         <BottomSheetFooter>
           <BottomSheetClose asChild>

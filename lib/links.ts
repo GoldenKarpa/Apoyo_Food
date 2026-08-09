@@ -31,3 +31,30 @@ export function sellerSurfaceUrl(path = "/food"): string {
 export function sellerSurfaceIsCrossOrigin(): boolean {
   return !!process.env.NEXT_PUBLIC_SELLER_SURFACE_URL;
 }
+
+/**
+ * Absolute URL onto **portal-web's own pages** — distinct from
+ * `sellerSurfaceUrl` above, which points at Food's OWN seller dashboard that
+ * merely happens to be hosted under the portal host's `/food/*` path. This one
+ * targets pages portal-web itself renders (`/register`), a different app.
+ *
+ * ⚠ This is deliberately NOT a violation of the standing "a vertical must
+ * never surface another vertical's URL as a redirect target" rule that
+ * `components/seller/signed-out-notice.tsx` documents. That rule is about never
+ * guessing at a SIBLING VERTICAL's door (Salon's, Apparel's, the Apoyo-Demia
+ * app's). Portal is not a sibling — it is the ecosystem's own identity issuer
+ * and the established provider-registration door, which every vertical is
+ * expected to send would-be providers to. Verified against Salon's own already
+ * shipped implementation of exactly this hop before writing it here:
+ * `Apoyo-Salon/app/salon/register/page.tsx` redirects a signed-out visitor to
+ * `providerSurfaceUrl("/register?source=salon")`, using its own near-identical
+ * `lib/portal-url.ts` helper. This is that same pattern, Food's copy.
+ *
+ * `NEXT_PUBLIC_PORTAL_BASE_URL` is the same variable `lib/portal-auth.ts`
+ * already requires for register/login to work at all (Slice 20), so this adds
+ * no new prod configuration — it reuses what must already be set.
+ */
+export function portalPageUrl(path: string): string {
+  const base = process.env.NEXT_PUBLIC_PORTAL_BASE_URL?.replace(/\/+$/, "");
+  return base ? `${base}${path}` : path;
+}
