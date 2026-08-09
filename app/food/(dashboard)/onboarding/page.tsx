@@ -32,7 +32,7 @@ export default async function SellerOnboardingPage() {
   const t = await getTranslations("seller.onboarding");
   const workspace = await loadSellerWorkspace();
 
-  if (workspace.state === "signed-out") return <SignedOutNotice />;
+  if (workspace.state === "signed-out") return <SignedOutNotice loginHref="/login" />;
   if (workspace.seller) redirect("/food");
 
   return (

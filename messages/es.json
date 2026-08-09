@@ -536,7 +536,8 @@
     },
     "signedOut": {
       "title": "Inicia sesión para entrar a tu cocina",
-      "body": "El panel del vendedor necesita una cuenta de Apoyo. Inicia sesión en cualquier sitio de Apoyo con la cuenta que ya usas y vuelve a esta página: la misma sesión funciona en todo el ecosistema."
+      "body": "El panel del vendedor necesita una cuenta de Apoyo. Inicia sesión en cualquier sitio de Apoyo con la cuenta que ya usas y vuelve a esta página: la misma sesión funciona en todo el ecosistema.",
+      "signIn": "Iniciar sesión"
     },
     "become": {
       "title": "Vende tu comida en Apoyo",

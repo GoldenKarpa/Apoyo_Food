@@ -536,7 +536,8 @@
     },
     "signedOut": {
       "title": "Sign in to reach your kitchen",
-      "body": "The seller workspace needs an Apoyo account. Sign in on any Apoyo site with the account you already use, then come back to this page — the same session works everywhere in the ecosystem."
+      "body": "The seller workspace needs an Apoyo account. Sign in on any Apoyo site with the account you already use, then come back to this page — the same session works everywhere in the ecosystem.",
+      "signIn": "Sign in"
     },
     "become": {
       "title": "Sell your food on Apoyo",
