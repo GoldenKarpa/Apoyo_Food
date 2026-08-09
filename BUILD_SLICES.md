@@ -1421,6 +1421,55 @@ place guessing wrong.
 
 ---
 
+### Slice 28 — A freshly-onboarded seller's own session didn't know it yet
+
+Direct follow-up from the redirect-policy discussion Slice 27's admin fix opened up: Apoyo-Demia's
+`middleware.ts` bounces a signed-in non-provider off `portal.apoyolime.com` back to their own
+vertical (decision 14's sign-in matrix — a deliberate, user-locked rule, not a bug). But it decides
+"non-provider" off the session JWT's embedded `memberships` claim, which `portal-web`'s own `jwt()`
+callback only refreshes at sign-in or an explicit `trigger: "update"` — never automatically. A
+seller who signs in, THEN completes onboarding in the same session, has a JWT that still says
+"no memberships" for up to 30 days (`SESSION_MAX_AGE_SECONDS`), so visiting portal afterward got
+them incorrectly bounced as a plain client. Confirmed live the same night this was diagnosed.
+
+**Deliberately not fixed by adding a live check to Apoyo-Demia's middleware.** `lib/session.ts`'s
+own standing rule — "use [a live read] only where a round-trip is impossible or a stale read is
+harmless — i.e. edge middleware" — exists precisely because Edge middleware runs on every single
+page load; a DB/API round-trip there is a cost paid by every visitor to every vertical, not just
+the rare case that needed it. The fix instead targets the actual source of the staleness: the
+moment a membership is minted, not the moment it's checked.
+
+**`portal-web` gained `POST /api/auth/refresh-session`** — session-gated (a live cookie already
+proves the caller owns the account, same carve-out `resend-verification`'s own comment uses),
+re-mints the session cookie via the EXISTING `mintSessionCookie()` (Slice-fix from earlier tonight,
+now also carrying email/name) — which already reloads memberships fresh on every call, regardless
+of what's passed in. No new membership-reading logic; this route just gives a vertical a way to
+ask for that reload to happen NOW instead of at the next natural re-issue.
+
+**Food's `lib/portal-auth.ts` gained `refreshPortalSession()`**, a fire-and-forget POST to that
+endpoint, called from `<OnboardForm>` right after `onboardSeller` returns `ok` — the exact moment
+a `(FOOD, PROVIDER)` membership just landed in the identity DB. Deliberately never awaited/blocking:
+every REAL authorization check in this app already reads live standing
+(`requireFoodSeller()`/`lib/ecosystem.ts`), so a failed or skipped refresh degrades to the OLD
+staleness window, never to a broken onboarding flow.
+
+**Deliberately scoped to Food only tonight, not Apparel/Salon too** — the underlying
+`/api/auth/refresh-session` endpoint is fully general and either vertical can adopt the identical
+one-line `refreshPortalSession()`-style call at their own onboarding-submit whenever that work is
+picked up; matches the user's own explicit call to defer cross-vertical uniformity work (the
+register-page cross-link) to a dedicated future turn rather than doing it piecemeal tonight.
+
+**Verification:** `tsc`/lint/`next build`/`vitest` clean in both repos (portal-web: 67/67; Food:
+27/27), same route lists plus the one new portal-web route. Not yet verified live — this closes
+out tonight's redirect-policy discussion but the actual "onboard, then visit portal, land on the
+launchpad instead of getting bounced" round trip is still the user's own walkthrough to run.
+
+Files modified: `components/seller/onboard-form.tsx` (calls `refreshPortalSession` on success),
+`lib/portal-auth.ts` (`refreshPortalSession`), `BUILD_SLICES.md`. Cross-repo (Apoyo-Portal
+portal-web, disclosed): `app/api/auth/refresh-session/route.ts` (new).
+
+---
+
 ## Phases 4+ (architected in `Apoyo_Food_Architecture.md` Part I — slice when reached)
 
 4 Saved & repeat (collections, order-again recs) · 5 Advanced search & trending materialization · 6 Seller dashboard & insights (k-anonymity floor — the signature feature) · 7 Reviews & portal reputation events · 8 Customer requests board · 9 Verification, geocoding, web-push, ws chat upgrade.

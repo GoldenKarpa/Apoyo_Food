@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { onboardSeller } from "@/lib/actions/onboard-seller";
+import { refreshPortalSession } from "@/lib/portal-auth";
 import { SELLER_FORM_IDLE, type SellerFormState } from "@/lib/actions/seller-form-state";
 import { MAX_DISPLAY_NAME_LENGTH, MIN_DISPLAY_NAME_LENGTH } from "@/lib/seller-profile";
 
@@ -39,9 +40,17 @@ export function OnboardForm() {
     startTransition(async () => {
       const result = await onboardSeller(SELLER_FORM_IDLE, formData);
       setState(result);
-      // Straight into the guided setup — the seller row now exists, so every
-      // step from here is an edit of something real and is resumable.
-      if (result.status === "ok") router.push("/food/profile/setup");
+      if (result.status === "ok") {
+        // Fire-and-forget: the (FOOD, PROVIDER) membership this action just
+        // minted won't be in the seller's OWN JWT until it naturally
+        // refreshes (up to 30 days) without this — see refreshPortalSession's
+        // own comment. Never awaited/blocking: a failed refresh degrades to
+        // the old staleness window, not a broken onboarding flow.
+        void refreshPortalSession();
+        // Straight into the guided setup — the seller row now exists, so every
+        // step from here is an edit of something real and is resumable.
+        router.push("/food/profile/setup");
+      }
     });
   }
 

@@ -117,6 +117,36 @@ export async function loginPortalCredentials(input: {
 }
 
 /**
+ * Re-mints the caller's own session cookie with freshly-loaded ecosystem
+ * memberships (portal-web's `/api/auth/refresh-session`).
+ *
+ * ⚠ Call this right after any action that mints a NEW `(FOOD, PROVIDER)`
+ * membership (today: `onboardSeller`'s own success path) — that membership
+ * lands in the identity DB immediately, but the seller's own JWT was issued
+ * earlier and won't know about it until the token naturally refreshes, which
+ * can otherwise take up to 30 days. Without this, Apoyo-Demia's own
+ * middleware (which trusts the JWT's `memberships` claim rather than a live
+ * read) keeps bouncing a genuine, freshly-onboarded provider off portal as
+ * if they were still a plain client — found live 2026-08-09/10.
+ *
+ * Fire-and-forget by design: this is a same-request nicety, not a
+ * correctness gate. Every REAL authorization check in this app already
+ * reads live standing (`requireFoodSeller()`, `lib/ecosystem.ts`), so a
+ * failed or skipped refresh here degrades to "the OLD staleness window",
+ * never to a broken dashboard.
+ */
+export async function refreshPortalSession(): Promise<void> {
+  try {
+    await fetch(`${PORTAL_BASE_URL}/api/auth/refresh-session`, {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch {
+    // Ignored — see the doc comment above.
+  }
+}
+
+/**
  * Sign out — **ecosystem-wide, and there is no other kind** (Slice 23).
  *
  * The session is one cookie on `.apoyolime.com`, minted by portal-web and
