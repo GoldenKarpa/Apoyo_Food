@@ -25,9 +25,9 @@
  */
 @layer base {
   :root {
-    /* Surfaces — unchanged from the Emergent spec */
-    --cream-bg: 244 238 225; /* #F4EEE1 */
-    --card: 252 248 239; /* #FCF8EF */
+    /* Surfaces — ecosystem palette-separation patch (2026-08-10) */
+    --cream-bg: 246 238 219; /* #F6EEDB */
+    --card: 252 246 231; /* #FCF6E7 */
     --sunken: 235 227 211; /* #EBE3D3 */
     --hairline: 226 216 196; /* #E2D8C4 */
 
