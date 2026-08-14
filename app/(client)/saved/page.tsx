@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { ListingGrid } from "@/components/listing-grid";
 import { Button } from "@/components/ui/button";
 import { SectionHeader } from "@/components/ui/section-header";
-import { CARD_SELECT, DISCOVERABLE, withAvailability } from "@/lib/discovery";
+import { CARD_SELECT, discoverable, withAvailability } from "@/lib/discovery";
 import { prisma } from "@/lib/prisma";
 import { getFoodSession } from "@/lib/session";
 
@@ -42,7 +42,7 @@ export default async function SavedPage() {
   }
 
   const rows = await prisma.foodSave.findMany({
-    where: { userId: session.userId, listing: DISCOVERABLE },
+    where: { userId: session.userId, listing: await discoverable() },
     select: { listing: { select: CARD_SELECT } },
     orderBy: { createdAt: "desc" },
   });

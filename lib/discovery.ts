@@ -4,6 +4,7 @@ import { localDay, summarizeAvailability, weekdayBitmask, addDays } from "@/lib/
 import { followedSellerIds } from "@/lib/follows";
 import { prisma } from "@/lib/prisma";
 import { seenStoryIds } from "@/lib/stories";
+import { publicSellerWhere } from "@/lib/visibility";
 
 /**
  * Composed discovery sections — architecture Part E1.
@@ -14,12 +15,14 @@ import { seenStoryIds } from "@/lib/stories";
  * photography."
  *
  * ⚠ **THE VISIBILITY RULE, and it is the one thing in this file that must never
- * be got wrong.** A listing is discoverable only when *both* the listing is
- * `active` **and its seller is `ACTIVE`**. The seed carries a deliberate trap
- * for exactly this: `mama-lin-kitchen` is SUSPENDED and still owns `active:
- * true` listings, and `pastelitos-y-mas` is PENDING with a live listing. A query
- * that filters on `active` alone returns both and leaks a suspended kitchen onto
- * the storefront. Every query in this module goes through `DISCOVERABLE`.
+ * be got wrong.** A listing is discoverable only when *all* of: the listing is
+ * `active`, it has not been taken down, its seller is `ACTIVE`, **and the
+ * seller's visibility class matches what the launch switch currently exposes**
+ * (LC-4). The seed carries a deliberate trap for the seller-status half:
+ * `mama-lin-kitchen` is SUSPENDED and still owns `active: true` listings, and
+ * `pastelitos-y-mas` is PENDING with a live listing. A query that filters on
+ * `active` alone returns both and leaks a suspended kitchen onto the storefront.
+ * Every query in this module goes through `discoverable()`.
  */
 
 /**
@@ -28,12 +31,46 @@ import { seenStoryIds } from "@/lib/stories";
  * `takenDownAt: null` (Slice 16) is a SEPARATE gate from `active`: `active` is
  * the seller's own pause switch, `takenDownAt` is admin-authority removal, and
  * a listing must be hidden if EITHER is set.
+ *
+ * ⚠ **LC-4 (2026-08-14) turned this from a `const` into an async function, and
+ * that was the point rather than a side effect.** It now folds in the
+ * launch-switch class filter, which requires reading the switch over the
+ * network. As a `const` it could be spread into a new query without thought; as
+ * a function it cannot be used without `await`, so the compiler visits every
+ * buyer-facing query and a new one cannot silently skip the gate. The plan's
+ * own warning for this slice is "miss one and it leaks" — this makes missing
+ * one a type error.
+ *
+ * ⚠ **Never merge a second `seller` key onto the result of this** (the Slice 9
+ * finding, recorded in BUILD_SLICES: two `seller` keys in one object literal
+ * silently overwrite each other, and the survivor would drop the visibility
+ * filter). To add a seller condition, spread `(await discoverable()).seller`
+ * into your own fully-authored `seller` clause — `followedSellersListings`
+ * below is the worked example.
  */
-export const DISCOVERABLE = {
-  active: true,
-  takenDownAt: null,
-  seller: { status: "ACTIVE" as const },
-} satisfies Prisma.FoodListingWhereInput;
+export async function discoverable(): Promise<Prisma.FoodListingWhereInput> {
+  return discoverableFromSeller({});
+}
+
+/**
+ * `discoverable()`, with EXTRA conditions folded into its `seller` clause.
+ *
+ * ⚠ This exists so the two-`seller`-keys bug is unrepresentable rather than
+ * merely warned about. Spreading `...(await discoverable())` and then adding
+ * your own `seller: { … }` does not merge the two — the later key wins outright
+ * and silently discards the status + visibility gate. That shipped once already
+ * (see `mostSavedListings`). Use this instead whenever a buyer-facing query
+ * needs to filter on something about the seller.
+ */
+export async function discoverableFromSeller(
+  extra: Prisma.FoodSellerWhereInput,
+): Promise<Prisma.FoodListingWhereInput> {
+  return {
+    active: true,
+    takenDownAt: null,
+    seller: { ...(await publicSellerWhere()), ...extra },
+  };
+}
 
 /** Everything a `<MealCard>` needs, and nothing more. */
 export const CARD_SELECT = {
@@ -135,7 +172,7 @@ export async function freshTodayEntries(limit = 12, userId: string | null = null
   const rows = await prisma.foodStory.findMany({
     where: {
       expiresAt: { gt: new Date() },
-      seller: { status: "ACTIVE" },
+      seller: await publicSellerWhere(),
     },
     select: {
       id: true,
@@ -180,7 +217,7 @@ export async function availableSoon(limit = 8, now = new Date()) {
 
   const rows = await prisma.foodListing.findMany({
     where: {
-      ...DISCOVERABLE,
+      ...(await discoverable()),
       OR: [availableOnWeekdayFilter(today.weekday), availableOnWeekdayFilter(saturday.weekday)],
     },
     select: CARD_SELECT,
@@ -192,6 +229,7 @@ export async function availableSoon(limit = 8, now = new Date()) {
 
 /** Section 3 — browse by category. */
 export async function categoryCards() {
+  const listing = await discoverable();
   const categories = await prisma.foodCategory.findMany({
     orderBy: { sortOrder: "asc" },
     select: {
@@ -201,7 +239,7 @@ export async function categoryCards() {
       nameEs: true,
       seasonal: true,
       heroImage: true,
-      _count: { select: { listings: { where: { listing: DISCOVERABLE } } } },
+      _count: { select: { listings: { where: { listing } } } },
     },
   });
   // A category with nothing in it is a dead end on the demo's front page.
@@ -211,7 +249,7 @@ export async function categoryCards() {
 /** Section 4 — new this week. */
 export async function newestListings(limit = 8, now = new Date()) {
   const rows = await prisma.foodListing.findMany({
-    where: DISCOVERABLE,
+    where: await discoverable(),
     select: CARD_SELECT,
     orderBy: { createdAt: "desc" },
     take: limit,
@@ -242,7 +280,7 @@ export async function trendingListings(limit = 8, now = new Date()) {
   const rows =
     ids.length > 0
       ? await prisma.foodListing.findMany({
-          where: { ...DISCOVERABLE, id: { in: ids } },
+          where: { ...(await discoverable()), id: { in: ids } },
           select: CARD_SELECT,
           take: limit,
         })
@@ -273,13 +311,25 @@ export async function trendingListings(limit = 8, now = new Date()) {
   return withAvailability(rows, now);
 }
 
-/** The trending fallback, and also "Popular in your area" (Part E4, Slice 10). */
+/**
+ * The trending fallback, and also "Popular in your area" (Part E4, Slice 10).
+ *
+ * ⚠ **Bug fixed here at LC-4 (2026-08-14), and it was live before this slice.**
+ * This used to spread the old `DISCOVERABLE` const and then conditionally spread a SECOND
+ * `seller` key for the area filter. Two `seller` keys in one object literal do
+ * not merge — the later one wins outright — so whenever `area` was set, the
+ * `takenDownAt`/seller-status half of the gate was silently discarded and a
+ * suspended kitchen could surface in "Popular in your area". That is the exact
+ * failure BUILD_SLICES already records from Slice 9, reintroduced here.
+ *
+ * It matters more now than it did: post-LC-4 the discarded clause also carries
+ * the visibility class, so the same overwrite would have leaked pre-launch REAL
+ * sellers onto a closed storefront. Fixed by authoring ONE `seller` clause that
+ * folds the area condition into the gate rather than replacing it.
+ */
 export async function mostSavedListings(limit = 8, now = new Date(), area?: RegionKey | null) {
   const rows = await prisma.foodListing.findMany({
-    where: {
-      ...DISCOVERABLE,
-      ...(area ? { seller: { status: "ACTIVE", areas: { has: area } } } : {}),
-    },
+    where: await discoverableFromSeller(area ? { areas: { has: area } } : {}),
     select: { ...CARD_SELECT, _count: { select: { saves: true } } },
     orderBy: { saves: { _count: "desc" } },
     take: limit,
@@ -290,7 +340,7 @@ export async function mostSavedListings(limit = 8, now = new Date(), area?: Regi
 /** Section 6 — sellers near you, from the area cookie. */
 export async function sellersInArea(area: RegionKey | null, limit = 8) {
   return prisma.foodSeller.findMany({
-    where: { status: "ACTIVE", ...(area ? { areas: { has: area } } : {}) },
+    where: { ...(await publicSellerWhere()), ...(area ? { areas: { has: area } } : {}) },
     select: SELLER_CARD_SELECT,
     orderBy: [{ lastStoryAt: { sort: "desc", nulls: "last" } }, { followerCount: "desc" }],
     take: limit,
@@ -308,7 +358,9 @@ export async function sellersInArea(area: RegionKey | null, limit = 8) {
  */
 export async function followedSellersListings(userId: string, limit = 8, now = new Date()) {
   const rows = await prisma.foodListing.findMany({
-    where: { ...DISCOVERABLE, seller: { status: "ACTIVE", followers: { some: { userId } } } },
+    // Folds the follow condition INTO the gate's seller clause rather than
+    // replacing it — see `discoverableFromSeller`.
+    where: await discoverableFromSeller({ followers: { some: { userId } } }),
     select: CARD_SELECT,
     orderBy: { createdAt: "desc" },
     take: limit,
@@ -345,7 +397,7 @@ export async function seasonalListings(limit = 8, now = new Date()) {
   const todayDate = new Date(`${today.iso}T00:00:00.000Z`);
   const rows = await prisma.foodListing.findMany({
     where: {
-      ...DISCOVERABLE,
+      ...(await discoverable()),
       availabilityWindows: {
         some: { type: "DATE_RANGE", startsOn: { lte: todayDate }, endsOn: { gte: todayDate } },
       },
@@ -360,10 +412,10 @@ export async function seasonalListings(limit = 8, now = new Date()) {
  * `/meals/[slug]`'s "More from this seller" rail (Slice 10, Part E4 Phase 1).
  *
  * A scalar `sellerId` equality, not a second `seller` key merged onto
- * `DISCOVERABLE` — the Slice 9 finding about two `seller` keys silently
+ * `discoverable()` — the Slice 9 finding about two `seller` keys silently
  * overwriting each other (and dropping the ACTIVE-status check) only applies
  * to nested relation filters, but the same instinct applies here: don't touch
- * how `DISCOVERABLE`'s own `seller` clause is shaped.
+ * how `discoverable()`'s own `seller` clause is shaped.
  */
 export async function moreFromSeller(
   sellerId: string,
@@ -372,7 +424,7 @@ export async function moreFromSeller(
   now = new Date(),
 ) {
   const rows = await prisma.foodListing.findMany({
-    where: { ...DISCOVERABLE, sellerId, id: { not: excludeListingId } },
+    where: { ...(await discoverable()), sellerId, id: { not: excludeListingId } },
     select: CARD_SELECT,
     orderBy: { createdAt: "desc" },
     take: limit,
@@ -396,7 +448,7 @@ export async function similarInCategory(
 ) {
   const rows = await prisma.foodListing.findMany({
     where: {
-      ...DISCOVERABLE,
+      ...(await discoverable()),
       id: { not: excludeListingId },
       categories: { some: { categoryId } },
     },
@@ -407,10 +459,14 @@ export async function similarInCategory(
   return withAvailability(rows, now);
 }
 
-/** How many ACTIVE sellers each area holds — the directory's area counts. */
+/**
+ * How many publicly-visible sellers each area holds — the directory's area
+ * counts. Gated: a count that includes sellers the directory itself will not
+ * list reads as a broken filter ("North West (7)" opening onto three cards).
+ */
 export async function sellerCountsByArea(): Promise<Record<string, number>> {
   const sellers = await prisma.foodSeller.findMany({
-    where: { status: "ACTIVE" },
+    where: await publicSellerWhere(),
     select: { areas: true },
   });
   const counts: Record<string, number> = {};

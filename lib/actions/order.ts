@@ -20,7 +20,7 @@ import {
   RESPOND_BY_HOURS,
 } from "@/lib/order-form";
 import { parseTtdToCents } from "@/lib/listing-form";
-import { DISCOVERABLE } from "@/lib/discovery";
+import { discoverable } from "@/lib/discovery";
 import { logDemand } from "@/lib/demand";
 import { notifyUser, notifyOrderPlaced, notifyOrderAccepted, notifyOrderDeclined } from "@/lib/notifications";
 import { checkRateLimit, clientIpFromHeaders, ORDER_CREATE_RULE_PER_IP, ORDER_CREATE_RULE_PER_USER } from "@/lib/rate-limit";
@@ -91,7 +91,7 @@ export async function createOrderRequest(
   if (!isFulfillmentMode(fulfillmentMode)) return { status: "error", error: "fulfillmentMode" };
 
   const listing = await prisma.foodListing.findFirst({
-    where: { id: listingId, ...DISCOVERABLE },
+    where: { id: listingId, ...(await discoverable()) },
     select: {
       id: true,
       title: true,

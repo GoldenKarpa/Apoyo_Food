@@ -3,7 +3,7 @@
 import type { ReportReason } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getFoodSession } from "@/lib/session";
-import { DISCOVERABLE } from "@/lib/discovery";
+import { discoverable } from "@/lib/discovery";
 
 const VALID_REASONS = new Set<string>(["INAPPROPRIATE", "SUSPECTED_SCAM", "FOOD_SAFETY_CONCERN", "OTHER"]);
 
@@ -38,7 +38,7 @@ export async function reportListing(
   if (!VALID_REASONS.has(reasonInput)) return { ok: false, reason: "invalid" };
 
   const listing = await prisma.foodListing.findFirst({
-    where: { id: listingId, ...DISCOVERABLE },
+    where: { id: listingId, ...(await discoverable()) },
     select: { id: true, sellerId: true },
   });
   if (!listing) return { ok: false, reason: "not_found" };

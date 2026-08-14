@@ -11,7 +11,7 @@
  *     exercised for every (action, starting status) combination, including
  *     the exact bypass Apparel's own Slice 16 found live (a transition
  *     reachable from the wrong starting state).
- *   - `DISCOVERABLE`'s `takenDownAt` gate — a real DB row, proven hidden.
+ *   - `discoverable()`'s `takenDownAt` gate — a real DB row, proven hidden.
  *   - `reportListing` — anonymous-safe (no session required to read), so its
  *     one-OPEN-report-per-listing dedup is provable here directly.
  *   - `FoodReport`'s deletion behaviour (SetNull on listing, Restrict on
@@ -22,7 +22,7 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 
 import { decideSellerLifecycleAction } from "../lib/admin-sellers";
-import { DISCOVERABLE } from "../lib/discovery";
+import { discoverable } from "../lib/discovery";
 import { reportListing } from "../lib/actions/report-listing";
 
 const prisma = new PrismaClient();
@@ -127,7 +127,7 @@ async function main() {
   );
 
   // ==========================================================================
-  section("DISCOVERABLE — takenDownAt is a separate gate from active");
+  section("discoverable() — takenDownAt is a separate gate from active");
   // ==========================================================================
   const seller = await prisma.foodSeller.create({ data: completeSeller({ status: "ACTIVE" }) });
   const listing = await prisma.foodListing.create({
@@ -143,11 +143,11 @@ async function main() {
     },
   });
 
-  const visibleBefore = await prisma.foodListing.findFirst({ where: { id: listing.id, ...DISCOVERABLE } });
+  const visibleBefore = await prisma.foodListing.findFirst({ where: { id: listing.id, ...(await discoverable()) } });
   assert("before takedown: active + ACTIVE seller is discoverable", visibleBefore !== null);
 
   await prisma.foodListing.update({ where: { id: listing.id }, data: { takenDownAt: new Date() } });
-  const visibleAfter = await prisma.foodListing.findFirst({ where: { id: listing.id, ...DISCOVERABLE } });
+  const visibleAfter = await prisma.foodListing.findFirst({ where: { id: listing.id, ...(await discoverable()) } });
   assert(
     "after takedown: hidden even though `active` is STILL true — the seller's toggle alone cannot undo it",
     visibleAfter === null,

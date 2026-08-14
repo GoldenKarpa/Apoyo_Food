@@ -7,7 +7,7 @@
  * `food_availability_windows_fields_by_type` CHECK constraint (not just its
  * transcribed rules), ownership scoping across the listing->seller relation,
  * and the visibility rule from the write side (does `active=false` really
- * drop a listing out of `DISCOVERABLE`).
+ * drop a listing out of `discoverable()`).
  *
  * `upsertListing`/`addAvailabilityWindow`/etc. themselves aren't exercised
  * here for the same reason Slice 13's actions weren't in `verify-seller.ts`:
@@ -26,7 +26,7 @@ import { PrismaClient } from "@prisma/client";
 import { slugify, uniqueListingSlug } from "../lib/slug";
 import { parseTtdToCents, validatePriceForMode, MAX_FEEDS_COUNT } from "../lib/listing-form";
 import { validateWindowInput } from "../lib/availability-window-form";
-import { DISCOVERABLE } from "../lib/discovery";
+import { discoverable } from "../lib/discovery";
 
 const prisma = new PrismaClient();
 
@@ -252,16 +252,16 @@ async function main() {
   assert("a re-index genuinely swaps positions 0 and 2 despite equal starting sortOrder", after[0].id === photoIds[2] && after[2].id === photoIds[0], after);
 
   // ==========================================================================
-  section("Visibility — active=false really removes a listing from DISCOVERABLE");
+  section("Visibility — active=false really removes a listing from discoverable()");
   // ==========================================================================
   await prisma.foodSeller.update({ where: { id: seller.id }, data: { status: "ACTIVE" } });
   await prisma.foodListing.update({ where: { id: first.id }, data: { active: true } });
-  const visibleWhenActive = await prisma.foodListing.findFirst({ where: { ...DISCOVERABLE, id: first.id } });
+  const visibleWhenActive = await prisma.foodListing.findFirst({ where: { ...(await discoverable()), id: first.id } });
   assert("an active listing under an ACTIVE seller IS discoverable", visibleWhenActive?.id === first.id);
 
   await prisma.foodListing.update({ where: { id: first.id }, data: { active: false } });
-  const hiddenWhenPaused = await prisma.foodListing.findFirst({ where: { ...DISCOVERABLE, id: first.id } });
-  assert("…and pausing it (active=false) removes it from DISCOVERABLE — the ONLY 'delete' this product has", hiddenWhenPaused === null);
+  const hiddenWhenPaused = await prisma.foodListing.findFirst({ where: { ...(await discoverable()), id: first.id } });
+  assert("…and pausing it (active=false) removes it from discoverable() — the ONLY 'delete' this product has", hiddenWhenPaused === null);
 
   // Deletion policy, re-confirmed rather than assumed: Slice 2 already proved
   // FoodOrderItem -> FoodListing is Restrict; a listing with no orders CAN

@@ -11,7 +11,8 @@ import { RegionMap } from "@/components/region-map";
 import { SellerFollowHeader } from "@/components/seller-follow-header";
 import { Chip } from "@/components/ui/chip";
 import { SectionHeader } from "@/components/ui/section-header";
-import { CARD_SELECT, DISCOVERABLE, withAvailability } from "@/lib/discovery";
+import { CARD_SELECT, discoverable, withAvailability } from "@/lib/discovery";
+import { publicSellerWhere } from "@/lib/visibility";
 import { logDemand } from "@/lib/demand";
 import { isSellerFollowed } from "@/lib/follows";
 import { prisma } from "@/lib/prisma";
@@ -40,8 +41,10 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  // LC-4 — gated like the page itself, so a hidden seller's NAME does not leak
+  // through the document title / OG metadata of an otherwise-404 page.
   const seller = await prisma.foodSeller.findFirst({
-    where: { slug, status: "ACTIVE" },
+    where: { ...(await publicSellerWhere()), slug },
     select: { displayName: true },
   });
   return { title: seller?.displayName ?? "Apoyo Food" };
@@ -50,8 +53,10 @@ export async function generateMetadata({
 export default async function SellerProfilePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
+  // LC-4 — the direct-URL door. `notFound()` below is what makes a shared link
+  // to a hidden seller behave exactly like a link to one that never existed.
   const seller = await prisma.foodSeller.findFirst({
-    where: { slug, status: "ACTIVE" },
+    where: { ...(await publicSellerWhere()), slug },
     select: {
       id: true,
       slug: true,
@@ -100,7 +105,7 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
   const [following, listingRows] = await Promise.all([
     isSellerFollowed(session?.userId ?? null, seller.id),
     prisma.foodListing.findMany({
-      where: { ...DISCOVERABLE, sellerId: seller.id },
+      where: { ...(await discoverable()), sellerId: seller.id },
       select: CARD_SELECT,
       orderBy: { createdAt: "desc" },
     }),

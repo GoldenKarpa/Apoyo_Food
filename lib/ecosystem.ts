@@ -237,6 +237,96 @@ export const getProviderRegistrationConfig = cache(async (): Promise<ProviderReg
  * admin control needs to know whether the flip actually landed, so it can
  * show an error instead of silently claiming success.
  */
+/**
+ * LC-3/LC-4 — Food's read of the per-vertical PUBLIC LAUNCH switch.
+ *
+ * Plan: `Launch_Control_Plan.md` §LC-3 (Apoyo-Portal). The switch lives in ONE
+ * shared table in the identity DB so a single admin surface controls launch
+ * state everywhere; Food reaches it over the ecosystem API rather than
+ * mirroring it locally (user decision, 2026-08-14). A mirror would need an
+ * invalidation story AND a reconciliation path for a missed write, and a
+ * mirror that silently goes stale reads as "launched" when it is not — the
+ * exact failure this program exists to prevent.
+ *
+ * ## What it selects
+ *
+ *     false (closed)  ->  storefront shows SHOWCASE sellers   (the default)
+ *     true  (open)    ->  storefront shows REAL sellers
+ *
+ * ⚠ Closed does NOT mean Food is offline. Every page still renders and every
+ * seller keeps full dashboard access; only the set of sellers the public
+ * surfaces return changes. `visibilityClassFilter()` in `lib/visibility.ts` is
+ * the single place that turns this boolean into a query filter.
+ *
+ * ## Fail CLOSED, and why the try/catch is not optional
+ *
+ * Every failure path returns `false` — an unreachable switch means "not
+ * public," never "public." A bug that hides real sellers is recoverable; one
+ * that reveals them before launch is not.
+ *
+ * The bare `try` around `fetch` is deliberate and load-bearing, for the exact
+ * reason recorded on `getProviderRegistrationConfig` above: a network-level
+ * throw (ECONNREFUSED, DNS failure) is NOT caught by an `!res.ok` check, and
+ * this function is called from the client storefront's own queries. Without it
+ * an ecosystem-API blip would 500 the whole surface rather than degrade it.
+ */
+export type LaunchConfig = Record<"SOCIAL" | "SALON" | "APPAREL" | "FOOD", boolean>;
+
+const LAUNCH_ALL_CLOSED: LaunchConfig = {
+  SOCIAL: false,
+  SALON: false,
+  APPAREL: false,
+  FOOD: false,
+};
+
+const LAUNCH_TTL_MS = 30_000;
+const LAUNCH_CACHE_KEY = "launch";
+const launchTtlCache = new Map<string, { config: LaunchConfig; expiresAt: number }>();
+
+/**
+ * ⚠ Deliberately NOT wrapped in React's `cache()`, unlike
+ * `getProviderRegistrationConfig` above. Same reasoning as `getMemberships`:
+ * `cache()` memoizes per request in a scope this module cannot invalidate. The
+ * TTL is short (30s, half the registration config's) because it is the delay
+ * between an admin flipping a vertical live and the storefront reflecting it —
+ * that window is felt directly during LC-5's live verification.
+ */
+export async function getLaunchConfig(): Promise<LaunchConfig> {
+  const cached = launchTtlCache.get(LAUNCH_CACHE_KEY);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.config;
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(ecosystemUrl("/config/launch"), {
+      headers: ecosystemHeaders(),
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[ecosystem] launch config fetch failed — failing closed", err);
+    return LAUNCH_ALL_CLOSED;
+  }
+  if (!res.ok) {
+    console.error(`[ecosystem] launch config returned ${res.status} — failing closed`);
+    // Deliberately not cached, so the next request retries rather than holding
+    // a failure for the whole TTL.
+    return LAUNCH_ALL_CLOSED;
+  }
+  const data = (await res.json()) as { launch: Partial<LaunchConfig> };
+  // Spread over all-closed: a key this app expects could simply be absent, and
+  // absent must read as closed, never as undefined.
+  const config: LaunchConfig = { ...LAUNCH_ALL_CLOSED, ...data.launch };
+  launchTtlCache.set(LAUNCH_CACHE_KEY, { config, expiresAt: Date.now() + LAUNCH_TTL_MS });
+  return config;
+}
+
+/** Whether Food's own storefront is open to the public. Fails closed. */
+export async function isFoodPubliclyLaunched(): Promise<boolean> {
+  const config = await getLaunchConfig();
+  return config.FOOD;
+}
+
 export async function setFoodRegistrationEnabled(enabled: boolean): Promise<void> {
   const res = await fetch(ecosystemUrl("/config/registration"), {
     method: "PATCH",

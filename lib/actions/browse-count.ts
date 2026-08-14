@@ -12,5 +12,5 @@ import { buildWhere, type BrowseFilters } from "@/lib/browse";
  * nothing here reveals anything a plain page load wouldn't.
  */
 export async function getBrowseResultCount(filters: BrowseFilters): Promise<number> {
-  return prisma.foodListing.count({ where: buildWhere(filters) });
+  return prisma.foodListing.count({ where: await buildWhere(filters) });
 }

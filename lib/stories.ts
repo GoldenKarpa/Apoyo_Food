@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { publicSellerWhere } from "@/lib/visibility";
 import { followedSellerIds } from "@/lib/follows";
 
 /**
@@ -31,7 +32,7 @@ export async function sellerStoryQueue(
 ): Promise<StorySellerQueueEntry[]> {
   const [activeStories, followed] = await Promise.all([
     prisma.foodStory.findMany({
-      where: { expiresAt: { gt: now }, seller: { status: "ACTIVE" } },
+      where: { expiresAt: { gt: now }, seller: await publicSellerWhere() },
       select: {
         id: true,
         createdAt: true,
@@ -90,8 +91,11 @@ export async function sellerActiveStories(sellerSlug: string, now = new Date()):
   seller: { id: string; slug: string; displayName: string } | null;
   stories: ViewerStory[];
 }> {
+  // LC-4 — the stories viewer is a direct-URL door onto a seller
+  // (`/stories/[sellerSlug]`), so it is gated exactly like the profile page.
+  // Returning `seller: null` makes the page render its own not-found state.
   const seller = await prisma.foodSeller.findFirst({
-    where: { slug: sellerSlug, status: "ACTIVE" },
+    where: { ...(await publicSellerWhere()), slug: sellerSlug },
     select: { id: true, slug: true, displayName: true },
   });
   if (!seller) return { seller: null, stories: [] };

@@ -1,7 +1,7 @@
 import type { Prisma, RegionKey } from "@prisma/client";
 
 import { localDay, addDays } from "@/lib/availability";
-import { CARD_SELECT, DISCOVERABLE, withAvailability } from "@/lib/discovery";
+import { CARD_SELECT, discoverable, withAvailability } from "@/lib/discovery";
 import { prisma } from "@/lib/prisma";
 import { isRegionKey } from "@/lib/regions";
 
@@ -131,17 +131,26 @@ function availabilityWhere(
   };
 }
 
-export function buildWhere(filters: BrowseFilters, now = new Date()): Prisma.FoodListingWhereInput {
-  const and: Prisma.FoodListingWhereInput[] = [DISCOVERABLE];
+/**
+ * ⚠ Async since LC-4 — the gate at element 0 now reads the launch switch. Every
+ * caller is forced through the compiler as a result, which is the point.
+ */
+export async function buildWhere(
+  filters: BrowseFilters,
+  now = new Date(),
+): Promise<Prisma.FoodListingWhereInput> {
+  const and: Prisma.FoodListingWhereInput[] = [await discoverable()];
 
   if (filters.categories.length) {
     and.push({ categories: { some: { category: { slug: { in: filters.categories } } } } });
   }
   if (filters.areas.length) {
-    // ⚠ Merged INTO the seller filter rather than added as a second `seller`
-    // key: two `seller` keys in one object silently overwrite each other, and
-    // the one that would have been dropped here is the ACTIVE-status check.
-    and.push({ seller: { status: "ACTIVE", areas: { hasSome: filters.areas } } });
+    // ⚠ A SEPARATE `AND` element, which is why this one is safe: AND elements
+    // are conjoined, not merged, so this cannot overwrite the gate at element 0
+    // the way a second `seller` key inside one object literal would. The gate
+    // (status + LC-4 visibility class) still applies to every row regardless of
+    // what this adds. Do NOT "simplify" this by folding it into element 0.
+    and.push({ seller: { areas: { hasSome: filters.areas } } });
   }
   if (filters.price) {
     const band = PRICE_BANDS[filters.price];
@@ -183,7 +192,7 @@ export async function browseListings(
   opts: { take?: number; skip?: number; now?: Date } = {},
 ) {
   const now = opts.now ?? new Date();
-  const where = buildWhere(filters, now);
+  const where = await buildWhere(filters, now);
 
   const [rows, total] = await Promise.all([
     prisma.foodListing.findMany({

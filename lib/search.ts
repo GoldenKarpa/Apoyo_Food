@@ -1,5 +1,6 @@
-import { CARD_SELECT, SELLER_CARD_SELECT, withAvailability } from "@/lib/discovery";
+import { CARD_SELECT, SELLER_CARD_SELECT, discoverable, withAvailability } from "@/lib/discovery";
 import { prisma } from "@/lib/prisma";
+import { publicSellerWhere, publicVisibilityClass } from "@/lib/visibility";
 
 /**
  * Search — architecture Part E3.
@@ -28,6 +29,22 @@ import { prisma } from "@/lib/prisma";
  * hand-written statement exists in the app and nothing downstream loses type
  * safety. All interpolation is parameterised (Part G: "Prisma (parameterized)
  * throughout").
+ *
+ * ── LC-4 (2026-08-14): the gate applies HERE TOO, in both places ──
+ * Search is the surface most easily forgotten in a visibility slice, because it
+ * does not share the `discoverable()` chokepoint the rest of the storefront
+ * goes through — it hand-writes its own WHERE. Both halves are gated:
+ *
+ *   1. the raw SQL, so the `LIMIT` counts only rows that can actually be shown
+ *      (filtering after the limit would silently return short pages), and
+ *   2. the typed re-fetch, as defence in depth — if the SQL and the Prisma gate
+ *      ever disagree, the narrower Prisma one wins and nothing leaks.
+ *
+ * ⚠ Two PRE-EXISTING leaks were closed while adding the gate, both unrelated to
+ * the launch switch and both live before this slice: neither statement filtered
+ * `taken_down_at`, so an admin-removed listing stayed findable by search (and
+ * its seller stayed findable via a seller whose listings were all taken down).
+ * `active`/`status` were checked; the admin-authority gate simply was not.
  */
 
 /** Trigram similarity floor — Part E3's own worked example uses 0.3. */
@@ -41,6 +58,7 @@ export interface SearchResults {
 }
 
 async function searchListingIds(query: string, limit: number): Promise<string[]> {
+  const visibilityClass = await publicVisibilityClass();
   const rows = await prisma.$queryRaw<{ id: string }[]>`
     SELECT l.id,
            GREATEST(
@@ -50,7 +68,9 @@ async function searchListingIds(query: string, limit: number): Promise<string[]>
       FROM food_listings l
       JOIN food_sellers s ON s.id = l.seller_id
      WHERE l.active = true
+       AND l.taken_down_at IS NULL
        AND s.status = 'ACTIVE'
+       AND s.visibility_class = ${visibilityClass}::visibility_class
        AND (
               unaccent(l.title)        ILIKE '%' || unaccent(${query}) || '%'
            OR unaccent(l.description)  ILIKE '%' || unaccent(${query}) || '%'
@@ -71,11 +91,13 @@ async function searchListingIds(query: string, limit: number): Promise<string[]>
 }
 
 async function searchSellerIds(query: string, limit: number): Promise<string[]> {
+  const visibilityClass = await publicVisibilityClass();
   const rows = await prisma.$queryRaw<{ id: string }[]>`
     SELECT s.id,
            similarity(unaccent(s.display_name), unaccent(${query})) AS score
       FROM food_sellers s
      WHERE s.status = 'ACTIVE'
+       AND s.visibility_class = ${visibilityClass}::visibility_class
        AND (
               unaccent(s.display_name) ILIKE '%' || unaccent(${query}) || '%'
            OR unaccent(COALESCE(s.bio, '')) ILIKE '%' || unaccent(${query}) || '%'
@@ -95,7 +117,9 @@ async function searchSellers(query: string, limit: number) {
   const ids = await searchSellerIds(query, limit);
   if (ids.length === 0) return [];
   const rows = await prisma.foodSeller.findMany({
-    where: { id: { in: ids } },
+    // Re-applies the gate rather than trusting the ids the raw SQL returned —
+    // see this module's header on defence in depth.
+    where: { ...(await publicSellerWhere()), id: { in: ids } },
     select: SELLER_CARD_SELECT,
   });
   const rank = new Map(ids.map((id, index) => [id, index]));
@@ -121,7 +145,7 @@ export async function search(
   let listings: SearchResults["listings"] = [];
   if (listingIds.length > 0) {
     const rows = await prisma.foodListing.findMany({
-      where: { id: { in: listingIds } },
+      where: { ...(await discoverable()), id: { in: listingIds } },
       select: CARD_SELECT,
     });
     const rank = new Map(listingIds.map((id, index) => [id, index]));

@@ -5,6 +5,7 @@ import type { RegionKey } from "@prisma/client";
 import { SellerCard } from "@/components/seller-card";
 import { SectionHeader } from "@/components/ui/section-header";
 import { SELLER_CARD_SELECT, sellerCountsByArea } from "@/lib/discovery";
+import { publicSellerWhere } from "@/lib/visibility";
 import { prisma } from "@/lib/prisma";
 import { isRegionKey } from "@/lib/regions";
 import { AreaPicker } from "./area-picker";
@@ -38,7 +39,7 @@ export default async function SellersPage({
     sellerCountsByArea(),
     prisma.foodSeller.findMany({
       where: {
-        status: "ACTIVE",
+        ...(await publicSellerWhere()),
         ...(areas.length > 0 ? { areas: { hasSome: areas } } : {}),
       },
       select: SELLER_CARD_SELECT,

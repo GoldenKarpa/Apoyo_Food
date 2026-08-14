@@ -16,7 +16,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { DIETARY_TAGS } from "@/lib/browse";
 import { describeWindow, localDay } from "@/lib/availability";
 import { buildWindowLabels } from "@/lib/window-labels";
-import { DISCOVERABLE, moreFromSeller, mostSavedListings, similarInCategory } from "@/lib/discovery";
+import { discoverable, moreFromSeller, mostSavedListings, similarInCategory } from "@/lib/discovery";
 import { logDemand } from "@/lib/demand";
 import { formatCentsTtd } from "@/lib/money";
 import { occasionLabel } from "@/lib/occasion-tags";
@@ -48,7 +48,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const listing = await prisma.foodListing.findFirst({
-    where: { slug, ...DISCOVERABLE },
+    where: { slug, ...(await discoverable()) },
     select: { title: true },
   });
   return { title: listing?.title ?? "Apoyo Food" };
@@ -58,7 +58,7 @@ export default async function MealDetailPage({ params }: { params: Promise<{ slu
   const { slug } = await params;
 
   const listing = await prisma.foodListing.findFirst({
-    where: { slug, ...DISCOVERABLE },
+    where: { slug, ...(await discoverable()) },
     select: {
       id: true,
       slug: true,
