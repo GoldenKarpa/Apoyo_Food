@@ -70,6 +70,40 @@ enum SellerStatus {
   @@map("seller_status")
 }
 
+/// LC-1 (2026-08-14) — `Launch_Control_Plan.md` §LC-1 in Apoyo-Portal, spec
+/// `Provider_Onboarding_Workflow.md` §6.2. Explicit visibility classification
+/// for a seller record; the per-vertical launch switch (LC-3) then means
+/// exactly one thing: **before launch show SHOWCASE, after launch show REAL.**
+///
+/// ⚠ Declared identically in all four vertical repos, each against its own
+/// database. Member names are the shared part — keep them in step. The
+/// `@@map` is local house style (Apoyo-Demia and Salon do not map theirs).
+///
+/// ⚠ The class lives on the SELLER record, never on the identity account.
+/// Food is what settles that: the 13 seeded sellers carry synthetic
+/// `seed-seller-…-user` ids that correspond to no identity row at all, so an
+/// account-level classification could not describe them.
+///
+/// Nothing reads this yet — gating is LC-4.
+enum VisibilityClass {
+  /// Genuine recruited sellers. The default for any new record, so sellers
+  /// recruited pre-launch accumulate hidden and all become visible the moment
+  /// the switch flips — nothing to publish one at a time.
+  REAL
+  /// Populates the storefront before launch so it reads as alive. Visible
+  /// before launch, hidden after.
+  SHOWCASE
+  /// Powers the demo experience, always. Inert in Food today — Food has no
+  /// runtime demo mechanism, only seed rows.
+  DEMO
+  /// Development and test accounts. Never visible anywhere, including the
+  /// demo experience — separate from DEMO deliberately, so test junk like
+  /// "Aug 8th Test Kitchen" cannot appear when showing the product to someone.
+  INTERNAL
+
+  @@map("visibility_class")
+}
+
 /// Part D: covers Idea.md's selling models without privileging one. Holiday
 /// specials / limited-time offers are ORTHOGONAL to this — any kind plus a
 /// DATE_RANGE window plus an optional `occasionTag`.
@@ -230,6 +264,10 @@ model FoodSeller {
   languages        String[]
   specialties      String[]
   status           SellerStatus      @default(PENDING)
+
+  /// LC-1 — see the VisibilityClass enum. Inert: nothing reads it until LC-4.
+  visibilityClass VisibilityClass @default(REAL) @map("visibility_class")
+
   fulfillmentModes FulfillmentMode[] @map("fulfillment_modes")
 
   /// Denormalised counter, maintained alongside FoodFollow writes (Slice 11).
