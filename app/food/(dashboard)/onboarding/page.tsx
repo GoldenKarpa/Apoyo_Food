@@ -15,7 +15,22 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * Seller registration.
+ * Seller SETUP — no longer seller registration.
+ *
+ * ⚠ AS-S7. Under `Provider_Onboarding_Workflow.md` §3 the front door is
+ * portal-web's Food application (`/register/food`), reviewed once by an admin;
+ * this page is what a seller lands on afterwards. Two consequences worth
+ * knowing:
+ *
+ *  - After contract §8 (AS-S6), an approved applicant's `FoodSeller` row is
+ *    created ACTIVE by Portal's commit, so they hit the `redirect("/food")`
+ *    below and never see this form. Reaching it means either a §8 delivery
+ *    failure (the fallback the contract names) or a self-registered cook.
+ *  - The signed-out link now points at the Food application specifically rather
+ *    than the retired merged registration form, so nobody is asked to choose a
+ *    vertical they already chose by being here.
+ *
+ * The URL stays `/food/onboarding`; renaming it to `/food/apply` is program 3.
  *
  * ⚠ An existing seller is REDIRECTED to their workspace rather than shown this
  * form again. `onboardSeller` is idempotent, so re-submitting would be harmless
@@ -42,7 +57,7 @@ export default async function SellerOnboardingPage() {
     return (
       <SignedOutNotice
         loginHref="/login"
-        registerHref={portalPageUrl("/register?source=food")}
+        registerHref={portalPageUrl("/register/food")}
       />
     );
   }
