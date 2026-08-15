@@ -21,7 +21,7 @@ import {
   trendingListings,
 } from "@/lib/discovery";
 import { getProviderRegistrationConfig } from "@/lib/ecosystem";
-import { sellerSurfaceUrl } from "@/lib/links";
+import { providerApplicationUrl } from "@/lib/links";
 import { AREA_COOKIE, isRegionKey } from "@/lib/regions";
 import { getFoodSession } from "@/lib/session";
 import { seenStoryIds } from "@/lib/stories";
@@ -91,8 +91,14 @@ export default async function HomePage() {
               advertises a registration flow that's currently closed. */}
           {registrationConfig.FOOD && (
             <Button asChild size="lg" variant="outline">
-              {/* Cross-origin in production; relative in local dev. */}
-              <a href={sellerSurfaceUrl("/food/setup")}>{t("sell")}</a>
+              {/* Cross-origin in production; relative in local dev.
+                  ⚠ US-S7: this pointed at SETUP (/food/onboarding, then
+                  /food/setup) until 2026-08-15 — so a signed-in buyer clicking
+                  "sell" landed on the setup form and could create a FoodSeller
+                  row with no application and no admin review. Recruitment CTAs
+                  go to the APPLICATION; setup is what you reach after approval
+                  (workflow spec §3). */}
+              <a href={providerApplicationUrl()}>{t("sell")}</a>
             </Button>
           )}
         </div>

@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
 import { getProviderRegistrationConfig } from "@/lib/ecosystem";
-import { sellerSurfaceUrl } from "@/lib/links";
+import { providerApplicationUrl } from "@/lib/links";
 
 /**
  * A slim buyer-surface footer.
@@ -48,8 +48,15 @@ export async function SiteFooter() {
         {config.FOOD ? (
           <Button variant="outline" asChild>
             {/* A plain <a>, not next/link: this crosses an origin in production,
-                where client-side routing has nothing to prefetch or soft-navigate. */}
-            <a href={sellerSurfaceUrl("/food/setup")}>{t("becomeSeller")}</a>
+                where client-side routing has nothing to prefetch or soft-navigate.
+
+                ⚠ US-S7: this pointed at SETUP until 2026-08-15, letting a
+                signed-in buyer create a FoodSeller row with no application and
+                no admin review. Recruitment CTAs go to the APPLICATION. Note
+                this is now gated and targeted by the SAME toggle — setup
+                deliberately ignores it (see that page's own comment), which is
+                what made the old pairing incoherent as well as wrong. */}
+            <a href={providerApplicationUrl()}>{t("becomeSeller")}</a>
           </Button>
         ) : (
           <p className="text-label text-ink-muted">{t("sellingClosed")}</p>
