@@ -58,3 +58,26 @@ export function portalPageUrl(path: string): string {
   const base = process.env.NEXT_PUBLIC_PORTAL_BASE_URL?.replace(/\/+$/, "");
   return base ? `${base}${path}` : path;
 }
+
+/**
+ * Food's provider APPLICATION, rendered by portal-web (workflow spec §3/§8).
+ *
+ * ⚠ WHY THIS EXISTS AS ITS OWN FUNCTION, given `portalPageUrl` above already
+ * takes a path. Because `portalPageUrl` takes a path, every caller was
+ * hand-writing the vertical-specific tail — and when program 3 renamed
+ * `/register/food` to `/food/apply`, "one helper, one edit" turned out to be
+ * true only for Apparel, which had a no-argument helper owning the whole URL.
+ * A host helper is not a URL helper. This is the URL helper.
+ *
+ * ⚠ THE PATH LOOKS LIKE FOOD'S OWN SELLER SURFACE AND IS NOT. `/food/*` on the
+ * portal host is this app (`sellerSurfaceUrl` above) — except `/food/apply`,
+ * which US-S1 carved out to portal-web (:3011) via a dedicated `location ^~`
+ * block. So this deliberately goes through `portalPageUrl`, NOT
+ * `sellerSurfaceUrl`, even though the two resolve to the same host today: they
+ * mean different things, and a future split would break the wrong one silently.
+ * If this URL ever serves food-web's own 404, the nginx drop-in
+ * `nginx.ssl.conf_apply` is missing — the bug is not in this repo.
+ */
+export function providerApplicationUrl(): string {
+  return portalPageUrl("/food/apply");
+}

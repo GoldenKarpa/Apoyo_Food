@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { OnboardForm } from "@/components/seller/onboard-form";
 import { SignedOutNotice } from "@/components/seller/signed-out-notice";
 import { loadSellerWorkspace } from "@/lib/seller";
-import { portalPageUrl } from "@/lib/links";
+import { providerApplicationUrl } from "@/lib/links";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("seller.onboarding");
@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
  * Seller SETUP — no longer seller registration.
  *
  * ⚠ AS-S7. Under `Provider_Onboarding_Workflow.md` §3 the front door is
- * portal-web's Food application (`/register/food`), reviewed once by an admin;
+ * portal-web's Food application (`/food/apply`, US-S3), reviewed once by an admin;
  * this page is what a seller lands on afterwards. Two consequences worth
  * knowing:
  *
@@ -57,7 +57,7 @@ export default async function SellerOnboardingPage() {
     return (
       <SignedOutNotice
         loginHref="/login"
-        registerHref={portalPageUrl("/register/food")}
+        registerHref={providerApplicationUrl()}
       />
     );
   }
