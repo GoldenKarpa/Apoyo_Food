@@ -66,7 +66,7 @@ export async function onboardSeller(
   const { displayName } = parsed.data;
 
   // Idempotent by design. Re-submitting (a double tap, a retried request, a
-  // seller returning to /food/onboarding by hand) must never mint a second
+  // seller returning to /food/setup by hand) must never mint a second
   // kitchen — `userId` is unique on the table, so the second row could not
   // exist anyway; this makes the outcome a success rather than a P2002.
   const existing = await prisma.foodSeller.findUnique({ where: { userId: session.userId } });

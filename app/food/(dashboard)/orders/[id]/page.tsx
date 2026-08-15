@@ -34,7 +34,7 @@ export default async function SellerOrderDetailPage({ params }: { params: Promis
   const workspace = await loadSellerWorkspace();
 
   if (workspace.state === "signed-out") return <SignedOutNotice />;
-  if (!workspace.seller) redirect("/food/onboarding");
+  if (!workspace.seller) redirect("/food/setup");
 
   const order = await sellerOrderDetail(id, workspace.seller.id);
   if (!order) notFound();

@@ -56,7 +56,7 @@ export default async function SellerSetupPage({
   // No row yet — there is nothing to set up. Registration comes first, and
   // sending someone to a form that would write to a nonexistent seller is
   // worse than one redirect.
-  if (!workspace.seller) redirect("/food/onboarding");
+  if (!workspace.seller) redirect("/food/setup");
 
   const { seller, steps, percent, nextStep } = workspace;
   const requested = (await searchParams).step;

@@ -57,7 +57,7 @@ export default async function SellerDashboardPage() {
         {config.FOOD ? (
           <div className="mt-6">
             <Button size="lg" asChild>
-              <Link href="/food/onboarding">{t("become.cta")}</Link>
+              <Link href="/food/setup">{t("become.cta")}</Link>
             </Button>
           </div>
         ) : (

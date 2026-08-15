@@ -183,13 +183,13 @@ async function main() {
   // so a RELATIVE href in the footer would send every would-be seller to a 404.
   const savedBase = process.env.NEXT_PUBLIC_SELLER_SURFACE_URL;
   delete process.env.NEXT_PUBLIC_SELLER_SURFACE_URL;
-  assert("unset (local dev) falls back to a relative path", sellerSurfaceUrl("/food/onboarding") === "/food/onboarding");
+  assert("unset (local dev) falls back to a relative path", sellerSurfaceUrl("/food/setup") === "/food/setup");
   assert("…and reports itself same-origin", !sellerSurfaceIsCrossOrigin());
   process.env.NEXT_PUBLIC_SELLER_SURFACE_URL = "https://portal.apoyolime.com/";
   assert(
     "set (production) produces an absolute URL with no doubled slash",
-    sellerSurfaceUrl("/food/onboarding") === "https://portal.apoyolime.com/food/onboarding",
-    sellerSurfaceUrl("/food/onboarding"),
+    sellerSurfaceUrl("/food/setup") === "https://portal.apoyolime.com/food/setup",
+    sellerSurfaceUrl("/food/setup"),
   );
   assert("…and reports itself cross-origin", sellerSurfaceIsCrossOrigin());
   if (savedBase === undefined) delete process.env.NEXT_PUBLIC_SELLER_SURFACE_URL;

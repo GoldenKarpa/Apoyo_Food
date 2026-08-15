@@ -25,7 +25,7 @@ export default async function NewListingPage() {
   const workspace = await loadSellerWorkspace();
 
   if (workspace.state === "signed-out") return <SignedOutNotice />;
-  if (!workspace.seller) redirect("/food/onboarding");
+  if (!workspace.seller) redirect("/food/setup");
 
   const categories = await sellerCategoryOptions();
 

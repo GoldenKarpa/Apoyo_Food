@@ -19,6 +19,24 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   assetPrefix,
+  // US-S5 (program 3, URL standardisation) — `/food/onboarding` became
+  // `/food/setup`. The name predated AS-S7, which turned this page from the
+  // front door into post-approval setup; "onboarding" beside portal-web's
+  // `/food/apply` read as two doors into one flow. Apparel called the identical
+  // step `onboard` and Salon called it `register` — three names, one thing.
+  //
+  // Bridged rather than dropped: this URL has been live since Slice 13, is
+  // linked from the buyer storefront's own "sell with us" CTA, and is where
+  // eight in-app guards redirected a seller-less visitor. Temporary (307), not
+  // permanent — a 308 is cached unrecallably. US-S6 flips it.
+  //
+  // ⚠ Not to be confused with `/food/apply`, which is NOT this app at all —
+  // nginx routes that one to portal-web (:3011). See lib/links.ts.
+  async redirects() {
+    return [
+      { source: "/food/onboarding", destination: "/food/setup", permanent: false },
+    ];
+  },
   images: {
     // Custom loader (Slice 4): the ingest pipeline already produced thumb/card/
     // full at fixed sizes, so Next's own optimizer would be redundant work on

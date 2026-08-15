@@ -49,7 +49,7 @@ export async function SiteFooter() {
           <Button variant="outline" asChild>
             {/* A plain <a>, not next/link: this crosses an origin in production,
                 where client-side routing has nothing to prefetch or soft-navigate. */}
-            <a href={sellerSurfaceUrl("/food/onboarding")}>{t("becomeSeller")}</a>
+            <a href={sellerSurfaceUrl("/food/setup")}>{t("becomeSeller")}</a>
           </Button>
         ) : (
           <p className="text-label text-ink-muted">{t("sellingClosed")}</p>

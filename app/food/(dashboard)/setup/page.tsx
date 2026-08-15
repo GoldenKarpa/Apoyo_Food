@@ -30,7 +30,13 @@ export async function generateMetadata(): Promise<Metadata> {
  *    than the retired merged registration form, so nobody is asked to choose a
  *    vertical they already chose by being here.
  *
- * The URL stays `/food/onboarding`; renaming it to `/food/apply` is program 3.
+ * ⚠ RENAMED at US-S5: this route was `/food/onboarding`. An earlier note here
+ * predicted program 3 would rename it to `/food/apply`, which would have been a
+ * head-on collision — `/food/apply` is the APPLICATION, a different page in a
+ * different app (portal-web), behind its own nginx location. Two things, not one
+ * renamed. `onboarding` beside `apply` read as two doors into one flow, and
+ * Apparel and Salon called this identical step `onboard` and `register`.
+ * `/food/onboarding` is bridged in next.config.ts (307) rather than dropped.
  *
  * ⚠ An existing seller is REDIRECTED to their workspace rather than shown this
  * form again. `onboardSeller` is idempotent, so re-submitting would be harmless
@@ -44,7 +50,7 @@ export async function generateMetadata(): Promise<Metadata> {
  * what registration produces: a PENDING seller, invisible to every buyer
  * surface until Slice 16's queue approves them.
  */
-export default async function SellerOnboardingPage() {
+export default async function SellerSetupPage() {
   const t = await getTranslations("seller.onboarding");
   const workspace = await loadSellerWorkspace();
 

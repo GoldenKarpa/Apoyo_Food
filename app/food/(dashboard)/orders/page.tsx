@@ -29,7 +29,7 @@ export default async function SellerOrdersPage() {
   const workspace = await loadSellerWorkspace();
 
   if (workspace.state === "signed-out") return <SignedOutNotice />;
-  if (!workspace.seller) redirect("/food/onboarding");
+  if (!workspace.seller) redirect("/food/setup");
 
   const { pending, other } = await sellerOrderSummaries(workspace.seller.id);
 

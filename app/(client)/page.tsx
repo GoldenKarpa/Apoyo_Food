@@ -92,7 +92,7 @@ export default async function HomePage() {
           {registrationConfig.FOOD && (
             <Button asChild size="lg" variant="outline">
               {/* Cross-origin in production; relative in local dev. */}
-              <a href={sellerSurfaceUrl("/food/onboarding")}>{t("sell")}</a>
+              <a href={sellerSurfaceUrl("/food/setup")}>{t("sell")}</a>
             </Button>
           )}
         </div>

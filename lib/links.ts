@@ -5,8 +5,8 @@
  *   - `food.apoyolime.com`          — the buyer marketplace, the `(client)` group
  *   - `portal.apoyolime.com/food/…` — the seller dashboard, host-gated
  *
- * A relative `<Link href="/food/onboarding">` from a buyer page therefore
- * resolves to `food.apoyolime.com/food/onboarding`, which `middleware.ts`
+ * A relative `<Link href="/food/setup">` from a buyer page therefore
+ * resolves to `food.apoyolime.com/food/setup`, which `middleware.ts`
  * correctly 404s. Any buyer-surface link INTO the seller surface has to be
  * absolute, which is what this module exists to make unavoidable.
  *

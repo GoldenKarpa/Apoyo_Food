@@ -234,7 +234,7 @@ async function run() {
   check(ctaVisible, "a signed-in non-seller sees the become-a-seller CTA (§6b FOOD toggle is on)");
 
   await page.getByRole("link", { name: /Empezar a vender/i }).click();
-  await page.waitForURL("**/food/onboarding");
+  await page.waitForURL("**/food/setup");
   const onboardBody = await page.locator("body").innerText();
   check(/dirección/i.test(onboardBody), "the registration page states the address-privacy rule up front (Part G)");
 
@@ -258,8 +258,8 @@ async function run() {
   );
 
   // Idempotency: the seller re-visits the registration URL by hand.
-  await page.goto(`${BASE}/food/onboarding`, { waitUntil: "networkidle" });
-  check(page.url().endsWith("/food"), "re-visiting /food/onboarding redirects an existing seller to their workspace", page.url());
+  await page.goto(`${BASE}/food/setup`, { waitUntil: "networkidle" });
+  check(page.url().endsWith("/food"), "re-visiting /food/setup redirects an existing seller to their workspace", page.url());
   check(
     (await prisma.foodSeller.count({ where: { userId: USER_ID } })) === 1,
     "…and no second kitchen was created",
@@ -487,7 +487,7 @@ async function run() {
   const victim = await prisma.foodSeller.findUnique({ where: { userId: USER_ID } });
   check(victim.profileImageThumb === withAvatar.profileImageThumb, "…and the real seller's avatar is untouched");
   await otherPage.goto(`${BASE}/food/profile`, { waitUntil: "networkidle" });
-  check(otherPage.url().endsWith("/food/onboarding"), "…and /food/profile sends them to registration, not into someone's editor", otherPage.url());
+  check(otherPage.url().endsWith("/food/setup"), "…and /food/profile sends them to registration, not into someone's editor", otherPage.url());
   await other.close();
 
   // ==========================================================================
