@@ -87,6 +87,11 @@ export default async function FoodAdminPage({
 
       <section className="admin-section">
         <h2>{t("registration.heading")}</h2>
+        {/* Says what "Closed" actually does. Since AS-S3 this toggle no
+            longer only hides a CTA — it also decides whether the portal
+            application page exists at all, and that is not guessable from
+            the word "Closed" alone. */}
+        <p className="admin-muted">{t("registration.description")}</p>
         <RegistrationToggle
           enabled={registrationConfig.FOOD}
           labels={{

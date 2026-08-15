@@ -470,6 +470,7 @@
         "heading": "Seller registration",
         "on": "Open",
         "off": "Closed",
+        "description": "While closed, Food is hidden from the “Become a provider” picker on portal and its application page returns not-found — nobody can apply, even with a direct link. Sellers who already have an account are unaffected.",
         "turnOn": "Open registration",
         "turnOff": "Close registration",
         "error": "That didn't save. Try again in a moment."

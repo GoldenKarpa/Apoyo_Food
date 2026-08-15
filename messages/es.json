@@ -470,6 +470,7 @@
         "heading": "Registro de vendedores",
         "on": "Abierto",
         "off": "Cerrado",
+        "description": "Mientras esté cerrado, Food no aparece en el selector «Conviértete en proveedor» del portal y su página de solicitud devuelve no encontrado: nadie puede postularse, ni siquiera con un enlace directo. Los vendedores que ya tienen cuenta no se ven afectados.",
         "turnOn": "Abrir registro",
         "turnOff": "Cerrar registro",
         "error": "Eso no se guardó. Inténtalo de nuevo en un momento."
