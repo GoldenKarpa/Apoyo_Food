@@ -327,6 +327,8 @@
       "submitting": "Creando cuenta…",
       "alreadyHaveAccount": "¿Ya tienes cuenta?",
       "signIn": "Iniciar sesión",
+      "providerDoorPrompt": "¿Quieres vender tu comida en Apoyo?",
+      "providerDoorCta": "Solicita ser vendedor",
       "checkEmailTitle": "Revisa tu correo",
       "checkEmailBody": "Te enviamos un enlace de confirmación — haz clic para terminar de crear tu cuenta.",
       "genericError": "Algo salió mal. Inténtalo de nuevo.",

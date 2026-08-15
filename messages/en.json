@@ -327,6 +327,8 @@
       "submitting": "Creating account…",
       "alreadyHaveAccount": "Already have an account?",
       "signIn": "Sign in",
+      "providerDoorPrompt": "Want to sell your food on Apoyo?",
+      "providerDoorCta": "Apply as a seller",
       "checkEmailTitle": "Check your email",
       "checkEmailBody": "We sent a confirmation link — click it to finish creating your account.",
       "genericError": "Something went wrong. Try again.",
