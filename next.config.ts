@@ -25,16 +25,23 @@ const nextConfig: NextConfig = {
   // `/food/apply` read as two doors into one flow. Apparel called the identical
   // step `onboard` and Salon called it `register` — three names, one thing.
   //
-  // Bridged rather than dropped: this URL has been live since Slice 13, is
-  // linked from the buyer storefront's own "sell with us" CTA, and is where
-  // eight in-app guards redirected a seller-less visitor. Temporary (307), not
-  // permanent — a 308 is cached unrecallably. US-S6 flips it.
+  // Bridged rather than dropped: this URL has been live since Slice 13 and is
+  // where eight in-app guards redirect a seller-less visitor. (It was ALSO the
+  // buyer storefront's "sell with us" target until US-S7 corrected that — those
+  // CTAs now go to `/food/apply`, the application, because sending recruitment
+  // traffic to setup skipped admin review entirely.)
+  //
+  // PERMANENT (308) since 2026-08-15. It shipped as a temporary 307 on purpose —
+  // a 308 is cached hard by browsers and is effectively unrecallable, so had
+  // `/food/setup` turned out broken in production nobody who followed one could
+  // have been routed back. Promoted only after `/food/onboarding` → 307 →
+  // `/food/setup` → 200 was curled on the live host.
   //
   // ⚠ Not to be confused with `/food/apply`, which is NOT this app at all —
   // nginx routes that one to portal-web (:3011). See lib/links.ts.
   async redirects() {
     return [
-      { source: "/food/onboarding", destination: "/food/setup", permanent: false },
+      { source: "/food/onboarding", destination: "/food/setup", permanent: true },
     ];
   },
   images: {
