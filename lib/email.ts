@@ -48,6 +48,12 @@ const STRINGS = {
       `${counterpartLabel} sent new messages about order ${orderNumber}.`,
     genericCustomer: "A customer",
     viewOrder: "View order",
+    // PC-1 — the same "you have messages" mail, for a conversation that is not
+    // about any one order. Deliberately a separate string rather than the
+    // order one with an empty number: "sent new messages about order " reads
+    // as a bug, and the CTA goes to the thread, not to an order page.
+    newThreadMessagesBody: (counterpartLabel: string) => `${counterpartLabel} sent you new messages.`,
+    viewConversation: "View conversation",
   },
   es: {
     orderPlacedSubject: "Nueva solicitud de pedido",
@@ -72,6 +78,8 @@ const STRINGS = {
       `${counterpartLabel} envió mensajes nuevos sobre el pedido ${orderNumber}.`,
     genericCustomer: "Un cliente",
     viewOrder: "Ver pedido",
+    newThreadMessagesBody: (counterpartLabel: string) => `${counterpartLabel} te envió mensajes nuevos.`,
+    viewConversation: "Ver conversación",
   },
 } as const;
 
@@ -104,6 +112,17 @@ function buyerOrderUrl(orderId: string): string {
 function sellerOrderUrl(orderId: string): string {
   const base = (process.env.NEXT_PUBLIC_SELLER_SURFACE_URL ?? "http://localhost:3012").replace(/\/+$/, "");
   return `${base}/food/orders/${orderId}`;
+}
+
+/** PC-1 — the same two bases, pointed at the persistent conversation instead. */
+function buyerThreadUrl(threadId: string): string {
+  const base = (process.env.NEXT_PUBLIC_ASSET_HOST ?? "http://localhost:3012").replace(/\/+$/, "");
+  return `${base}/messages/${threadId}`;
+}
+
+function sellerThreadUrl(threadId: string): string {
+  const base = (process.env.NEXT_PUBLIC_SELLER_SURFACE_URL ?? "http://localhost:3012").replace(/\/+$/, "");
+  return `${base}/food/messages/${threadId}`;
 }
 
 function layout(heading: string, bodyHtml: string, ctaLabel: string, ctaHref: string): string {
@@ -241,5 +260,27 @@ export async function sendNewMessagesEmail(
     s.newMessagesBody(details.orderNumber, label),
     href,
   );
+}
+
+/**
+ * PC-1 — "new messages waiting" for a conversation with no order attached.
+ *
+ * ⚠ Same 15-minute debounce as the order variant, applied by the caller
+ * (`notifyThreadMessage` → `shouldSendDebouncedEmail`), and for a reason the
+ * user stated directly on 2026-08-19: **no per-message email, ever.** A
+ * persistent thread invites long back-and-forths, so one mail per message
+ * would be both a mailbox and a storage problem. The debounce is what keeps a
+ * fifty-message evening to a handful of mails.
+ */
+export async function sendNewThreadMessagesEmail(
+  to: string,
+  locale: EmailLocale,
+  details: { threadId: string; counterpartLabel: string | null; audience: "CLIENT" | "SELLER" },
+): Promise<void> {
+  const s = STRINGS[locale];
+  const label = details.counterpartLabel ?? s.genericCustomer;
+  const text = s.newThreadMessagesBody(label);
+  const href = details.audience === "SELLER" ? sellerThreadUrl(details.threadId) : buyerThreadUrl(details.threadId);
+  await sendSimple(to, s.newMessagesSubject, s.newMessagesHeading, `<p>${escapeHtml(text)}</p>`, s.viewConversation, text, href);
 }
 

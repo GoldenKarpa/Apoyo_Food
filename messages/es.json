@@ -441,6 +441,13 @@
       "cancelDismiss": "No, dejarlo",
       "cancelError": "Eso no funcionó. Inténtalo de nuevo.",
       "threadHeading": "Mensajes"
+    },
+    "messages": {
+      "title": "Mensajes",
+      "empty": "Aún no hay conversaciones. Escribe a una cocina a la que ya le pediste para empezar una.",
+      "messageSeller": "Escribir a esta cocina",
+      "openThread": "Abrir conversación",
+      "viewKitchen": "Ver cocina"
     }
   },
   "seller": {
@@ -561,7 +568,8 @@
         "profile": "Perfil",
         "listings": "Platos",
         "stories": "En la cocina hoy",
-        "orders": "Pedidos"
+        "orders": "Pedidos",
+        "messages": "Mensajes"
       }
     },
     "signedOut": {
@@ -976,6 +984,35 @@
       "declineReasonPrefix": "Tu nota",
       "cancellationReasonPrefix": "Motivo",
       "threadHeading": "Mensajes"
+    },
+    "messages": {
+      "title": "Mensajes",
+      "detailTitle": "Conversación",
+      "subtitle": "Tus conversaciones con clientes, conservadas entre todos los pedidos.",
+      "empty": "Aún no hay conversaciones. Empiezan cuando un cliente escribe sobre un pedido.",
+      "optedOutNotice": "Los mensajes entre pedidos están desactivados para tu cocina. Los clientes aún pueden escribir sobre un pedido activo. Cámbialo en Perfil.",
+      "unknownCustomer": "Cliente",
+      "since": "Conversando desde {date}"
+    },
+    "messageSettings": {
+      "title": "Mensajes",
+      "postOrder": {
+        "title": "Permitir mensajes entre pedidos",
+        "description": "Los clientes que ya te compraron pueden seguir la conversación. Desactívalo para limitar el chat a pedidos activos — no se oculta ni se borra nada en ningún caso."
+      },
+      "readReceipts": {
+        "title": "Mostrar a los clientes cuándo leíste",
+        "description": "Si lo desactivas, los clientes no verán «Leído» en sus mensajes. Tú sigues viendo lo que no has leído."
+      },
+      "delivery": {
+        "title": "Avisarme de mensajes nuevos",
+        "description": "El correo se agrupa: como máximo uno cada 15 minutos por conversación, nunca uno por mensaje. Los avisos de pedidos siempre se envían.",
+        "options": {
+          "IN_APP_AND_EMAIL": "En la app y por correo",
+          "IN_APP": "Solo en la app",
+          "OFF": "No avisarme"
+        }
+      }
     }
   },
   "scaffold": {
@@ -1022,7 +1059,8 @@
       "removeAttachment": "Quitar foto",
       "send": "Enviar",
       "sending": "Enviando…",
-      "error": "Eso no funcionó. Inténtalo de nuevo."
+      "error": "Eso no funcionó. Inténtalo de nuevo.",
+      "blocked": "Esta conversación no acepta mensajes nuevos en este momento."
     },
     "report": {
       "trigger": "Reportar este mensaje",
@@ -1040,6 +1078,16 @@
       "submit": "Enviar reporte",
       "submitting": "Enviando…",
       "thanks": "Gracias, lo revisaremos."
+    },
+    "read": "Leído",
+    "access": {
+      "sellerOptedOut": "Esta cocina solo recibe mensajes sobre pedidos activos.",
+      "sellerOptedOutOwn": "Desactivaste los mensajes entre pedidos. Los clientes aún pueden escribirte sobre un pedido activo."
     }
+  },
+  "threads": {
+    "photoPreview": "Foto",
+    "unreadCount": "{count} nuevos",
+    "unknownCounterpart": "Cliente"
   }
 }

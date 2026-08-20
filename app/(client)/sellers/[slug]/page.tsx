@@ -8,6 +8,7 @@ import { FoodImage } from "@/components/food-image";
 import { ListingGrid } from "@/components/listing-grid";
 import { MenuShelf, type MenuShelfItem } from "@/components/menu-shelf";
 import { RegionMap } from "@/components/region-map";
+import { MessageSellerLink } from "@/components/message-seller-link";
 import { SellerFollowHeader } from "@/components/seller-follow-header";
 import { Chip } from "@/components/ui/chip";
 import { SectionHeader } from "@/components/ui/section-header";
@@ -171,12 +172,18 @@ export default async function SellerProfilePage({ params }: { params: Promise<{ 
             <h1 className="font-display text-display font-semibold text-ink">{seller.displayName}</h1>
           </div>
 
-          <SellerFollowHeader
-            sellerId={seller.id}
-            initialFollowing={following}
-            initialFollowerCount={seller.followerCount}
-            authenticated={!!session}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            {/* PC-1 — renders nothing unless this viewer has actually ordered
+                from this kitchen. See the component's own note: the silence is
+                the gate, not an oversight. */}
+            <MessageSellerLink sellerId={seller.id} viewerUserId={session?.userId ?? null} />
+            <SellerFollowHeader
+              sellerId={seller.id}
+              initialFollowing={following}
+              initialFollowerCount={seller.followerCount}
+              authenticated={!!session}
+            />
+          </div>
         </div>
 
         {seller.bio && <p className="max-w-2xl text-body text-ink-muted">{seller.bio}</p>}

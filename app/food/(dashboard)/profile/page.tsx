@@ -14,7 +14,9 @@ import { LanguagesField } from "@/components/seller/languages-field";
 import { PhotoField } from "@/components/seller/photo-field";
 import { SellerStatusNote } from "@/components/seller/status-banner";
 import { SpecialtiesField } from "@/components/seller/specialties-field";
+import { MessageSettingsFields } from "@/components/seller/message-settings-fields";
 import { loadSellerWorkspace } from "@/lib/seller";
+import { deliveryFor } from "@/lib/notification-prefs";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("seller.profile");
@@ -48,6 +50,7 @@ async function Section({
 export default async function SellerProfilePage() {
   const t = await getTranslations("seller.profile");
   const ts = await getTranslations("seller.setup");
+  const tm = await getTranslations("seller.messageSettings");
   const workspace = await loadSellerWorkspace();
 
   if (workspace.state === "signed-out") return <SignedOutNotice />;
@@ -116,6 +119,17 @@ export default async function SellerProfilePage() {
 
       <Section title={ts("steps.gallery.title")}>
         <GalleryManager photos={seller.photos} />
+      </Section>
+
+      {/* PC-1 — conversation controls. Last on the page deliberately: it is the
+          only section here that is not part of "what customers see about my
+          kitchen", and a seller looking for it is looking for it on purpose. */}
+      <Section title={tm("title")}>
+        <MessageSettingsFields
+          postOrderMessaging={seller.postOrderMessaging}
+          messageReadReceipts={seller.messageReadReceipts}
+          chatDelivery={deliveryFor(seller.notificationPrefs, "chat")}
+        />
       </Section>
     </>
   );

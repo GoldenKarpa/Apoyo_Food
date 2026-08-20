@@ -6,7 +6,7 @@ import { AcceptOrderForm } from "@/components/seller/accept-order-form";
 import { OrderCompleteButton } from "@/components/order-simple-action";
 import { OrderReasonAction } from "@/components/order-reason-action";
 import { OrderThread } from "@/components/order-thread";
-import { OrderMessageComposer } from "@/components/order-message-composer";
+import { ThreadComposerSection } from "@/components/thread-composer-section";
 import { OrderThreadPoller } from "@/components/order-thread-poller";
 import { SignedOutNotice } from "@/components/seller/signed-out-notice";
 import { StatusChip } from "@/components/ui/chip";
@@ -14,6 +14,7 @@ import { loadSellerWorkspace } from "@/lib/seller";
 import { sellerOrderDetail } from "@/lib/order";
 import { ORDER_STATUS_TONE } from "@/lib/order-status-labels";
 import { markOrderNotificationsRead } from "@/lib/notifications";
+import { resolveThreadAccess } from "@/lib/thread";
 import { formatCentsTtd } from "@/lib/money";
 import { formatFulfillmentInstant } from "@/lib/time";
 import type { Locale } from "@/i18n/request";
@@ -40,6 +41,13 @@ export default async function SellerOrderDetailPage({ params }: { params: Promis
   if (!order) notFound();
 
   if (workspace.session) await markOrderNotificationsRead(workspace.session.userId, id);
+
+  // PC-1 — an order page stays reachable forever, so the gate has to be asked
+  // here too: once every order with this buyer has closed AND this seller has
+  // opted out of post-order conversation, the composer on an old order must
+  // stop working as well, or "chat stays bound to open orders" has a permanent
+  // hole in it one click away in the order list.
+  const access = await resolveThreadAccess(workspace.seller.id, order.clientId, workspace.seller.postOrderMessaging);
 
   const [t, ts, tf, locale] = await Promise.all([
     getTranslations("seller.orders"),
@@ -148,7 +156,7 @@ export default async function SellerOrderDetailPage({ params }: { params: Promis
           viewerLocale={locale as Locale}
           surface="seller"
         />
-        <OrderMessageComposer orderId={order.id} actor="seller" />
+        <ThreadComposerSection access={access} target={{ kind: "order", orderId: order.id }} actor="seller" />
       </section>
       <OrderThreadPoller />
     </div>

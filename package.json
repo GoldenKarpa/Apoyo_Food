@@ -40,7 +40,8 @@
     "verify:orders": "tsx scripts/verify-orders.ts",
     "verify:order-lifecycle": "node scripts/verify-order-lifecycle.mjs",
     "verify:order-thread": "tsx scripts/verify-order-thread.ts",
-    "verify:order-thread-e2e": "node scripts/verify-order-thread-e2e.mjs"
+    "verify:order-thread-e2e": "node scripts/verify-order-thread-e2e.mjs",
+    "verify:threads": "tsx scripts/verify-threads.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

@@ -6,9 +6,9 @@
  * service — unreachable in this dev environment by its own design, which is
  * exactly what proves the done-when's "translate-service-down degrade path
  * still delivers original text" for real rather than by mocking a failure),
- * the `notifyOrderMessage` debounce integration against a real database, the
+ * the `notifyThreadMessage` debounce integration against a real database, the
  * "orders" storage-key trust boundary, and the new message-attachment media
- * preset. `sendOrderMessage`/`reportOrderMessage` themselves read
+ * preset. `sendOrderMessage`/`reportMessage` themselves read
  * `next/headers` and cannot be called outside a request scope — proven live
  * instead by `scripts/verify-order-thread-e2e.mjs`, the same domain/e2e split
  * every prior slice's own verification has used.
@@ -19,7 +19,7 @@ import { PrismaClient } from "@prisma/client";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { shouldSendDebouncedEmail, sellerEmailLocale, notifyOrderMessage } from "../lib/notifications";
+import { shouldSendDebouncedEmail, sellerEmailLocale, notifyThreadMessage } from "../lib/notifications";
 import { prepareTranslatedText, resolveTranslatedText } from "../lib/bilingual";
 import { safeStorageKey } from "../lib/storage";
 import { ingestMessageAttachment } from "../lib/media/ingest";
@@ -47,6 +47,9 @@ const CLIENT_USER_ID = `${SLUG}-client`;
 
 async function cleanup() {
   await prisma.foodNotification.deleteMany({ where: { userId: { in: [SELLER_USER_ID, CLIENT_USER_ID] } } });
+  // PC-1 — threads before orders before the seller. A thread's messages cascade
+  // from the thread, and the seller row is Restrict-protected by BOTH.
+  await prisma.foodThread.deleteMany({ where: { seller: { userId: SELLER_USER_ID } } });
   await prisma.foodOrder.deleteMany({ where: { seller: { userId: SELLER_USER_ID } } });
   await prisma.foodSeller.deleteMany({ where: { userId: SELLER_USER_ID } });
 }
@@ -161,7 +164,7 @@ async function main() {
   }
 
   // ==========================================================================
-  section("notifyOrderMessage — real DB integration: the debounce actually gates the SEND ATTEMPT");
+  section("notifyThreadMessage — real DB integration: the debounce actually gates the SEND ATTEMPT");
   // ==========================================================================
   const seller = await prisma.foodSeller.create({
     data: {
@@ -186,13 +189,18 @@ async function main() {
       respondBy: new Date(Date.now() + 24 * 60 * 60 * 1000),
     },
   });
+  // PC-1 — notifications hang off the THREAD now, so one has to exist. The
+  // debounce this section proves is per-conversation, not per-order.
+  const thread = await prisma.foodThread.create({
+    data: { sellerId: seller.id, clientId: CLIENT_USER_ID, clientEmail: "buyer@example.test" },
+  });
 
   // First message ever for this order — no prior notification exists, so the
   // debounce gate permits an attempt (it fails silently: no SMTP reachable in
   // this dev environment, the exact same ambient state as the translate
   // service — `emailedAt` stays null, and the function must not throw either
   // way).
-  await notifyOrderMessage(order, seller, "client");
+  await notifyThreadMessage(thread, seller, "client", order);
   const afterFirst = await prisma.foodNotification.findMany({
     where: { userId: seller.userId, kind: "ORDER_MESSAGE" },
   });
@@ -204,7 +212,7 @@ async function main() {
   // rather than re-testing the pure function in isolation.
   await prisma.foodNotification.update({ where: { id: afterFirst[0].id }, data: { emailedAt: new Date() } });
 
-  await notifyOrderMessage(order, seller, "client");
+  await notifyThreadMessage(thread, seller, "client", order);
   const afterSecond = await prisma.foodNotification.findMany({
     where: { userId: seller.userId, kind: "ORDER_MESSAGE" },
   });

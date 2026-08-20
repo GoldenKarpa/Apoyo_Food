@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ChefHat, Camera, LayoutDashboard, Receipt, UserRound } from "lucide-react";
+import { ChefHat, Camera, LayoutDashboard, MessagesSquare, Receipt, UserRound } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -31,6 +31,10 @@ const REAL_ITEMS = [
   { href: "/food/listings", key: "listings", icon: ChefHat },
   { href: "/food/stories", key: "stories", icon: Camera },
   { href: "/food/orders", key: "orders", icon: Receipt },
+  // PC-1 — sits next to Orders on purpose. A persistent conversation is a
+  // sibling of the order pipeline, not a tab inside it: the whole point is
+  // that it outlives any one order.
+  { href: "/food/messages", key: "messages", icon: MessagesSquare },
   { href: "/food/profile", key: "profile", icon: UserRound },
 ] as const;
 

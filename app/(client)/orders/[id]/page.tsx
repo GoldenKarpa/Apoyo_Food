@@ -6,13 +6,14 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ListingSellerRow } from "@/components/listing-seller-row";
 import { OrderReasonAction } from "@/components/order-reason-action";
 import { OrderThread } from "@/components/order-thread";
-import { OrderMessageComposer } from "@/components/order-message-composer";
+import { ThreadComposerSection } from "@/components/thread-composer-section";
 import { OrderThreadPoller } from "@/components/order-thread-poller";
 import { SignedOutNotice } from "@/components/seller/signed-out-notice";
 import { StatusChip } from "@/components/ui/chip";
 import { clientOrderDetail } from "@/lib/order";
 import { ORDER_STATUS_TONE } from "@/lib/order-status-labels";
 import { markOrderNotificationsRead } from "@/lib/notifications";
+import { resolveThreadAccess } from "@/lib/thread";
 import { formatCentsTtd } from "@/lib/money";
 import { formatFulfillmentInstant } from "@/lib/time";
 import { getFoodSession } from "@/lib/session";
@@ -44,6 +45,9 @@ export default async function ClientOrderDetailPage({ params }: { params: Promis
   if (!order) notFound();
 
   await markOrderNotificationsRead(session.userId, id);
+
+  // PC-1 — see the seller page's note; the same gate, asked from the other side.
+  const access = await resolveThreadAccess(order.seller.id, session.userId, order.seller.postOrderMessaging);
 
   const [t, ts, tf, locale] = await Promise.all([
     getTranslations("client.orderDetail"),
@@ -147,8 +151,9 @@ export default async function ClientOrderDetailPage({ params }: { params: Promis
           viewerUserId={session.userId}
           viewerLocale={locale as Locale}
           surface="buyer"
+          showReadReceipts={order.seller.messageReadReceipts}
         />
-        <OrderMessageComposer orderId={order.id} actor="client" />
+        <ThreadComposerSection access={access} target={{ kind: "order", orderId: order.id }} actor="client" />
       </section>
       <OrderThreadPoller />
     </div>

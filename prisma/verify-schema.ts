@@ -112,11 +112,13 @@ async function main() {
     SELECT table_name FROM information_schema.tables
     WHERE table_schema = 'public' AND table_name LIKE 'food_%'
   `;
-  // ⚠ Stale since Slice 16 (added `food_reports`, an 18th table, without
-  // updating this count — `db:verify` wasn't in that slice's own regression
-  // list, which is how it went unnoticed). Now 19: the Slice 2 baseline (17)
-  // + `food_reports` (Slice 16) + `food_platform_settings` (Slice 17).
-  assert("19 food_* tables created", tables.length === 19, tables.length);
+  // ⚠ Was stale once already — Slice 16 added `food_reports` without updating
+  // this count, because `db:verify` wasn't in that slice's regression list.
+  // Now 20: the Slice 2 baseline (17) + `food_reports` (Slice 16) +
+  // `food_platform_settings` (Slice 17) + `food_threads` (PC-1). Note PC-1 also
+  // RENAMED `food_order_messages` → `food_messages`, which is net zero here —
+  // the rename is asserted by name below, not by this count.
+  assert("20 food_* tables created", tables.length === 20, tables.length);
   const badlyNamed = tables.filter((t) => !/^food_[a-z_]+$/.test(t.table_name));
   assert("every table is snake_case", badlyNamed.length === 0, badlyNamed);
   const columns = await prisma.$queryRaw<{ column_name: string }[]>`
@@ -284,23 +286,54 @@ async function main() {
       items: {
         create: { listingId: listing.id, titleSnapshot: "Quesillo venezolano", priceCentsSnapshot: 12500, quantity: 1 },
       },
-      messages: {
-        create: {
-          senderUserId: `${P}client`,
-          originalText: "¿Puede ser sin caramelo?",
-          originalLocale: "es",
-          translations: { en: "Can it be without caramel?" },
-        },
-      },
     },
-    include: { items: true, messages: true },
+    include: { items: true },
   });
-  assert("FoodOrder round-trips with items + thread message", order.items.length === 1 && order.messages.length === 1);
+
+  // ⚠ PC-1 — a message is no longer created THROUGH the order. It belongs to
+  // the (seller, buyer) thread, and the order is now optional context on it.
+  // That inversion is the whole feature, so this round-trip asserts it rather
+  // than working around it.
+  const thread = await prisma.foodThread.create({
+    data: { sellerId: seller.id, clientId: `${P}client`, clientEmail: `${P}client@example.test` },
+  });
+  await prisma.foodMessage.create({
+    data: {
+      threadId: thread.id,
+      orderId: order.id,
+      senderUserId: `${P}client`,
+      originalText: "¿Puede ser sin caramelo?",
+      originalLocale: "es",
+      translations: { en: "Can it be without caramel?" },
+    },
+  });
+  // A second message with NO order at all — the post-order case, impossible
+  // before PC-1 made `order_id` nullable.
+  await prisma.foodMessage.create({
+    data: {
+      threadId: thread.id,
+      senderUserId: `${P}client`,
+      originalText: "¿Qué vas a tener el fin de semana?",
+      originalLocale: "es",
+      translations: { en: "What are you making this weekend?" },
+    },
+  });
+  const messages = await prisma.foodMessage.findMany({ where: { threadId: thread.id }, orderBy: { createdAt: "asc" } });
+  assert("FoodOrder round-trips with items", order.items.length === 1);
+  assert("FoodThread carries both an order-scoped and an order-less message", messages.length === 2);
+  assert("…a post-order message has no order at all", messages[1].orderId === null);
+  assert(
+    "…the (seller, client) pair is unique — one conversation per relationship",
+    await prisma.foodThread
+      .create({ data: { sellerId: seller.id, clientId: `${P}client` } })
+      .then(() => false)
+      .catch((e) => e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002"),
+  );
   assert("…status defaults to PENDING", order.status === "PENDING");
   assert(
     "…stored translations survive as JSON",
-    (order.messages[0].translations as Record<string, string>).en === "Can it be without caramel?",
-    order.messages[0].translations,
+    (messages[0].translations as Record<string, string>).en === "Can it be without caramel?",
+    messages[0].translations,
   );
 
   // ==========================================================================
@@ -504,9 +537,25 @@ async function main() {
   // that was protecting it is gone.
   await prisma.foodOrder.delete({ where: { id: order.id } });
   assert(
-    "deleting an order cascades its items and messages",
-    (await prisma.foodOrderItem.count({ where: { orderId: order.id } })) === 0 &&
-      (await prisma.foodOrderMessage.count({ where: { orderId: order.id } })) === 0,
+    "deleting an order cascades its items",
+    (await prisma.foodOrderItem.count({ where: { orderId: order.id } })) === 0,
+  );
+  // ⚠ PC-1 inverted this one. It used to assert that deleting an order took its
+  // messages with it (the old CASCADE, which was also the only cleanup this
+  // data had). A conversation must now OUTLIVE the order it discussed —
+  // `ON DELETE SET NULL` — or a persistent thread would still die with an
+  // order, and the whole feature with it.
+  assert(
+    "deleting an order does NOT delete its messages — it only clears their order link",
+    (await prisma.foodMessage.count({ where: { threadId: thread.id } })) === 2 &&
+      (await prisma.foodMessage.count({ where: { orderId: order.id } })) === 0,
+  );
+
+  // The thread itself is Restrict-protected through its seller, like orders.
+  await prisma.foodThread.delete({ where: { id: thread.id } });
+  assert(
+    "deleting a thread cascades its messages",
+    (await prisma.foodMessage.count({ where: { threadId: thread.id } })) === 0,
   );
 
   await prisma.foodSeller.delete({ where: { id: seller.id } });

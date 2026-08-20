@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { reportOrderMessage } from "@/lib/actions/order-message";
+import { reportMessage } from "@/lib/actions/order-message";
 
 const REASONS = ["INAPPROPRIATE", "SUSPECTED_SCAM", "FOOD_SAFETY_CONCERN", "OTHER"] as const;
 
@@ -36,7 +36,7 @@ export function ReportMessageSheet({ messageId }: { messageId: string }) {
 
   async function handleSubmit() {
     setSubmitting(true);
-    const result = await reportOrderMessage(messageId, reason, message);
+    const result = await reportMessage(messageId, reason, message);
     setSubmitting(false);
     if (result.ok) setSubmitted(true);
   }

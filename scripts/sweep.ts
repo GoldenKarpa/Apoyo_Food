@@ -26,7 +26,12 @@
  *   npx tsx scripts/sweep.ts --once      one pass and exit (verification, a
  *                                        future PM2-cron-restart deployment)
  */
-import { sweepExpiredStories, sweepExpiredOrders, sweepOrderCompletionNudges } from "../lib/sweep";
+import {
+  sweepExpiredStories,
+  sweepExpiredOrders,
+  sweepOrderCompletionNudges,
+  sweepIdleThreads,
+} from "../lib/sweep";
 import { prisma } from "../lib/prisma";
 
 const TICK_MS = 5 * 60_000;
@@ -34,7 +39,7 @@ const TICK_MS = 5 * 60_000;
 async function tick(): Promise<void> {
   // ⚠ Each job's failure is caught independently — a broken story sweep must
   // never suppress the order-expiry pass sitting right below it, and vice
-  // versa. A single try/catch around all three would have exactly that
+  // versa. A single try/catch around all four would have exactly that
   // coupling.
   try {
     const cleared = await sweepExpiredStories();
@@ -55,6 +60,17 @@ async function tick(): Promise<void> {
     console.log(`[food-sweep] orders: nudged ${nudged} seller(s) toward marking a fulfilled order COMPLETED`);
   } catch (err) {
     console.error("[food-sweep] completion-nudge tick failed", err);
+  }
+
+  // PC-1 — thread retention. Runs on the same 5-minute tick as everything else
+  // rather than on its own daily schedule: the job is a no-op on almost every
+  // pass (its cutoff is 12 months), and a second scheduler would be more moving
+  // parts than the work justifies. Its own try/catch, per the note above.
+  try {
+    const purged = await sweepIdleThreads();
+    if (purged > 0) console.log(`[food-sweep] threads: purged ${purged} conversation(s) idle past retention`);
+  } catch (err) {
+    console.error("[food-sweep] thread-retention tick failed", err);
   }
 }
 

@@ -14,7 +14,10 @@ export interface OrderThreadMessage {
   translations: unknown;
   attachmentPath: string | null;
   attachmentKind: string | null;
+  readAt: Date | null;
   createdAt: Date;
+  /** PC-1 — present only on the Messages section, where a thread spans orders. */
+  order?: { id: string; orderNumber: string } | null;
 }
 
 /**
@@ -31,12 +34,28 @@ export async function OrderThread({
   viewerUserId,
   viewerLocale,
   surface,
+  showReadReceipts = true,
+  showOrderContext = false,
 }: {
   messages: OrderThreadMessage[];
   viewerUserId: string;
   viewerLocale: Locale;
   /** Which surface is rendering this thread — picks the reachable attachment read path (E14). */
   surface: "buyer" | "seller";
+  /**
+   * PC-1 — whether "Read" is shown beneath the viewer's OWN messages.
+   *
+   * ⚠ Only ever `false` on the BUYER's surface, and only because the seller
+   * turned `messageReadReceipts` off. `FoodMessage.readAt` is written either
+   * way (the seller's unread counts read the same column) — this hides the
+   * value, it does not stop its capture, and the caller is responsible for
+   * passing the seller's setting through. A seller always sees whether the
+   * buyer read them; the buyer has no equivalent setting because this app
+   * gives a buyer no settings surface at all.
+   */
+  showReadReceipts?: boolean;
+  /** Label which order a message was about — only meaningful where a thread spans several. */
+  showOrderContext?: boolean;
 }) {
   const t = await getTranslations("orderThread");
 
@@ -74,6 +93,8 @@ export async function OrderThread({
             </div>
             <span className="px-1 text-caption text-ink-muted">
               {new Intl.DateTimeFormat(viewerLocale, { dateStyle: "short", timeStyle: "short" }).format(message.createdAt)}
+              {showOrderContext && message.order && ` · ${message.order.orderNumber}`}
+              {own && showReadReceipts && message.readAt && ` · ${t("read")}`}
             </span>
           </li>
         );

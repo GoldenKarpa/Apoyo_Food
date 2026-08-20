@@ -441,6 +441,13 @@
       "cancelDismiss": "Never mind",
       "cancelError": "That didn't work. Try again.",
       "threadHeading": "Messages"
+    },
+    "messages": {
+      "title": "Messages",
+      "empty": "No conversations yet. Message a kitchen you've ordered from to start one.",
+      "messageSeller": "Message this kitchen",
+      "openThread": "Open conversation",
+      "viewKitchen": "View kitchen"
     }
   },
   "seller": {
@@ -561,7 +568,8 @@
         "profile": "Profile",
         "listings": "Listings",
         "stories": "Fresh Today",
-        "orders": "Orders"
+        "orders": "Orders",
+        "messages": "Messages"
       }
     },
     "signedOut": {
@@ -976,6 +984,35 @@
       "declineReasonPrefix": "Your note",
       "cancellationReasonPrefix": "Reason",
       "threadHeading": "Messages"
+    },
+    "messages": {
+      "title": "Messages",
+      "detailTitle": "Conversation",
+      "subtitle": "Your conversations with customers, kept across every order.",
+      "empty": "No conversations yet. They start when a customer writes about an order.",
+      "optedOutNotice": "Messages between orders are turned off for your kitchen. Customers can still write about an active order. Change this under Profile.",
+      "unknownCustomer": "Customer",
+      "since": "Talking since {date}"
+    },
+    "messageSettings": {
+      "title": "Messages",
+      "postOrder": {
+        "title": "Allow messages between orders",
+        "description": "Customers who have ordered from you before can keep the conversation going. Turn this off to keep chat to active orders only — nothing is hidden or deleted either way."
+      },
+      "readReceipts": {
+        "title": "Show customers when you've read",
+        "description": "Turn this off and customers won't see 'Read' on their messages. You still see what's unread."
+      },
+      "delivery": {
+        "title": "Tell me about new messages",
+        "description": "Email is grouped — at most one every 15 minutes per conversation, never one per message. Order alerts are always sent.",
+        "options": {
+          "IN_APP_AND_EMAIL": "In the app and by email",
+          "IN_APP": "In the app only",
+          "OFF": "Don't notify me"
+        }
+      }
     }
   },
   "scaffold": {
@@ -1022,7 +1059,8 @@
       "removeAttachment": "Remove photo",
       "send": "Send",
       "sending": "Sending…",
-      "error": "That didn't work. Try again."
+      "error": "That didn't work. Try again.",
+      "blocked": "This conversation is closed to new messages right now."
     },
     "report": {
       "trigger": "Report this message",
@@ -1040,6 +1078,16 @@
       "submit": "Submit report",
       "submitting": "Submitting…",
       "thanks": "Thanks — we'll take a look."
+    },
+    "read": "Read",
+    "access": {
+      "sellerOptedOut": "This kitchen only takes messages about active orders.",
+      "sellerOptedOutOwn": "You've turned off messages between orders. Customers can still write to you about an active order."
     }
+  },
+  "threads": {
+    "photoPreview": "Photo",
+    "unreadCount": "{count} new",
+    "unknownCounterpart": "Customer"
   }
 }

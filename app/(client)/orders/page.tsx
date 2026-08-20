@@ -29,8 +29,9 @@ export default async function OrdersPage() {
   const session = await getFoodSession();
   if (!session) return <SignedOutNotice namespace="client.signedOut" loginHref="/login" />;
 
-  const [t, ts, locale, orders] = await Promise.all([
+  const [t, tm, ts, locale, orders] = await Promise.all([
     getTranslations("client.orders"),
+    getTranslations("client.messages"),
     getTranslations("orderStatus"),
     getLocale(),
     clientOrderSummaries(session.userId),
@@ -38,7 +39,16 @@ export default async function OrdersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-display font-semibold text-ink">{t("title")}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-display font-semibold text-ink">{t("title")}</h1>
+        {/* PC-1 — the buyer's route into the Messages surface. Here rather than
+            in the bottom tab bar: Part F3 reserves that bar for five
+            destinations, and this is the page a buyer is already on when they
+            think "what did that kitchen say?". */}
+        <Link href="/messages" className="text-label text-green underline">
+          {tm("title")}
+        </Link>
+      </div>
 
       {orders.length === 0 ? (
         <p className="rounded-card border border-hairline bg-card p-6 text-body text-ink-muted">{t("empty")}</p>

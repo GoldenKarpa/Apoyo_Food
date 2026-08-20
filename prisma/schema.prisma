@@ -177,6 +177,13 @@ enum NotificationKind {
   ORDER_CANCELLED
   ORDER_COMPLETED
   ORDER_MESSAGE
+  /// PC-1 — a message sent between orders, on a persistent thread. Kept
+  /// DISTINCT from `ORDER_MESSAGE` rather than replacing it: `ORDER_MESSAGE`'s
+  /// payload carries `orderId` and is cleared when that order's page is
+  /// opened (`markOrderNotificationsRead`), which a message belonging to no
+  /// order can never be. Both kinds carry `threadId` and are cleared together
+  /// by `markThreadNotificationsRead`.
+  THREAD_MESSAGE
   ORDER_REMINDER
   NEW_FOLLOWER
   STORY_FROM_FOLLOWED
@@ -261,9 +268,9 @@ model FoodSeller {
   lat Float?
   lng Float?
 
-  languages        String[]
-  specialties      String[]
-  status           SellerStatus      @default(PENDING)
+  languages   String[]
+  specialties String[]
+  status      SellerStatus @default(PENDING)
 
   /// LC-1 — see the VisibilityClass enum. Inert: nothing reads it until LC-4.
   visibilityClass VisibilityClass @default(REAL) @map("visibility_class")
@@ -278,6 +285,40 @@ model FoodSeller {
   /// presence, not demand.
   lastStoryAt DateTime? @map("last_story_at")
 
+  /// ── PC-1 · persistent buyer↔seller conversation, seller-controlled ────────
+  ///
+  /// ⚠ **All three DEFAULT to the permissive/on value, and that is the ruling,
+  /// not an implementation convenience** (`PRE_LAUNCH_CHECKLIST.md` §5, ruled
+  /// 2026-08-19): post-order conversation is an escape hatch a noisy-inbox
+  /// seller switches OFF, never a feature they must discover and switch on.
+  /// Flipping any of these defaults to `false` inverts a user ruling.
+
+  /// `false` keeps this seller's chat bound to orders that are currently OPEN
+  /// (`lib/thread.ts`'s `OPEN_ORDER_STATUSES`) — exactly today's behaviour.
+  /// It never hides or freezes an existing thread's history, and it never
+  /// blocks messaging about a live order; see `resolveThreadAccess`.
+  postOrderMessaging Boolean @default(true) @map("post_order_messaging")
+
+  /// Whether the BUYER is shown "Read" on their own messages. Deliberately a
+  /// disclosure switch only: `FoodMessage.readAt` is written either way,
+  /// because the seller's own unread counts are derived from the same column
+  /// and a seller who hides receipts still needs to see what's waiting.
+  messageReadReceipts Boolean @default(true) @map("message_read_receipts")
+
+  /// Per-category delivery preferences, `{ "<category>": "IN_APP_AND_EMAIL" |
+  /// "IN_APP" | "OFF" }`. Only the `chat` key is read today (user ruling:
+  /// "chat now, structured for expansion later" — order-lifecycle mail stays
+  /// mandatory, since a seller who silences "you have a new order" has a
+  /// broken business rather than a quieter one).
+  ///
+  /// ⚠ The default is `{}` and the real default lives in
+  /// `lib/notification-prefs.ts`, NOT in a column default — one source of
+  /// truth, and adding a category later needs no backfill. Values are a TS
+  /// union, deliberately not a Prisma enum: this schema's own header rules
+  /// that "an enum type with no table reading it is noise, not foresight",
+  /// and no column would reference it.
+  notificationPrefs Json @default("{}") @map("notification_prefs")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -287,6 +328,7 @@ model FoodSeller {
   highlights FoodStoryHighlight[]
   followers  FoodFollow[]
   orders     FoodOrder[]
+  threads    FoodThread[]
   reports    FoodReport[]
 
   @@index([status])
@@ -624,9 +666,12 @@ model FoodOrder {
   /// Restrict, not Cascade: an order is append-only evidence of a real-world
   /// transaction for BOTH parties. A seller row that has orders cannot be hard
   /// deleted — `SellerStatus.SUSPENDED` exists for that.
-  seller   FoodSeller         @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  seller   FoodSeller      @relation(fields: [sellerId], references: [id], onDelete: Restrict)
   items    FoodOrderItem[]
-  messages FoodOrderMessage[]
+  /// ⚠ PC-1: `onDelete: SetNull` on the message side, NOT Cascade — a message
+  /// now belongs to the THREAD, and deleting an order must not take the
+  /// conversation about it with it. See `FoodMessage`.
+  messages FoodMessage[]
 
   @@index([sellerId, status, createdAt])
   @@index([clientId, createdAt])
@@ -657,12 +702,75 @@ model FoodOrderItem {
   @@map("food_order_items")
 }
 
-/// One thread per order — no separate thread entity is needed in MVP. Transport
-/// is fetch-on-load + light polling now; the Phase-9 ws upgrade reuses this
-/// exact table with no schema change (architecture Part C).
-model FoodOrderMessage {
-  id      String @id @default(cuid())
-  orderId String @map("order_id")
+/// PC-1 · the persistent buyer↔seller conversation.
+///
+/// **Supersedes Part D's "one thread per order — no separate thread entity is
+/// needed in MVP".** Ruled 2026-08-19 (`PRE_LAUNCH_CHECKLIST.md` §5): order-
+/// scoped chat died with the order, so a buyer asking about next weekend's
+/// menu, or negotiating a custom order, had nowhere for the message to land.
+/// One row per (seller, buyer) pair, resuming across every order they ever
+/// transact.
+///
+/// ⚠ **Row existence is NOT permission to write.** The anti-spam gate that
+/// order-scoping used to provide for free is now explicit and lives in
+/// `lib/thread.ts`'s `resolveThreadAccess` — a thread may exist (created the
+/// moment a first order's chat starts) while post-order writing is still
+/// closed. Never infer "may message" from "thread exists"; Apparel needed a
+/// whole `ApparelContactEvent` reveal step for exactly this reason.
+///
+/// `seller` is `Restrict` for the same reason `FoodOrder.seller` is: a seller
+/// with conversation history cannot be hard-deleted (`SellerStatus.SUSPENDED`
+/// exists for that). Retention is the sweep's job — `sweepIdleThreads`.
+model FoodThread {
+  id String @id @default(cuid())
+
+  sellerId String @map("seller_id")
+  /// Opaque identity-store id of the buyer; no relation (see header).
+  clientId String @map("client_id")
+
+  /// Same snapshot-at-capture gap as `FoodOrder.clientEmail`, and taken for
+  /// the same reason: the notification fan-out and the retention sweep both
+  /// run with no live buyer session to read an address from, and the
+  /// ecosystem API exposes no users-lookup-by-id endpoint. Refreshed on every
+  /// send that has a session carrying one, so it tracks a changed address.
+  clientEmail String? @map("client_email")
+
+  /// Drives both the Messages list ordering and the retention sweep's idle
+  /// test. Nullable only for the instant between creating a thread and
+  /// writing its first message — every real row has one.
+  lastMessageAt DateTime? @map("last_message_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  seller   FoodSeller    @relation(fields: [sellerId], references: [id], onDelete: Restrict)
+  messages FoodMessage[]
+
+  /// The pair IS the identity of a thread — one conversation per relationship,
+  /// forever, is the whole point. Also what makes `upsert` the safe way to
+  /// resolve one under concurrent first sends.
+  @@unique([sellerId, clientId])
+  @@index([sellerId, lastMessageAt])
+  @@index([clientId, lastMessageAt])
+  @@map("food_threads")
+}
+
+/// PC-1 — was `FoodOrderMessage`, keyed to `orderId`, cascading from the order.
+/// Renamed in place (`ALTER TABLE ... RENAME`, data preserved) when the thread
+/// became the owner. Transport is still fetch-on-load + light polling; the
+/// Phase-9 ws upgrade reuses this exact table with no schema change
+/// (architecture Part C).
+///
+/// ⚠ `orderId` is now NULLABLE and carries `onDelete: SetNull`. Both halves
+/// matter: a message sent between orders has no order to point at, and a
+/// deleted order must not delete the conversation that discussed it. It stays
+/// on the row purely as context ("this was about FD-4821") — never as the
+/// thing that authorizes reading the message. Authorization is the thread's
+/// (seller, client) pair, checked in `lib/thread.ts`.
+model FoodMessage {
+  id       String  @id @default(cuid())
+  threadId String  @map("thread_id")
+  orderId  String? @map("order_id")
 
   /// Opaque identity-store id; either party.
   senderUserId String @map("sender_user_id")
@@ -678,12 +786,17 @@ model FoodOrderMessage {
   attachmentKind AttachmentKind? @map("attachment_kind")
 
   createdAt DateTime  @default(now()) @map("created_at")
+  /// Written whenever the recipient opens the conversation, regardless of the
+  /// sender's read-receipt setting — see `FoodSeller.messageReadReceipts`. The
+  /// setting gates DISPLAY of this value to the buyer, never its capture.
   readAt    DateTime? @map("read_at")
 
-  order FoodOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  thread FoodThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  order  FoodOrder? @relation(fields: [orderId], references: [id], onDelete: SetNull)
 
+  @@index([threadId, createdAt])
   @@index([orderId, createdAt])
-  @@map("food_order_messages")
+  @@map("food_messages")
 }
 
 /// Buyer-facing report/flag intake (Slice 16), mirroring Apparel's

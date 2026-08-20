@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getFoodSession, type FoodSession } from "@/lib/session";
 import { requireOwnSeller } from "@/lib/seller";
+import { MESSAGE_SELECT } from "@/lib/thread";
 
 /**
  * The order domain: ownership resolution and the queries the seller inbox and
@@ -69,17 +70,16 @@ export async function createOrderWithRetry<T>(
   return null;
 }
 
-/** The order thread (Slice 18) — shared by both detail selects below, one shape either surface renders. */
-const ORDER_MESSAGE_SELECT = {
-  id: true,
-  senderUserId: true,
-  originalText: true,
-  originalLocale: true,
-  translations: true,
-  attachmentPath: true,
-  attachmentKind: true,
-  createdAt: true,
-} satisfies Prisma.FoodOrderMessageSelect;
+/**
+ * The message shape both detail selects below render.
+ *
+ * ⚠ PC-1 moved this to `lib/thread.ts` and both files now read the ONE
+ * definition — the order page and the Messages section render the same
+ * component, so a second copy here would drift the moment a column is added
+ * (it already would have: `readAt` is new, and only one of two copies would
+ * have gained it).
+ */
+const ORDER_MESSAGE_SELECT = MESSAGE_SELECT;
 
 // ── Seller inbox ─────────────────────────────────────────────────────────────
 
@@ -194,7 +194,18 @@ const CLIENT_ORDER_DETAIL_SELECT = {
   cancellationReason: true,
   items: { select: { id: true, titleSnapshot: true, priceCentsSnapshot: true, quantity: true, note: true } },
   seller: {
-    select: { id: true, displayName: true, slug: true, profileImageThumb: true, profileImageBlur: true },
+    // `postOrderMessaging`/`messageReadReceipts` are PC-1: the buyer's own
+    // order page has to know whether to offer a composer and whether to show
+    // "Read", and both answers live on the seller row.
+    select: {
+      id: true,
+      displayName: true,
+      slug: true,
+      profileImageThumb: true,
+      profileImageBlur: true,
+      postOrderMessaging: true,
+      messageReadReceipts: true,
+    },
   },
   messages: { select: ORDER_MESSAGE_SELECT, orderBy: { createdAt: "asc" } },
 } satisfies Prisma.FoodOrderSelect;

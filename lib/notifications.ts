@@ -7,8 +7,10 @@ import {
   sendOrderDeclinedEmail,
   sendOrderExpiredEmail,
   sendNewMessagesEmail,
+  sendNewThreadMessagesEmail,
   type EmailLocale,
 } from "@/lib/email";
+import { deliveryFor, wantsEmail, wantsInApp } from "@/lib/notification-prefs";
 
 /**
  * In-app notifications for the order lifecycle (Slice 17, architecture E6):
@@ -54,6 +56,10 @@ const ORDER_NOTIFICATION_KINDS: NotificationKind[] = [
   "ORDER_CANCELLED",
   "ORDER_COMPLETED",
   "ORDER_MESSAGE",
+  // PC-1 — a message on a persistent thread counts toward the same badge. It
+  // is the same event to a seller ("someone wrote to me"); only its route back
+  // differs.
+  "THREAD_MESSAGE",
   "ORDER_REMINDER",
 ];
 
@@ -200,43 +206,92 @@ export function shouldSendDebouncedEmail(lastEmailedAt: Date | null, now: Date =
 }
 
 /**
- * Fires on every message send, to the party that DIDN'T send it. The in-app
- * row is written every time (so the unread badge and `/orders`'s own list
- * stay accurate); the EMAIL is throttled by `shouldSendDebouncedEmail` against
- * the recipient's own most recently EMAILED `ORDER_MESSAGE` row for this
- * order — a burst of messages inside the window writes several unread rows
- * but sends at most one email, and the very next message after the window
- * closes fires a fresh one.
+ * ⚠ `notifyOrderMessage` lived here until PC-1 and is GONE, not deprecated —
+ * `notifyThreadMessage` below replaces it for both message kinds. The
+ * difference is not cosmetic: the old function debounced email against the
+ * recipient's last emailed row **for one ORDER**, which on a persistent thread
+ * would have restarted the 15-minute window every time the conversation moved
+ * between orders (and never applied at all to a message belonging to none).
+ * Debouncing per THREAD is what actually delivers the user's standing rule
+ * that chat must never generate per-message email.
  */
-export async function notifyOrderMessage(
-  order: NotifyOrder & { sellerId: string },
-  seller: NotifySeller,
-  senderRole: "seller" | "client",
-): Promise<void> {
-  const recipientUserId = senderRole === "seller" ? order.clientId : seller.userId;
-  const recipientEmail = senderRole === "seller" ? order.clientEmail : seller.email;
-  const recipientLocale = senderRole === "seller" ? CLIENT_EMAIL_LOCALE : sellerEmailLocale(seller);
-  // The buyer has no local display name to show the SELLER (no cross-DB
-  // relation) — their snapshotted email doubles as the label, same fallback
-  // shape Salon's own `notifyRequestReceived` uses (`request.clientEmail ??
-  // "a client"`) for the identical gap.
-  const counterpartLabel = senderRole === "seller" ? seller.displayName : order.clientEmail;
 
-  const payload = { orderId: order.id, orderNumber: order.orderNumber };
+// ── PC-1 · persistent-thread messages ────────────────────────────────────────
+
+/**
+ * Fires on every message send, to the party that DIDN'T send it — the thread
+ * equivalent of `notifyOrderMessage`, and the path a post-order message takes.
+ *
+ * Three things differ from the order variant, all of them user rulings from
+ * 2026-08-19:
+ *
+ *  1. **The seller's own delivery preference is honoured** (`chat` category):
+ *     `IN_APP_AND_EMAIL` (default), `IN_APP`, or `OFF`. ⚠ It applies ONLY when
+ *     the seller is the RECIPIENT. A buyer has no settings surface in this app,
+ *     so a seller's preference must never suppress the buyer's own
+ *     notification — that would let one party silence the other.
+ *  2. **Email is debounced per THREAD, not per order** — at most one per
+ *     conversation per 15 minutes, reusing `shouldSendDebouncedEmail`
+ *     unchanged. The user was explicit that per-message chat email is not
+ *     wanted at any point, and a persistent thread makes long back-and-forths
+ *     the normal case rather than the exception.
+ *  3. **`orderId` is optional.** When present the row is an `ORDER_MESSAGE`
+ *     (so the order page's own `markOrderNotificationsRead` still clears it,
+ *     unchanged); when absent it is a `THREAD_MESSAGE`. Both carry `threadId`,
+ *     which is what lets the Messages section clear either kind.
+ *
+ * Best-effort throughout, like every other notifier here: a failed write or a
+ * failed send must never fail the message that triggered it.
+ */
+export async function notifyThreadMessage(
+  thread: { id: string; clientId: string; clientEmail: string | null },
+  seller: NotifySeller & { notificationPrefs: unknown },
+  senderRole: "seller" | "client",
+  order?: { id: string; orderNumber: string } | null,
+): Promise<void> {
+  const recipientIsSeller = senderRole === "client";
+  const recipientUserId = recipientIsSeller ? seller.userId : thread.clientId;
+  const recipientEmail = recipientIsSeller ? seller.email : thread.clientEmail;
+  const recipientLocale = recipientIsSeller ? sellerEmailLocale(seller) : CLIENT_EMAIL_LOCALE;
+  // The buyer has no local display name to show the SELLER (no cross-DB
+  // relation) — their snapshotted email doubles as the label, the same
+  // fallback `notifyOrderMessage` uses for the identical gap.
+  const counterpartLabel = recipientIsSeller ? thread.clientEmail : seller.displayName;
+
+  // ⚠ Only consulted for a seller recipient — see point 1 above.
+  const delivery = recipientIsSeller ? deliveryFor(seller.notificationPrefs, "chat") : "IN_APP_AND_EMAIL";
+
+  // OFF suppresses the in-app row too, not merely the email: a seller who
+  // asked not to be notified should not accrue an unread badge either. The
+  // MESSAGE is still written and still shown in the thread — this governs
+  // being chased about it, never whether it is delivered.
+  if (!wantsInApp(delivery)) return;
+
+  const kind: NotificationKind = order ? "ORDER_MESSAGE" : "THREAD_MESSAGE";
+  const payload: Record<string, unknown> = order
+    ? { orderId: order.id, orderNumber: order.orderNumber, threadId: thread.id }
+    : { threadId: thread.id };
+
   let created: { id: string } | null;
   try {
-    created = await prisma.foodNotification.create({ data: { userId: recipientUserId, kind: "ORDER_MESSAGE", payload } });
+    created = await prisma.foodNotification.create({
+      data: { userId: recipientUserId, kind, payload: payload as Prisma.InputJsonValue },
+    });
   } catch (err) {
-    console.error("[notifications] failed to write ORDER_MESSAGE", err);
+    console.error("[notifications] failed to write", kind, (err as Error).message);
     created = null;
   }
-  if (!created || !recipientEmail) return;
+  if (!created || !recipientEmail || !wantsEmail(delivery)) return;
 
+  // Debounced against this THREAD's own last emailed notification, across both
+  // kinds — an order-scoped message and a post-order one an hour apart are the
+  // same conversation to the recipient, and switching kinds must not reset the
+  // window.
   const lastEmailed = await prisma.foodNotification.findFirst({
     where: {
       userId: recipientUserId,
-      kind: "ORDER_MESSAGE",
-      payload: { path: ["orderId"], equals: order.id },
+      kind: { in: ["ORDER_MESSAGE", "THREAD_MESSAGE"] },
+      payload: { path: ["threadId"], equals: thread.id },
       emailedAt: { not: null },
     },
     orderBy: { emailedAt: "desc" },
@@ -245,14 +300,43 @@ export async function notifyOrderMessage(
   if (!shouldSendDebouncedEmail(lastEmailed?.emailedAt ?? null)) return;
 
   try {
-    await sendNewMessagesEmail(recipientEmail, recipientLocale, {
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-      counterpartLabel,
-      audience: senderRole === "seller" ? "CLIENT" : "SELLER",
-    });
+    if (order) {
+      await sendNewMessagesEmail(recipientEmail, recipientLocale, {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        counterpartLabel,
+        audience: recipientIsSeller ? "SELLER" : "CLIENT",
+      });
+    } else {
+      await sendNewThreadMessagesEmail(recipientEmail, recipientLocale, {
+        threadId: thread.id,
+        counterpartLabel,
+        audience: recipientIsSeller ? "SELLER" : "CLIENT",
+      });
+    }
     await prisma.foodNotification.update({ where: { id: created.id }, data: { emailedAt: new Date() } });
   } catch (err) {
     console.error("[notifications] new-messages email failed", err);
   }
+}
+
+/**
+ * Clears a viewer's message notifications for ONE conversation — the thread
+ * page's equivalent of `markOrderNotificationsRead`.
+ *
+ * Covers BOTH kinds by `threadId`, which is why the PC-1 migration backfills
+ * `threadId` into pre-existing `ORDER_MESSAGE` payloads: without that, an old
+ * unread notification could only ever be cleared by opening the order page it
+ * named, never from the Messages section.
+ */
+export async function markThreadNotificationsRead(userId: string, threadId: string): Promise<void> {
+  await prisma.foodNotification.updateMany({
+    where: {
+      userId,
+      readAt: null,
+      kind: { in: ["ORDER_MESSAGE", "THREAD_MESSAGE"] },
+      payload: { path: ["threadId"], equals: threadId },
+    },
+    data: { readAt: new Date() },
+  });
 }

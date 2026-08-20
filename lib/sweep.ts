@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { deleteMedia } from "@/lib/storage";
 import { notifyUser, notifyOrderExpired } from "@/lib/notifications";
+import { OPEN_ORDER_STATUSES, THREAD_IDLE_RETENTION_DAYS, orderIsActive } from "@/lib/thread";
 
 /**
  * `food-sweep` — the scheduled job(s), kept separate from the CLI/PM2 runner
@@ -114,4 +115,96 @@ export async function sweepOrderCompletionNudges(now: Date = new Date()): Promis
   }
 
   return notified;
+}
+
+/**
+ * PC-1 · thread retention — the answer to "what cleans this up now?".
+ *
+ * ⚠ **Before PC-1 there was no thread retention job because there did not need
+ * to be one:** `FoodOrderMessage` cascaded from `FoodOrder`, so deleting an
+ * order took its conversation with it. Lifting conversation off the order
+ * removed the only cleanup this data had, which is why the 2026-08-19 ruling
+ * asks for a retention story in the same breath as the thread itself. This is
+ * that story.
+ *
+ * **The rule:** a thread is deleted when it has had no message for
+ * `THREAD_IDLE_RETENTION_DAYS` (12 months, the user's own figure — chosen to
+ * clear a seasonal reorder cycle, so last Christmas's baker is still reachable
+ * this Christmas) AND the pair has no order that is still ACTIVE (not merely
+ * one whose status still looks open). Messages go with it via
+ * `ON DELETE CASCADE`.
+ *
+ * ⚠ **The active-order clause is a safety interlock, not a nicety.** A pair can
+ * have a live ACCEPTED order for a fulfilment date a year out (a wedding cake,
+ * a Christmas catering booking) with a quiet thread — deleting the
+ * conversation about an order that has not happened yet would destroy exactly
+ * the arrangements both parties are relying on. Idleness alone is not evidence
+ * that a relationship is over.
+ *
+ * ⚠ **But "open" must not mean "immortal", which is why the test is
+ * `orderIsActive` and not a status check.** An ACCEPTED order has no automatic
+ * exit in this app — only the seller marks COMPLETED — so one abandoned years
+ * ago would otherwise preserve its thread permanently, and the interlock would
+ * quietly become a leak.
+ *
+ * ⚠ **Attachment files are deleted BEFORE the rows**, the reverse of
+ * `sweepExpiredStories`'s deliberate inversion above, and for the reason that
+ * function's own note gives: a story is discarded outright, whereas here a
+ * crash between the two steps must not leave a thread whose photos 404 in a
+ * conversation either party can still open. An orphaned file is disk waste; an
+ * orphaned reference is a broken thread.
+ *
+ * Returns the number of threads removed.
+ */
+export async function sweepIdleThreads(now: Date = new Date()): Promise<number> {
+  const cutoff = new Date(now.getTime() - THREAD_IDLE_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+
+  const candidates = await prisma.foodThread.findMany({
+    where: {
+      // `lastMessageAt` is null only for a thread whose first message has not
+      // landed yet; `createdAt` covers it so a row created and abandoned in the
+      // same instant is not immortal.
+      OR: [{ lastMessageAt: { lt: cutoff } }, { AND: [{ lastMessageAt: null }, { createdAt: { lt: cutoff } }] }],
+    },
+    select: {
+      id: true,
+      sellerId: true,
+      clientId: true,
+      messages: { where: { attachmentPath: { not: null } }, select: { attachmentPath: true } },
+    },
+  });
+  if (candidates.length === 0) return 0;
+
+  // One query for the interlock rather than one per candidate. The status
+  // filter narrows in the database; `orderIsActive` then decides per row.
+  const openOrders = await prisma.foodOrder.findMany({
+    where: {
+      status: { in: OPEN_ORDER_STATUSES },
+      OR: candidates.map((t) => ({ sellerId: t.sellerId, clientId: t.clientId })),
+    },
+    select: { sellerId: true, clientId: true, status: true, respondBy: true, fulfillmentAt: true },
+  });
+  // ⚠ **Open is not the same as active, and using the former here would make
+  // threads immortal.** Nothing in this app auto-closes an ACCEPTED order — only
+  // the seller marks COMPLETED — so an order whose fulfilment date passed years
+  // ago still carries an open-looking status and would shield its conversation
+  // forever. `orderIsActive` is the real test: a PENDING request inside its
+  // `respondBy` window, or an ACCEPTED booking whose date (plus grace) has not
+  // passed. See `lib/thread.ts` for why it deliberately does not CLOSE such an
+  // order — that is an order-lifecycle decision, not a cleanup job's business.
+  const shielded = new Set(
+    openOrders.filter((o) => orderIsActive(o, now)).map((o) => `${o.sellerId}:${o.clientId}`),
+  );
+
+  const doomed = candidates.filter((t) => !shielded.has(`${t.sellerId}:${t.clientId}`));
+  if (doomed.length === 0) return 0;
+
+  await Promise.all(
+    doomed.flatMap((t) =>
+      t.messages.map((m) => deleteMedia(m.attachmentPath as string)),
+    ),
+  );
+
+  const { count } = await prisma.foodThread.deleteMany({ where: { id: { in: doomed.map((t) => t.id) } } });
+  return count;
 }

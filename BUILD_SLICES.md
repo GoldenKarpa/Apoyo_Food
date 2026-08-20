@@ -1470,6 +1470,174 @@ portal-web, disclosed): `app/api/auth/refresh-session/route.ts` (new).
 
 ---
 
+---
+
+### PC-1 — Persistent buyer↔seller chat, with a seller opt-out (2026-08-19)
+
+Not a numbered slice: a standalone program implementing the user ruling in
+`Apoyo-Demia/PRE_LAUNCH_CHECKLIST.md` §5 ("Food — post-order chat becomes a persistent
+buyer↔seller thread, provider-controlled"). **Food's provider demo is sequenced AFTER this**
+(same ruling), because it changes what the demo has to show.
+
+**Supersedes architecture Part D's "one thread per order — no separate thread entity is needed
+in MVP"**, which is struck through in that doc rather than removed. Conversation used to die with
+the order (`FoodOrderMessage` cascaded from `FoodOrder`) and there was no seller inbox at all, so
+a buyer writing four months later had nowhere for the message to land.
+
+**Seven decisions were settled with the user before any code was written** (2026-08-19). Recorded
+here because several are the kind that look like implementation detail and are not:
+
+1. **Opt-out leaves existing threads read-only, but writable while an order is open.** History is
+   never hidden or deleted; the composer returns automatically whenever the pair has a PENDING or
+   ACCEPTED order, and disappears again when it closes.
+2. **A blocked buyer is told WHY, but only when there is something to tell.** An opted-out seller
+   produces an explicit "this kitchen only takes messages about active orders". A buyer with no
+   order history sees **nothing at all** — no composer, no entry point, no explainer — because
+   messaging was never offered to them, and an explainer would advertise the channel to exactly
+   the person the gate excludes.
+3. **Read/unread is a seller setting, not a fixed feature** (user amendment to the original
+   question). `messageReadReceipts` governs whether the BUYER sees "Read"; the seller's own unread
+   counts are never optional. ⚠ It is disclosure-only — `readAt` is written either way, because
+   the seller's badges read the same column.
+4. **Notification delivery is a seller setting too**: in-app + email / in-app only / off, stored
+   per-category ("chat now, structured for expansion later") so a category can be added with no
+   migration. ⚠ **Order-lifecycle mail is deliberately not expressible** — a seller who silences
+   "you have a new order" has a broken business, not a quieter one.
+5. **No per-message email, ever** (user, unprompted). Already true for order threads via
+   `MESSAGE_EMAIL_DEBOUNCE_MS`; PC-1 re-points that debounce at the THREAD so it survives a
+   conversation moving between orders.
+6. **Retention: 12 months idle.** ⚠ With an interlock — an open order shields an idle thread from
+   the sweep.
+7. **Defaults are all permissive**, and that is the ruling itself, not a convenience.
+
+**The gate is the load-bearing part, and it is stricter than "any order".** `lib/thread.ts`'s
+`ENGAGED_ORDER_STATUSES` requires an order the seller actually **responded to** —
+ACCEPTED/COMPLETED/DECLINED/CANCELLED_BY_*. `PENDING` and `EXPIRED` are excluded on purpose: a
+stranger can create a PENDING order unilaterally, so if it granted a permanent channel then
+"place a request, ignore the 24h expiry, message forever" would be a one-click spam key —
+precisely the surface order-scoping used to close. `DECLINED` IS included, and that is not
+leniency: "not this Saturday, could you do the next one?" is the single most natural trigger for
+this feature, and it required a real response a spammer cannot force. Chat during a PENDING order
+still works (`OPEN_ORDER_STATUSES`), which is today's behaviour unchanged and bounded by
+`respondBy`.
+
+⚠ **A `FoodThread` row is a container, never a permission.** It is created when a first order's
+chat starts and outlives every order. Nothing should ever infer "may message" from "thread
+exists" — `resolveThreadAccess` re-derives the answer from live order state and the seller's
+current setting on every render AND every send.
+
+**Follow-up decision, settled 2026-08-19 after the first build: "open" must not mean "immortal".**
+The interlock originally shielded a thread whenever the pair had an order in `OPEN_ORDER_STATUSES`.
+That is a status test, and status alone is not sufficient in this schema:
+
+- `PENDING` **cannot** go stale — it carries `respondBy`, and `sweepExpiredOrders` moves it to
+  `EXPIRED` automatically on the same tick.
+- `ACCEPTED` has **no automatic exit at all.** Only the seller marks `COMPLETED` (architecture E5
+  point 3, deliberate), and `sweepOrderCompletionNudges` sends exactly one reminder they are free
+  to ignore. So an order whose fulfilment date passed two years ago still reads as open, and would
+  have shielded its conversation from retention permanently — the interlock quietly becoming a leak.
+
+Replaced by `lib/thread.ts`'s `orderIsActive(order, now)`, a pure function: a `PENDING` request
+still inside its `respondBy` window, or an `ACCEPTED` booking whose `fulfillmentAt` plus
+`ACCEPTED_ORDER_ACTIVE_GRACE_DAYS` (30) has not passed. Everything terminal is inactive.
+
+⚠ **Every Food order is scheduled** — `fulfillmentAt` is NOT NULL — so the "unscheduled open order
+needs a 30–90 day inactivity window" pattern has no referent here and was deliberately not built.
+The date the order already carries is a better signal than any inactivity heuristic.
+
+⚠ **The same predicate governs the write gate**, not just retention. Two definitions of "active"
+would be a bug waiting to happen: a stale `ACCEPTED` order that no longer shields a thread from
+deletion must not still grant write access to an opted-out seller's inbox either. In practice this
+only narrows things for opted-out sellers, since `ACCEPTED` is in `ENGAGED_ORDER_STATUSES` and a
+seller on the permissive default allows post-order messaging anyway.
+
+⚠ **It deliberately does NOT close the stale order.** Auto-expiring a long-abandoned `ACCEPTED`
+order is a real and separate gap — it also pollutes the seller's order list and any future revenue
+analytics — but it changes the business record of a real-world transaction, with notifications and
+history attached. Deciding that inside a retention sweep would hide an order-lifecycle decision
+inside a cleanup job. `orderIsActive` answers only "does this row still justify protecting a
+conversation" and leaves the order untouched; the verification asserts that it does.
+**Not built, not sliced — a candidate for `APOYO_BACKLOG.md`.**
+
+
+**Findings and decisions during the build:**
+
+- **`food_order_messages` is RENAMED to `food_messages`, not recreated.** Rows, primary key and
+  indexes survive in place, so there is no window where a message exists in one table and not the
+  other. Postgres keeps the OLD names for indexes/constraints across a table rename, so each is
+  renamed explicitly — otherwise a later `prisma migrate diff` proposes spurious churn.
+- **The backfill has a hard guard**: if any pre-existing message fails to reach a thread, the
+  migration `RAISE EXCEPTION`s rather than proceeding to a NOT NULL that would fail opaquely.
+  Backfilled thread ids are `thr_` + UUID, since SQL has no cuid generator; the column is TEXT
+  with no format contract, and the prefix makes them identifiable if one needs investigating.
+- **`ORDER_MESSAGE` notification payloads are backfilled with `threadId`.** Without it, an
+  already-unread message notification could never be cleared from the new Messages section — only
+  by opening the old order page it named.
+- **`ORDER_MESSAGE` was kept and `THREAD_MESSAGE` added alongside it**, rather than one kind for
+  both. `markOrderNotificationsRead` clears by `orderId`, which a message belonging to no order
+  can never have; both kinds carry `threadId`, and `markThreadNotificationsRead` clears either.
+- **`notifyOrderMessage` is gone, not deprecated** — its debounce was per-ORDER, which on a
+  persistent thread would restart the 15-minute window every time the conversation moved between
+  orders, and never applied at all to a message belonging to none.
+- **The order detail pages run the gate too.** An order page is reachable forever, so once every
+  order with a buyer has closed and the seller has opted out, the composer on an old order must
+  stop working — otherwise "chat stays bound to open orders" has a permanent hole one click away
+  in the buyer's order list.
+- **`components/order-thread.tsx` / `order-message-composer.tsx` keep their `Order…` names** while
+  being fully generic now. Renaming them is a delete-and-recreate of files two order pages import,
+  for accuracy not worth the churn. Read "Order" as "the conversation".
+- **The buyer surface got no sixth bottom-tab entry** — Part F3 reserves that bar for five
+  destinations. `/messages` is reached from `/orders` and from a seller's profile, the two places
+  a buyer is already thinking about that kitchen.
+- **`resolveThread` upserts** rather than find-then-create: two concurrent first sends would both
+  see "no thread" and the loser would take a P2002 mid-send. The `(sellerId, clientId)` unique
+  index is what makes that safe.
+
+**Verification — run for real against a live database.** `tsc --noEmit` clean, `next lint` clean
+(zero warnings), `next build` clean with all four new routes present (`/food/messages`,
+`/food/messages/[id]`, `/messages`, `/messages/[id]`), `vitest` 27/27, `npm run db:verify` 54/54.
+
+`npm run verify:threads` — **59 assertions, all passing** against a real Postgres: every branch of
+the gate as a pure decision, the gate against real rows (stranger refused, EXPIRED-only refused,
+one COMPLETED order opening it), the opt-out actually blocking a post-order send, the open-order
+override, `orderIsActive` including the stale-ACCEPTED case, 5 concurrent thread resolutions
+landing on one row, the order-deletion inversion, unread/receipt behaviour, preference parsing,
+and the retention sweep with both its interlock and its stale-order escape.
+
+**The migration was proved on real pre-PC-1 data, not just on an empty schema.** The dev database
+was empty, so a throwaway `pc1_backfill_test` database was built by replaying the five prior
+migrations, seeded with old-shape `food_order_messages` rows (two buyers, one buyer holding TWO
+orders with the same seller, a second seller for the same buyer, an order with no messages, and an
+unread `ORDER_MESSAGE` notification), then migrated. Result: **5 messages kept, 0 stranded, all 5
+order links preserved, 3 threads** — the same buyer's two orders with one seller collapsed into a
+single thread carrying all 3 of its messages, the message-less order produced no thread, the
+seller/buyer pairing did not merge across sellers, the `client_email` snapshot picked the newer
+non-null address, and the `ORDER_MESSAGE` notification gained `threadId` while the `ORDER_PLACED`
+row beside it was untouched.
+
+⚠ `prisma/verify-schema.ts`'s hardcoded table count was stale-by-design-again (19 → 20 with
+`food_threads`) and is fixed; its old "deleting an order cascades its messages" assertion is
+**inverted**, since that is now precisely what must not happen.
+
+Files created: `lib/thread.ts`, `lib/notification-prefs.ts`, `lib/actions/thread.ts`,
+`lib/actions/message-settings.ts`, `components/thread-list.tsx`,
+`components/thread-composer-section.tsx`, `components/message-seller-link.tsx`,
+`components/seller/message-settings-fields.tsx`, `app/food/(dashboard)/messages/page.tsx`,
+`app/food/(dashboard)/messages/[id]/page.tsx`, `app/(client)/messages/page.tsx`,
+`app/(client)/messages/[id]/page.tsx`, `scripts/verify-threads.ts`,
+`prisma/migrations/20260819120000_pc1_persistent_threads/migration.sql`.
+
+Files modified: `prisma/schema.prisma`, `prisma/verify-schema.ts`, `lib/order.ts`,
+`lib/notifications.ts`, `lib/email.ts`, `lib/sweep.ts`, `lib/actions/order-message.ts`,
+`scripts/sweep.ts`, `scripts/verify-order-thread.ts`, `components/order-thread.tsx`,
+`components/order-message-composer.tsx`, `components/report-message-sheet.tsx`,
+`components/seller/seller-nav.tsx`, `app/food/(dashboard)/orders/[id]/page.tsx`,
+`app/food/(dashboard)/profile/page.tsx`, `app/(client)/orders/[id]/page.tsx`,
+`app/(client)/orders/page.tsx`, `app/(client)/sellers/[slug]/page.tsx`, `messages/en.json`,
+`messages/es.json`, `package.json`, `Apoyo_Food_Architecture.md`, `BUILD_SLICES.md`.
+Cross-repo (Apoyo-Demia, disclosed): `PRE_LAUNCH_CHECKLIST.md` §5 — the ruling's own entry,
+marked built-not-deployed.
+
 ## Phases 4+ (architected in `Apoyo_Food_Architecture.md` Part I — slice when reached)
 
 4 Saved & repeat (collections, order-again recs) · 5 Advanced search & trending materialization · 6 Seller dashboard & insights (k-anonymity floor — the signature feature) · 7 Reviews & portal reputation events · 8 Customer requests board · 9 Verification, geocoding, web-push, ws chat upgrade.
