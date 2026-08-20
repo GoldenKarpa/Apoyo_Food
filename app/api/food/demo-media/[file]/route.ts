@@ -72,9 +72,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ file: s
     status: 200,
     headers: {
       "Content-Type": "image/webp",
-      // Committed, named by slot, and only ever replaced by a deliberate re-run
-      // of scripts/build-demo-assets.mjs plus a deploy.
-      "Cache-Control": "public, max-age=31536000, immutable",
+      // WARNING: NOT `immutable`, and the distinction is not pedantry.
+      // These filenames are SLOT names (`doubles.webp`), not content hashes, so
+      // the same URL legitimately serves different bytes after a re-run of
+      // `scripts/build-demo-assets.mjs`. `immutable` tells a browser it may
+      // never revalidate, which would strand a replaced photo in caches for as
+      // long as the max-age says - a year, in the first version of this file.
+      // A day plus revalidation keeps it cheap without lying about what the URL
+      // means. (Apparel's PD-S9 review found the identical wrong claim in its
+      // own copy of this route.)
+      "Cache-Control": "public, max-age=86400, must-revalidate",
     },
   });
 }

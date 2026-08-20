@@ -18,6 +18,7 @@ import {
   MAX_FULFILLMENT_AREA_LENGTH,
   MAX_ITEM_NOTE_LENGTH,
   RESPOND_BY_HOURS,
+  resolveAcceptPricing,
 } from "@/lib/order-form";
 import { parseTtdToCents } from "@/lib/listing-form";
 import { discoverable } from "@/lib/discovery";
@@ -197,27 +198,28 @@ export async function acceptOrder(
       orderNumber: true,
       fulfillmentAt: true,
       seller: { select: { displayName: true } },
-      items: { select: { id: true, priceCentsSnapshot: true } },
+      // `quantity` is selected for `resolveAcceptPricing`'s shared shape. The
+      // action still recomputes the subtotal from fresh rows inside the
+      // transaction below rather than trusting the value that helper returns —
+      // that recompute is the concurrency-safe one, and it stays authoritative.
+      items: { select: { id: true, priceCentsSnapshot: true, quantity: true } },
     },
   });
 
   const decision = decideOrderTransition(order, "accept", "seller");
   if (!decision.ok) return { status: "error", error: "orderInvalidTransition" };
 
-  const updates: { id: string; priceCents: number }[] = [];
-  for (const item of order.items) {
-    const raw = formData.get(`price-${item.id}`);
-    const rawStr = raw === null ? "" : String(raw).trim();
-    if (rawStr === "") {
-      // No adjustment offered — legal only when a price already exists (FIXED/
-      // STARTING_AT). A QUOTE item has nothing to fall back to.
-      if (item.priceCentsSnapshot === null) return { status: "error", error: "priceRequired" };
-      continue;
-    }
-    const cents = parseTtdToCents(rawStr);
-    if (cents === null) return { status: "error", error: "priceInvalid" };
-    updates.push({ id: item.id, priceCents: cents });
-  }
+  // ⚠ The rule itself lives in `lib/order-form.ts`'s `resolveAcceptPricing` —
+  // pure, no I/O, and shared with the provider demo's sandbox so the two cannot
+  // drift (PD-S10). `changed` is deliberately the SAME set this loop used to
+  // build: items the seller left blank keep their snapshot and are not
+  // re-written, so the writes below are unchanged by the extraction.
+  const pricing = resolveAcceptPricing(order.items, (id) => {
+    const raw = formData.get(`price-${id}`);
+    return raw === null ? null : String(raw);
+  }, parseTtdToCents);
+  if (!pricing.ok) return { status: "error", error: pricing.error };
+  const updates = pricing.changed;
 
   await prisma.$transaction(async (tx) => {
     for (const u of updates) {

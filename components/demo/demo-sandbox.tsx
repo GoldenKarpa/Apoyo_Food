@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 import { FoodActionsProvider, type FoodActions } from "@/lib/actions/registry";
 import { parseTtdToCents } from "@/lib/listing-form";
 import { MAX_MESSAGE_LENGTH } from "@/lib/order-message-form";
+import { resolveAcceptPricing } from "@/lib/order-form";
 import { NOTIFICATION_DELIVERIES, type NotificationDelivery } from "@/lib/notification-prefs";
 import { decideOrderTransition } from "@/lib/order-status";
 import {
@@ -169,15 +170,33 @@ function demoId(prefix: string): string {
 
 // ── The sandbox ─────────────────────────────────────────────────────────────
 
-export function DemoSandbox({ locale, children }: { locale: Locale; children: ReactNode }) {
+export function DemoSandbox({
+  locale,
+  nowMs,
+  children,
+}: {
+  locale: Locale;
+  /**
+   * ⚠ Resolved ONCE on the server (`app/food/demo/page.tsx`) and threaded down.
+   * Every initializer below runs on the server render AND again on hydration;
+   * reading the clock in them would seed two different fixture sets for one
+   * page. See that file's note.
+   */
+  nowMs: number;
+  children: ReactNode;
+}) {
   const t = useTranslations("foodDemo");
 
   const [sellerRef, setSeller, seller] = useDemoState<DemoSeller>(() => initialSeller(locale));
-  const [ordersRef, setOrders, orders] = useDemoState<DemoOrder[]>(() => initialOrders(locale));
+  const [ordersRef, setOrders, orders] = useDemoState<DemoOrder[]>(() =>
+    initialOrders(locale, new Date(nowMs)),
+  );
   const [listingsRef, setListings, listings] = useDemoState<DemoListing[]>(() =>
     initialListings(locale),
   );
-  const [threadsRef, setThreads, threads] = useDemoState<DemoThread[]>(() => initialThreads(locale));
+  const [threadsRef, setThreads, threads] = useDemoState<DemoThread[]>(() =>
+    initialThreads(locale, new Date(nowMs)),
+  );
   const [problems, setProblems] = useState<string[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -199,14 +218,19 @@ export function DemoSandbox({ locale, children }: { locale: Locale; children: Re
     (clientId: string): ThreadAccess => {
       const mine = ordersRef.current.filter((o) => o.clientId === clientId);
       return decideThreadAccess({
+        // ⚠ Evaluated at the SAME pinned epoch the fixtures were built from,
+        // not at `new Date()`. The gate is a function of the fixture dates, so
+        // pinning both to one instant is what makes the answer identical on the
+        // server pass and on hydration. A live clock here would also mean a demo
+        // left open long enough could silently change its own answer mid-tour.
         hasOpenOrder: mine.some(
-          (o) => OPEN_ORDER_STATUSES.includes(o.status) && orderIsActive(o, new Date()),
+          (o) => OPEN_ORDER_STATUSES.includes(o.status) && orderIsActive(o, new Date(nowMs)),
         ),
         hasEngagedOrder: mine.some((o) => ENGAGED_ORDER_STATUSES.includes(o.status)),
         sellerAllowsPostOrder: sellerRef.current.postOrderMessaging,
       });
     },
-    [ordersRef, sellerRef],
+    [ordersRef, sellerRef, nowMs],
   );
 
   /**
@@ -312,31 +336,33 @@ export function DemoSandbox({ locale, children }: { locale: Locale; children: Re
         const decision = decideOrderTransition(order, "accept", "seller");
         if (!decision.ok) return { status: "error" as const, error: "orderInvalidTransition" as const };
 
-        // The real action's per-item pricing rule, reproduced exactly: a blank
-        // field is legal only when a snapshot already exists, and a QUOTE item
-        // has nothing to fall back to.
-        const priced: DemoOrder["items"] = [];
-        for (const item of order.items) {
-          const raw = String(formData.get(`price-${item.id}`) ?? "").trim();
-          if (raw === "") {
-            if (item.priceCentsSnapshot === null) {
-              return { status: "error" as const, error: "priceRequired" as const };
-            }
-            priced.push(item);
-            continue;
-          }
-          const cents = parseTtdToCents(raw);
-          if (cents === null) return { status: "error" as const, error: "priceInvalid" as const };
-          priced.push({ ...item, priceCentsSnapshot: cents });
-        }
-
-        const subtotalCents = priced.reduce(
-          (sum, it) => sum + (it.priceCentsSnapshot ?? 0) * it.quantity,
-          0,
+        // ⚠ The REAL rule, imported — not reproduced. `resolveAcceptPricing`
+        // is the same pure function `lib/actions/order.ts` calls, so a blank
+        // field on a QUOTE item refuses with `priceRequired` here for exactly
+        // the reason it does in production, and a change to the rule cannot
+        // leave this demo teaching the old one. The first version of this
+        // sandbox hand-copied the loop; Apparel's own PD-S9 review found that
+        // pattern silently drifted from the product it claimed to reproduce.
+        const pricing = resolveAcceptPricing(
+          order.items,
+          (id) => {
+            const raw = formData.get(`price-${id}`);
+            return raw === null ? null : String(raw);
+          },
+          parseTtdToCents,
         );
+        if (!pricing.ok) return { status: "error" as const, error: pricing.error };
+
         setOrders((prev) =>
           prev.map((o) =>
-            o.id !== orderId ? o : { ...o, status: decision.status, items: priced, subtotalCents },
+            o.id !== orderId
+              ? o
+              : {
+                  ...o,
+                  status: decision.status,
+                  items: pricing.resolved,
+                  subtotalCents: pricing.subtotalCents,
+                },
           ),
         );
         return { status: "ok" as const };

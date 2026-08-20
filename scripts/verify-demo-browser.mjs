@@ -387,6 +387,14 @@ async function run() {
     {
       const res = await page.request.get(`${BASE}/api/food/demo-media/doubles.webp`);
       check(res.status() === 200, "a committed demo photo is served by /api/food/demo-media", `status ${res.status()}`);
+      // These filenames are slot names, not content hashes, so `immutable`
+      // would strand a replaced photo in caches. See the route's own note.
+      const cc = res.headers()["cache-control"] ?? "";
+      check(
+        cc.includes("must-revalidate") && !cc.includes("immutable"),
+        "demo photos are cached but revalidated - a slot name is not a content hash",
+        cc,
+      );
       const bad = await page.request.get(`${BASE}/api/food/demo-media/../.env`);
       check(bad.status() === 404, "an off-manifest filename is refused - the allow-list IS the traversal guard", `status ${bad.status()}`);
     }

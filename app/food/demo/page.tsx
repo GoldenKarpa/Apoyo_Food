@@ -65,5 +65,17 @@ export default async function FoodDemoPage() {
   // commit, not a follow-up pass). Food's seller surface defaults to `es`.
   const locale = (await getLocale()) as Locale;
 
-  return <DemoShell locale={locale} />;
+  // ⚠ ONE epoch, resolved here and threaded all the way down to the fixtures.
+  //
+  // The fixtures are relative to "now" (a request whose respondBy has not
+  // passed, a booking three days out), and they are built inside `useState`
+  // initializers — which React runs ONCE on the server render and AGAIN on
+  // hydration. Calling `Date.now()` in there produces two different fixture
+  // sets for the same page and an intermittent hydration mismatch on anything
+  // near a minute boundary. Resolving it once on the server makes both passes
+  // identical by construction rather than by luck. (Apparel's PD-S9 review
+  // found this first, in the same shape.)
+  const nowMs = Date.now();
+
+  return <DemoShell locale={locale} nowMs={nowMs} />;
 }

@@ -33,7 +33,7 @@ import {
 } from "@/lib/demo/fixtures";
 import { ORDER_STATUS_TONE } from "@/lib/order-status-labels";
 import { formatCentsTtd } from "@/lib/money";
-import { formatFulfillmentInstant } from "@/lib/time";
+import { formatFulfillmentInstant, formatMediumDate } from "@/lib/time";
 import { portalPageUrl } from "@/lib/links";
 import type { Locale } from "@/i18n/request";
 
@@ -92,10 +92,10 @@ const SECTION_IDS: readonly Section[] = ["orders", "listings", "messages", "stor
  */
 const INFORMATIONAL: ReadonlySet<Section> = new Set<Section>(["stories"]);
 
-export function DemoShell({ locale }: { locale: Locale }) {
+export function DemoShell({ locale, nowMs }: { locale: Locale; nowMs: number }) {
   return (
-    <DemoSandbox locale={locale}>
-      <DemoShellBody locale={locale} />
+    <DemoSandbox locale={locale} nowMs={nowMs}>
+      <DemoShellBody locale={locale} nowMs={nowMs} />
     </DemoSandbox>
   );
 }
@@ -146,7 +146,7 @@ function DemoLinkGuard({
   return <div onClickCapture={handle}>{children}</div>;
 }
 
-function DemoShellBody({ locale }: { locale: Locale }) {
+function DemoShellBody({ locale, nowMs }: { locale: Locale; nowMs: number }) {
   const t = useTranslations("foodDemo");
   const { seller, orders, listings, threads, notice, showNotice, dismissNotice, threadAccessFor } =
     useDemoSandbox();
@@ -157,7 +157,8 @@ function DemoShellBody({ locale }: { locale: Locale }) {
   /** Which conversation is open, or null for the list. Messages only. */
   const [openThreadId, setOpenThreadId] = useState<string | null>(null);
 
-  const stories = useMemo(() => initialStories(locale), [locale]);
+  // Same server-resolved epoch as everything else — see `page.tsx`.
+  const stories = useMemo(() => initialStories(locale, new Date(nowMs)), [locale, nowMs]);
   const highlights = useMemo(() => initialHighlights(locale), [locale]);
 
   const openOrder = orders.find((o) => o.id === openOrderId) ?? null;
@@ -639,9 +640,7 @@ function DemoThreadView({
         </button>
         <h2 className="font-display text-display font-semibold text-ink">{thread.clientLabel}</h2>
         <p className="text-caption text-ink-muted">
-          {t("since", {
-            date: new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(thread.createdAt),
-          })}
+          {t("since", { date: formatMediumDate(thread.createdAt, locale) })}
         </p>
       </div>
 

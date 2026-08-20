@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 
+import { formatMessageInstant } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
 export interface ThreadListRow {
@@ -83,9 +84,8 @@ export function ThreadList({
               )}
               {thread.lastMessageAt && (
                 <span className="text-caption text-ink-muted">
-                  {new Intl.DateTimeFormat(locale, { dateStyle: "short", timeStyle: "short" }).format(
-                    thread.lastMessageAt,
-                  )}
+                  {/* Pinned — same reasoning as `<OrderThread>`'s. */}
+                  {formatMessageInstant(thread.lastMessageAt, locale)}
                 </span>
               )}
             </Link>

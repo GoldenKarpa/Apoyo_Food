@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { FoodImage } from "@/components/food-image";
 import { ReportMessageSheet } from "@/components/report-message-sheet";
 import { resolveTranslatedText } from "@/lib/bilingual";
+import { formatMessageInstant } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/request";
 
@@ -103,7 +104,12 @@ export function OrderThread({
               <ReportMessageSheet messageId={message.id} />
             </div>
             <span className="px-1 text-caption text-ink-muted">
-              {new Intl.DateTimeFormat(viewerLocale, { dateStyle: "short", timeStyle: "short" }).format(message.createdAt)}
+              {/* ⚠ Pinned to the fixed zone, never a bare formatter — see
+                  `lib/time.ts`'s `formatMessageInstant`. Unpinned, this showed the
+                  WRONG DAY for anything sent after 20:00 local, and (since
+                  PD-S10 made this component isomorphic) mismatched between the
+                  server pass and hydration. */}
+              {formatMessageInstant(message.createdAt, viewerLocale)}
               {showOrderContext && message.order && ` · ${message.order.orderNumber}`}
               {own && showReadReceipts && message.readAt && ` · ${t("read")}`}
             </span>

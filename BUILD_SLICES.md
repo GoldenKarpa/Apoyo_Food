@@ -1733,8 +1733,48 @@ no provider mounted the context value IS the real actions.
   inventing revenue numbers would be its least honest screen). Fresh Today is informational inside
   an `inert` wrapper.
 
+**Addendum, same day — five fixes carried across from Apparel's own PD-S9 review.** That review
+(`Apoyo-Apparel 92edb13`) found six defects in the sibling demo; four were shared with this one by
+construction, plus one class Food had in a different place. Fixed here before either ships:
+
+1. **Every date formatter is now pinned to `FOOD_TIMEZONE`.** `<OrderThread>` and `<ThreadList>`
+   used a bare `new Intl.DateTimeFormat(locale, …)`. That was a **pre-existing live bug** — with no
+   `timeZone`, Node formats in the server's zone, and T&T is UTC-4, so anything sent after 20:00
+   local rendered as the following DAY on the surface whose entire job is "when did this customer
+   write to me". PD-S10 made both components isomorphic, which added a second failure on top: an
+   unpinned formatter reads the UTC server on the first pass and the visitor's own device zone on
+   hydration. `lib/time.ts` gains `formatMessageInstant` / `formatMediumDate`, and the module
+   header's existing rule ("never use server-local time for anything a user sees") now has
+   something to reach for instead of the raw constructor.
+2. **One epoch, resolved on the server.** The fixtures are relative to "now" and were built inside
+   `useState` initializers — which React runs once on the server render and again on hydration, so
+   `new Date()` in there seeded two different fixture sets for one page. `app/food/demo/page.tsx`
+   resolves `nowMs` once and threads it down; the gate is evaluated at that same pinned instant, so
+   both passes agree by construction rather than by luck.
+3. ⚠ **`resolveAcceptPricing` extracted, and the sandbox's hand-copy deleted.** The demo's
+   `acceptOrder` re-implemented E5's per-item pricing rule and a comment claimed it "reproduced [it]
+   exactly". It did — *that day*. Apparel's review found precisely this pattern having silently
+   drifted from the product it claimed to mirror, on the screen a prospective seller judges the
+   business model by. The rule now lives once, pure, in `lib/order-form.ts`, and both
+   `lib/actions/order.ts` and the sandbox call it. ⚠ The real action's WRITES are unchanged: the
+   helper returns `changed` (only items the seller actually retyped) alongside `resolved` and
+   `subtotalCents`, so blank fields still are not re-written with their own value, and the
+   authoritative subtotal is still recomputed from fresh rows inside the transaction.
+   `npm run verify:orders` — 41/41 against a real database — is what proves the live path survived.
+4. **`/api/food/demo-media` no longer claims `immutable`.** These filenames are slot names, not
+   content hashes, so the same URL legitimately serves different bytes after a re-run of the asset
+   build; `immutable` would have stranded a replaced photo in caches for the full year the
+   `max-age` allowed. Now one day plus `must-revalidate`, with an assertion.
+5. **`getDemoAccessMode`'s `res.json()` is guarded.** A 200 carrying a non-JSON body (an nginx
+   error page, a proxy interstitial) made `res.json()` throw straight out of a function whose
+   entire contract is to fail closed — a 500 where the demo is meant to render a 404. Same gap and
+   same fix as the bare `try` around `fetch` already recorded on `getProviderRegistrationConfig`.
+
+**Not applicable to Food:** Apparel's null-photo `src:""` defect — `<MealCard>` already treats "no
+photo" as a real state (a seller mid-onboarding) and renders its own placeholder.
+
 **Verification — run with Postgres DOWN, on purpose.** `npm run verify:demo`
-(`scripts/verify-demo-browser.mjs`) — **47 assertions, all passing** through a real browser: the
+(`scripts/verify-demo-browser.mjs`) — **48 assertions, all passing** through a real browser: the
 guard in all three modes (including that `APPROVED_PROVIDER` reads the ecosystem API and not the
 empty JWT claim), the quote-price accept AND its `priceRequired` refusal, decline with a reason,
 complete, cancel, the pause switch, a real reply, the composer-visibility gate in both directions
@@ -1742,7 +1782,10 @@ for both customers, the three PC-1 settings, the informational section's `inert`
 frame, both locales, refresh-resets, no sandbox alarm, no failed request, no console error, and no
 link escaping to a real dashboard route. A demo that works with no database at all is the cleanest
 proof it touches none. `tsc --noEmit` clean, `next lint` clean (zero warnings), `next build` clean
-with `/food/demo` and `/api/food/demo-media/[file]` both present, `vitest` 27/27.
+with `/food/demo` and `/api/food/demo-media/[file]` both present, `vitest` 27/27. After the
+addendum above, re-run against a real database as well: `verify:orders` 41/41, `verify:threads`
+59/59, `db:verify` 54/54 — the live order-accept and thread-gate paths both survived their
+extractions.
 
 ⚠ **Food has no `POST_DEPLOY_CHECKLIST.md`-equivalent readiness doc at all** (`APOYO_BACKLOG.md`
 B1 already tracks this). Unlike Apparel's PT-3 there is no existing checklist to clear before
@@ -1760,7 +1803,11 @@ Files created: `lib/actions/registry.tsx`, `lib/thread-access.ts`, `lib/demo/acc
 `scripts/build-demo-assets.mjs`, `scripts/verify-demo-browser.mjs`, `demo-assets/*` (8 webps +
 `manifest.json`).
 
-Files modified: `lib/ecosystem.ts`, `lib/thread.ts`, `lib/media-url.ts`,
+Files created (addendum): `POST_DEPLOY_CHECKLIST.md` — Food's first readiness doc, closing
+`APOYO_BACKLOG.md` B1's "Food has no readiness doc at all".
+
+Files modified: `lib/ecosystem.ts`, `lib/thread.ts`, `lib/media-url.ts`, `lib/time.ts`,
+`lib/order-form.ts`, `lib/actions/order.ts`, `app/food/(dashboard)/messages/[id]/page.tsx`,
 `components/order-thread.tsx`, `components/thread-list.tsx`,
 `components/thread-composer-section.tsx`, `components/order-message-composer.tsx`,
 `components/order-reason-action.tsx`, `components/order-simple-action.tsx`,

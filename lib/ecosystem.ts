@@ -399,7 +399,21 @@ export async function getDemoAccessMode(): Promise<DemoAccessMode> {
     return "OFF";
   }
 
-  const data = (await res.json()) as { demo?: { mode?: string } };
+  // ⚠ The parse is guarded too, and that is not belt-and-braces. This
+  // function's ENTIRE contract is to fail closed, and `res.json()` throws on a
+  // 200 whose body is not JSON — an nginx error page, a proxy interstitial, an
+  // HTML 200 from the wrong upstream. Unguarded, that throw escapes a function
+  // that has promised never to, and the demo page 500s where it is supposed to
+  // render a 404. Same gap, same fix, as the bare `try` around `fetch` above
+  // and on `getProviderRegistrationConfig`. (Found by Apparel's PD-S9 review in
+  // its own copy of this reader.)
+  let data: { demo?: { mode?: string } };
+  try {
+    data = (await res.json()) as { demo?: { mode?: string } };
+  } catch (err) {
+    console.error("[ecosystem] demo access returned an unparseable body — failing closed", err);
+    return "OFF";
+  }
   // An unrecognised or absent mode reads as OFF, never as "probably fine".
   const raw = data.demo?.mode;
   const mode: DemoAccessMode = DEMO_MODES.includes(raw ?? "") ? (raw as DemoAccessMode) : "OFF";

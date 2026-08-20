@@ -9,6 +9,7 @@ import { SignedOutNotice } from "@/components/seller/signed-out-notice";
 import { loadSellerWorkspace } from "@/lib/seller";
 import { markThreadNotificationsRead } from "@/lib/notifications";
 import { markThreadRead, resolveThreadAccess, threadDetail } from "@/lib/thread";
+import { formatMediumDate } from "@/lib/time";
 import type { Locale } from "@/i18n/request";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -61,7 +62,7 @@ export default async function SellerThreadPage({ params }: { params: Promise<{ i
           {thread.clientEmail ?? t("unknownCustomer")}
         </h1>
         <p className="text-caption text-ink-muted">
-          {t("since", { date: new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(thread.createdAt) })}
+          {t("since", { date: formatMediumDate(thread.createdAt, locale) })}
         </p>
       </div>
 

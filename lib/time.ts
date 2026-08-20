@@ -31,3 +31,41 @@ export function formatFulfillmentInstant(instant: Date, locale: string): string 
     minute: "2-digit",
   }).format(instant);
 }
+
+/**
+ * A conversation timestamp — short date + time, in the fixed zone.
+ *
+ * ⚠ **This exists because a bare `new Intl.DateTimeFormat(locale, …)` is a bug
+ * in two independent ways**, and `<OrderThread>`/`<ThreadList>` had it in both
+ * forms until PD-S10 (the defect Apparel found first, in the same components'
+ * equivalents):
+ *
+ *  1. **Wrong DAY for the seller.** With no `timeZone`, Node formats in the
+ *     server's zone. T&T is UTC-4, so anything sent after 20:00 local renders
+ *     as the following date — on a surface whose whole job is "when did this
+ *     customer write to me".
+ *  2. **A hydration mismatch, once a component is isomorphic.** PD-S10 made
+ *     both components render on the client as well as the server, and an
+ *     unpinned formatter reads the UTC server on the first pass and the
+ *     visitor's own device zone on hydration. React then reconciles two
+ *     different strings for the same instant.
+ *
+ * The module header already forbids this in words ("Never use server-local time
+ * for anything a user sees"); these helpers make it forbidden in practice, so a
+ * caller has something to reach for other than the raw constructor.
+ */
+export function formatMessageInstant(instant: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: FOOD_TIMEZONE,
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(instant);
+}
+
+/** A calendar day in the fixed zone — "talking since 27 Jul 2026". */
+export function formatMediumDate(instant: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: FOOD_TIMEZONE,
+    dateStyle: "medium",
+  }).format(instant);
+}
