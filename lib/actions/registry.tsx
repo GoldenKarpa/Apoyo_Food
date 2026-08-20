@@ -10,6 +10,7 @@ import {
   setPostOrderMessaging,
 } from "@/lib/actions/message-settings";
 import { toggleListingActive } from "@/lib/actions/upsert-listing";
+import { uploadMessageAttachment } from "@/lib/message-attachment";
 
 /**
  * PD-S10 — the ONE seam that makes Food's seller demo interactive without a
@@ -95,6 +96,19 @@ export interface FoodActions {
   setChatNotificationDelivery: typeof setChatNotificationDelivery;
   // ── Catalogue (Slice 14) ──────────────────────────────────────────────────
   toggleListingActive: typeof toggleListingActive;
+  /**
+   * ⚠ The one key here that is NOT a Server Action — it is a plain `fetch` to
+   * the media-upload route. It belongs in this record anyway, and leaving it
+   * out was a real hole found at PD-S10's review: it is a MUTATION on a
+   * demo-rendered component, so a demo that could not intercept it performed a
+   * genuine authenticated upload, wrote real files, and spent a real
+   * rate-limit budget while promising the visitor that nothing is saved.
+   *
+   * The rule this record encodes is "every mutation the demo can reach goes
+   * through the seam", not "every Server Action goes through the seam". A
+   * future mutation that happens to be a fetch belongs here too.
+   */
+  uploadMessageAttachment: typeof uploadMessageAttachment;
 }
 
 export const REAL_FOOD_ACTIONS: FoodActions = {
@@ -109,6 +123,7 @@ export const REAL_FOOD_ACTIONS: FoodActions = {
   setMessageReadReceipts,
   setChatNotificationDelivery,
   toggleListingActive,
+  uploadMessageAttachment,
 };
 
 const FoodActionsContext = createContext<FoodActions>(REAL_FOOD_ACTIONS);

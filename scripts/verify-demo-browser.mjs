@@ -395,8 +395,27 @@ async function run() {
         "demo photos are cached but revalidated - a slot name is not a content hash",
         cc,
       );
-      const bad = await page.request.get(`${BASE}/api/food/demo-media/../.env`);
-      check(bad.status() === 404, "an off-manifest filename is refused - the allow-list IS the traversal guard", `status ${bad.status()}`);
+      // WARNING: a literal `../` here is COLLAPSED BY THE URL PARSER before the
+      // request is ever sent, so the old version of this assertion resolved to
+      // `/api/food/.env`, never reached the route, and would have passed with
+      // the allow-list deleted. Percent-encoding the dots is what actually
+      // delivers the traversal attempt to the handler. The plain off-manifest
+      // name is the second half: the allow-list refuses on membership, so it
+      // does not matter which shape the attempt takes.
+      const traversal = await page.request.get(
+        `${BASE}/api/food/demo-media/%2e%2e%2f%2e%2e%2f.env`,
+      );
+      check(
+        traversal.status() === 404,
+        "an ENCODED traversal attempt reaches the route and is refused",
+        `status ${traversal.status()}`,
+      );
+      const offManifest = await page.request.get(`${BASE}/api/food/demo-media/secret.webp`);
+      check(
+        offManifest.status() === 404,
+        "an off-manifest filename is refused - the allow-list IS the guard",
+        `status ${offManifest.status()}`,
+      );
     }
 
     // == 4. Orders - the quote accept, and its refusal ========================
@@ -514,6 +533,21 @@ async function run() {
       (await page.locator("body").innerText()).includes("pencil it in"),
       "the reply appears in the transcript",
     );
+    // The paperclip is the ONE mutation that is a fetch rather than a Server
+    // Action. Before PD-S10's review it escaped the seam entirely and performed
+    // a REAL upload from inside the demo; this asserts it now goes through the
+    // sandbox and says so.
+    await page.locator('input[type="file"]').first().setInputFiles({
+      name: "kitchen.webp",
+      mimeType: "image/webp",
+      buffer: Buffer.from([0x52, 0x49, 0x46, 0x46]),
+    });
+    check(
+      await appears(page, "[data-demo-notice]"),
+      "attaching a photo is answered by the sandbox, and the demo says the visitor's own file was not kept",
+    );
+    await page.locator('[aria-label="Dismiss"]').click();
+
     await shot(page, "demo-thread");
     await page.locator("[data-demo-thread-back]").click();
     await page.waitForTimeout(300);
@@ -707,7 +741,10 @@ async function run() {
       "the sandbox raised no fixture-mismatch alarm (plan R1)",
       "see console for [demo-sandbox] lines",
     );
-    const realApi = failedResponses.filter((r) => !r.includes("/api/food/demo-media/.."));
+    // The two deliberate 404 probes above are the only expected failures.
+    const realApi = failedResponses.filter(
+      (r) => !/\/api\/food\/demo-media\/(%2e|secret\.webp)/.test(r),
+    );
     check(
       realApi.length === 0,
       "no request failed - with Postgres DOWN, this also proves no control reached a real Server Action",

@@ -2,7 +2,11 @@ import { useTranslations } from "next-intl";
 
 import { FoodImage } from "@/components/food-image";
 import { ReportMessageSheet } from "@/components/report-message-sheet";
-import { resolveTranslatedText } from "@/lib/bilingual";
+// ⚠ `@/lib/bilingual-read`, NOT `@/lib/bilingual`. This component is
+// isomorphic, so its imports reach the browser bundle, and the parent module
+// pulls in the kap64-translate HTTP client, which has no business there. See
+// that module's header.
+import { resolveTranslatedText } from "@/lib/bilingual-read";
 import { formatMessageInstant } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/request";

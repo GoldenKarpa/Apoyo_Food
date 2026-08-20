@@ -1773,8 +1773,65 @@ construction, plus one class Food had in a different place. Fixed here before ei
 **Not applicable to Food:** Apparel's null-photo `src:""` defect — `<MealCard>` already treats "no
 photo" as a real state (a seller mid-onboarding) and renders its own placeholder.
 
+**Second addendum — a code review of PD-S10 itself, and the one finding that mattered.**
+Apparel's review was of Apparel; this is the same treatment applied to Food's own diff. Five
+findings, all real, all fixed. `verify:demo` is now **50 assertions**.
+
+1. ⚠ **The photo attachment escaped the actions seam entirely, and it was writing real files.**
+   `<OrderMessageComposer>`'s upload is the ONE mutation on the conversation surface that is a
+   `fetch` rather than a Server Action — and the seam was built around Server Actions, so the
+   paperclip inside `/food/demo` performed a **genuine authenticated POST** to
+   `/api/food/media/upload`: real WebP variants written into the server's `uploads/` tree, a real
+   rate-limit budget spent, and orphaned files no retention sweep will ever collect — under a
+   banner promising that nothing is saved. It is invisible to the Postgres-down run because that
+   route needs no database, and `verify-demo` had never clicked it.
+
+   Extracted to `lib/message-attachment.ts` and added to `FoodActions`; the sandbox answers with a
+   committed fixture photo and raises a notice saying the visitor's own file was not kept, so the
+   control demonstrably works AND the substitution reads as honesty rather than a bug. ⚠ **The
+   rule the registry encodes is "every mutation the demo can reach goes through the seam", not
+   "every Server Action goes through the seam"** — the type's own header now says so. Adding the
+   key made the sandbox stop compiling until it was implemented, which is the total record doing
+   exactly its job.
+2. **The demo's order detail showed the whole conversation.** The real `/food/orders/[id]` renders
+   `order.messages` — the order-scoped relation — while `/food/messages/[id]` renders the whole
+   thread with `showOrderContext`. The demo handed the full thread to both, so opening FD-2041
+   displayed a message about FD-2038, unlabelled. Now filtered to the order, matching the page it
+   claims to be.
+3. **Making `<OrderThread>` isomorphic put the translation client in the browser bundle.**
+   `lib/bilingual.ts` imports `lib/translate.ts` (the kap64-translate HTTP client) at module scope
+   for the WRITE half's sake; the component only ever needed the read half, which was harmless
+   while it was server-only. Split into `lib/bilingual-read.ts` (imports nothing but a type,
+   re-exported from the parent so every caller is unchanged) — the same discipline
+   `lib/order-message-form.ts`'s header already spells out. No secret leaked; it was dead server
+   code shipped to every visitor.
+4. **The demo's unread badge never cleared.** Nothing played `markThreadRead`'s part, so Ayanna's
+   "1 new" survived reading her thread. The sandbox now stamps counterpart messages on open —
+   regardless of `messageReadReceipts`, because that setting governs DISCLOSURE only and the
+   seller's own counts read the same column (`lib/thread.ts` is explicit).
+5. ⚠ **A security assertion that could never fail.** `verify-demo`'s traversal probe requested
+   `/api/food/demo-media/../.env`, and the URL parser **collapses `../` before the request is
+   sent** — it resolved to `/api/food/.env`, never reached the route, and would have passed with
+   the allow-list deleted. Now percent-encoded so it actually arrives, plus a separate
+   off-manifest-name probe. A test that cannot fail is worse than no test, because it is counted.
+
+**The review also confirmed, rather than assumed, that the first addendum's fixes hold:**
+`resolveAcceptPricing` is behaviour-identical to the loop it replaced (same `changed` set, blank
+fields still not re-written, in-transaction subtotal untouched), the `nowMs` threading genuinely
+removes the SSR/hydration divergence, no unpinned formatter survives anywhere in the repo, and the
+`lib/thread-access.ts` extraction leaves all twelve importers working with no demo-tree component
+reaching Prisma at runtime.
+
+**One class generalised past the demo.** Defect 5's unguarded `res.json()` was not unique to
+`getDemoAccessMode`: `getProviderRegistrationConfig` and `getLaunchConfig` had it too, and both are
+**live buyer-facing** reads that document themselves as failing closed. `<SiteFooter>` calls the
+first on every storefront page — the same shape as the Slice 16 bug where an uncaught throw 500'd
+the entire `(client)` route group. Both are now guarded. `lib/media/serve.ts`'s `immutable` header
+was checked and is CORRECT (storage keys carry a random id and are never reused), which is the
+distinction defect 4 turns on.
+
 **Verification — run with Postgres DOWN, on purpose.** `npm run verify:demo`
-(`scripts/verify-demo-browser.mjs`) — **48 assertions, all passing** through a real browser: the
+(`scripts/verify-demo-browser.mjs`) — **50 assertions, all passing** through a real browser: the
 guard in all three modes (including that `APPROVED_PROVIDER` reads the ecosystem API and not the
 empty JWT claim), the quote-price accept AND its `priceRequired` refusal, decline with a reason,
 complete, cancel, the pause switch, a real reply, the composer-visibility gate in both directions
@@ -1784,7 +1841,7 @@ link escaping to a real dashboard route. A demo that works with no database at a
 proof it touches none. `tsc --noEmit` clean, `next lint` clean (zero warnings), `next build` clean
 with `/food/demo` and `/api/food/demo-media/[file]` both present, `vitest` 27/27. After the
 addendum above, re-run against a real database as well: `verify:orders` 41/41, `verify:threads`
-59/59, `db:verify` 54/54 — the live order-accept and thread-gate paths both survived their
+59/59, `verify:order-thread` 31/31, `db:verify` 54/54 — the live order-accept and thread-gate paths both survived their
 extractions.
 
 ⚠ **Food has no `POST_DEPLOY_CHECKLIST.md`-equivalent readiness doc at all** (`APOYO_BACKLOG.md`
@@ -1796,7 +1853,8 @@ read as a clean bill of health.
 hand-maintained (plan R5) and adding a vertical to it is the deliberate act of saying the demo
 exists now. Neither this nor Apparel's is deployed, so both stay out until they are.
 
-Files created: `lib/actions/registry.tsx`, `lib/thread-access.ts`, `lib/demo/access.ts`,
+Files created: `lib/actions/registry.tsx`, `lib/thread-access.ts`, `lib/bilingual-read.ts`,
+`lib/message-attachment.ts`, `lib/demo/access.ts`,
 `lib/demo/fixtures.ts`, `components/demo/demo-sandbox.tsx`, `components/demo/demo-shell.tsx`,
 `components/seller/order-summary-row.tsx`, `components/seller/listing-summary-row.tsx`,
 `app/food/demo/page.tsx`, `app/api/food/demo-media/[file]/route.ts`,

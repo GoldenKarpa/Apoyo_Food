@@ -1107,6 +1107,7 @@
     "messagesBlurb": "Una conversación por cliente que sobrevive a cualquier pedido — y los ajustes que deciden quién puede empezarla.",
     "messagesEmpty": "Todavía no hay conversaciones.",
     "messagesLabel": "Mensajes",
+    "noticeAttachment": "Esa foto no se subió — la demostración nunca guarda un archivo. En su lugar se adjuntó una foto de ejemplo para que vea cómo queda.",
     "noticeListingEditor": "El editor de platos es una pantalla real, pero queda fuera de este recorrido — la demostración lo mantiene en una sola página para que no pierda lo que ya hizo.",
     "optedOutNotice": "Usted desactivó los mensajes después de cerrar un pedido. Los clientes sin nada abierto pueden seguir leyendo la conversación, pero no pueden escribirle.",
     "ordersBlurb": "Aquí llegan las solicitudes. Acepte una — poniendo el precio cuando el plato es por cotización —, recházela, márquela como entregada o cancélela. Los botones que ve dependen del estado real del pedido.",

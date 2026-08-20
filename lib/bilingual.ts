@@ -23,24 +23,20 @@ import type { Locale } from "@/i18n/request";
  * covers every future reader, and Part E6 asks for exactly that.
  */
 
+/**
+ * ⚠ The READ half lives in `lib/bilingual-read.ts` — a module importing nothing
+ * but a type — and is re-exported here so every existing importer keeps working
+ * and there is exactly one definition. It was split out at PD-S10's review
+ * because THIS file imports the translation HTTP client at module scope, and
+ * `<OrderThread>` (isomorphic since PD-S10) would otherwise drag that whole
+ * graph into the browser bundle. See that file's header.
+ */
+export { resolveTranslatedText } from "@/lib/bilingual-read";
+export type { TranslatedText, ResolvedText } from "@/lib/bilingual-read";
+
+import type { TranslatedText } from "@/lib/bilingual-read";
+
 const OTHER_LOCALE: Record<Locale, Locale> = { en: "es", es: "en" };
-
-/** The three columns `FoodOrderMessage` stores for a piece of authored text. */
-export interface TranslatedText {
-  originalText: string;
-  originalLocale: Locale;
-  translations: Record<string, string>;
-}
-
-export interface ResolvedText {
-  /** What to render prominently for this viewer. */
-  text: string;
-  /** Always the author's original, for the gentler secondary line / toggle. */
-  original: string;
-  originalLocale: Locale;
-  /** True only when `text` is a real translation distinct from `original`. */
-  isTranslated: boolean;
-}
 
 /**
  * Send-time translation. Computes the other locale's translation once and
@@ -83,34 +79,3 @@ export async function prepareTranslatedText(
   }
 }
 
-/**
- * Read-time resolution. **Makes zero network calls, ever** — that reads are pure
- * is the entire point of storing the translation once.
- *
- * Falls back to the original whenever no translation applies, whether because
- * the author already wrote in the viewer's locale or because the send-time
- * translation never landed (service down). Both degrade identically and
- * silently, which is the intended behaviour: the reader sees real words, never
- * an error or an empty bubble.
- */
-export function resolveTranslatedText(
-  message: { originalText: string | null; originalLocale: string | null; translations: unknown },
-  viewerLocale: Locale,
-): ResolvedText | null {
-  if (!message.originalText) return null;
-
-  const originalLocale = (message.originalLocale as Locale | null) ?? viewerLocale;
-  const original = message.originalText;
-
-  if (originalLocale === viewerLocale) {
-    return { text: original, original, originalLocale, isTranslated: false };
-  }
-
-  const translations = (message.translations ?? {}) as Record<string, string>;
-  const translated = translations[viewerLocale];
-  if (!translated) {
-    return { text: original, original, originalLocale, isTranslated: false };
-  }
-
-  return { text: translated, original, originalLocale, isTranslated: true };
-}

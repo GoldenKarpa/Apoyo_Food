@@ -62,7 +62,7 @@ The demo is invisible until an admin moves `DemoAccessConfig` off `OFF` (`VPS_PE
 | C2 | **`curl -I https://portal.apoyolime.com/api/food/demo-media/doubles.webp` → `200 image/webp`.** | Every demo photo depends on `/api/food/*` being proxied on the portal host. It is (4 locations, live since 2026-08-09) — but `VPS_DIRECTORY_MAP.md` carried a stale "2 locations" claim until 2026-08-20, so confirm rather than trust. | ☐ |
 | C3 | ⚠ **B1 and B3 ticked** — the real sign-in and the real order round trip. | In `VERIFIED_EMAIL` mode the demo exists to help someone decide **which vertical to apply for**. If they sample Food, decide to apply, and land on a broken door, the demo has converted interest into a dead end — worse than not offering it. This is the same reasoning that makes PT-3 gate Apparel's demo. | ☐ |
 | C4 | **`/food/apply` reachable and functional.** | The demo's whole conversion path. ⚠ That URL is **not this app** — US-S1 carved it out to portal-web via a dedicated nginx block. If it serves Food's own 404, the nginx drop-in is missing and the bug is not in this repo. | ☐ |
-| C5 | **Walk the demo once in production, in both languages.** | `npm run verify:demo` (48 assertions, run with Postgres down) proves the sandbox. It cannot prove nginx routing, the real portal session, or that the photos survived the deploy. | ☐ |
+| C5 | **Walk the demo once in production, in both languages.** | `npm run verify:demo` (50 assertions, run with Postgres down) proves the sandbox. It cannot prove nginx routing, the real portal session, or that the photos survived the deploy. | ☐ |
 
 ---
 

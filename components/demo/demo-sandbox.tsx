@@ -26,6 +26,7 @@ import {
 } from "@/lib/thread-access";
 import {
   DEMO_SELLER_USER_ID,
+  demoAttachmentPhoto,
   initialListings,
   initialOrders,
   initialSeller,
@@ -143,6 +144,8 @@ export interface DemoSandboxValue {
   notice: string | null;
   showNotice: (text: string) => void;
   dismissNotice: () => void;
+  /** Stand-in for `markThreadRead` — see the sandbox's own note. */
+  markThreadRead: (threadId: string) => void;
   /**
    * The REAL PC-1 gate, evaluated over the fixtures for one buyer. Exposed so
    * the shell can hand the answer to `<ThreadComposerSection>` exactly as the
@@ -207,6 +210,36 @@ export function DemoSandbox({
     );
     setProblems((prev) => (prev.includes(label) ? prev : [...prev, label]));
   }, []);
+
+  /**
+   * The demo's stand-in for `markThreadRead` — the seller opening a
+   * conversation stamps the BUYER's messages, never their own.
+   *
+   * ⚠ Without this the inbox badge never cleared: a visitor read Ayanna's
+   * thread, went back, and still saw "1 new" forever. The real product marks
+   * on render of the thread page, and the seller's own unread counts read the
+   * same column the buyer's "Read" line does — which is also why this must run
+   * regardless of `messageReadReceipts` (that setting governs DISCLOSURE only,
+   * `lib/thread.ts` is explicit about it).
+   */
+  const markThreadRead = useCallback(
+    (threadId: string) => {
+      const now = new Date();
+      setThreads((prev) =>
+        prev.map((th) =>
+          th.id !== threadId
+            ? th
+            : {
+                ...th,
+                messages: th.messages.map((m) =>
+                  m.senderUserId !== DEMO_SELLER_USER_ID && !m.readAt ? { ...m, readAt: now } : m,
+                ),
+              },
+        ),
+      );
+    },
+    [setThreads],
+  );
 
   /**
    * ⚠ The real gate, over fixture rows. `hasOpenOrder` runs each candidate
@@ -429,6 +462,19 @@ export function DemoSandbox({
         return { ok: true as const };
       },
 
+      // ── The one non-Server-Action mutation ────────────────────────────────
+      uploadMessageAttachment: async () => {
+        // ⚠ NOTHING is uploaded. The real implementation POSTs the file to the
+        // media-upload route, which writes real WebP variants to disk under a
+        // real session and a real rate-limit budget — none of which belongs in
+        // a demo whose banner promises that nothing is saved. Answering with a
+        // committed fixture photo keeps the control genuinely working; the
+        // notice is what tells the visitor their own photo was not kept, so the
+        // substitution reads as the demo being honest rather than as a bug.
+        setNotice(t("noticeAttachment"));
+        return { ok: true as const, key: demoAttachmentPhoto().src };
+      },
+
       // ── Catalogue ─────────────────────────────────────────────────────────
       toggleListingActive: async (listingId) => {
         const listing = listingsRef.current.find((l) => l.id === listingId);
@@ -458,6 +504,7 @@ export function DemoSandbox({
     reportProblem,
     threadAccessFor,
     locale,
+    t,
   ]);
 
   const value = useMemo<DemoSandboxValue>(
@@ -471,8 +518,9 @@ export function DemoSandbox({
       showNotice: setNotice,
       dismissNotice: () => setNotice(null),
       threadAccessFor,
+      markThreadRead,
     }),
-    [seller, orders, listings, threads, problems, notice, threadAccessFor],
+    [seller, orders, listings, threads, problems, notice, threadAccessFor, markThreadRead],
   );
 
   return (

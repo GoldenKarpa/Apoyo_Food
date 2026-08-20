@@ -1107,6 +1107,7 @@
     "messagesBlurb": "One conversation per customer that outlives any single order — plus the settings that decide who can start one.",
     "messagesEmpty": "No conversations yet.",
     "messagesLabel": "Messages",
+    "noticeAttachment": "That photo was not uploaded — the demo never writes a file. A sample photo has been attached instead so you can see how it looks.",
     "noticeListingEditor": "The dish editor is a real screen, but it sits outside this tour — the demo keeps you on one page so nothing you have done gets lost.",
     "optedOutNotice": "You have turned off messages after an order closes. Customers with nothing open can still read your conversation, but they cannot write to you.",
     "ordersBlurb": "Requests arrive here. Accept one — naming a price where the dish is quoted — decline it, mark it done, or cancel. The buttons you see depend on where the order actually is.",

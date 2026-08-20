@@ -215,7 +215,20 @@ export const getProviderRegistrationConfig = cache(async (): Promise<ProviderReg
     // next request retries instead of holding a failure for 60s.
     return CONFIG_ALL_OFF;
   }
-  const data = (await res.json()) as { providerRegistration: Partial<ProviderRegistrationConfig> };
+  // ⚠ Guarded for exactly the reason the `try` around `fetch` above exists, and
+  // it is the SAME Slice 16 bug one line further down the path: this function
+  // is called by `<SiteFooter>` on every buyer-facing page, so anything that
+  // throws out of it takes the whole `(client)` route group with it. `!res.ok`
+  // does not cover a 200 whose BODY is not JSON — an nginx error page, a proxy
+  // interstitial, a default host page from a misrouted upstream. That throws
+  // inside `res.json()`, past every check above it.
+  let data: { providerRegistration?: Partial<ProviderRegistrationConfig> };
+  try {
+    data = (await res.json()) as { providerRegistration: Partial<ProviderRegistrationConfig> };
+  } catch (err) {
+    console.error("[ecosystem] registration config body was not JSON — failing closed", err);
+    return CONFIG_ALL_OFF;
+  }
   // Spread over the all-off default: portal-web returns keys only for verticals
   // in its own SelectableVertical list, so a key this app expects could simply
   // be absent. Absent must read as false, never undefined.
@@ -313,7 +326,17 @@ export async function getLaunchConfig(): Promise<LaunchConfig> {
     // a failure for the whole TTL.
     return LAUNCH_ALL_CLOSED;
   }
-  const data = (await res.json()) as { launch: Partial<LaunchConfig> };
+  // ⚠ Same guard, same reasoning, and here the stakes are the ones this whole
+  // function exists for: an unhandled throw on the storefront's launch read is
+  // a 500, and a 500 is not "closed". Fail-closed has to mean fail-closed on
+  // every path, including a reachable server answering 200 with the wrong body.
+  let data: { launch?: Partial<LaunchConfig> };
+  try {
+    data = (await res.json()) as { launch: Partial<LaunchConfig> };
+  } catch (err) {
+    console.error("[ecosystem] launch config body was not JSON — failing closed", err);
+    return LAUNCH_ALL_CLOSED;
+  }
   // Spread over all-closed: a key this app expects could simply be absent, and
   // absent must read as closed, never as undefined.
   const config: LaunchConfig = { ...LAUNCH_ALL_CLOSED, ...data.launch };

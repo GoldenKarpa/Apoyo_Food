@@ -148,8 +148,17 @@ function DemoLinkGuard({
 
 function DemoShellBody({ locale, nowMs }: { locale: Locale; nowMs: number }) {
   const t = useTranslations("foodDemo");
-  const { seller, orders, listings, threads, notice, showNotice, dismissNotice, threadAccessFor } =
-    useDemoSandbox();
+  const {
+    seller,
+    orders,
+    listings,
+    threads,
+    notice,
+    showNotice,
+    dismissNotice,
+    threadAccessFor,
+    markThreadRead,
+  } = useDemoSandbox();
 
   const [section, setSection] = useState<Section>("orders");
   /** Which order is open, or null for the inbox list. Orders only. */
@@ -299,7 +308,13 @@ function DemoShellBody({ locale, nowMs }: { locale: Locale; nowMs: number }) {
               )}
 
               <DemoLinkGuard
-                onNavigate={(href) => setOpenThreadId(href.split("/").pop() ?? null)}
+                onNavigate={(href) => {
+                  const id = href.split("/").pop() ?? null;
+                  setOpenThreadId(id);
+                  // Mirrors the real thread page, which marks on render — the
+                  // inbox badge has to clear or it reads as stuck.
+                  if (id) markThreadRead(id);
+                }}
               >
                 <ThreadList
                   threads={threads.map((thread) => ({
@@ -579,8 +594,14 @@ function DemoOrderDetail({
       {thread && (
         <section className="flex flex-col gap-3">
           <h3 className="text-h2 font-semibold text-ink">{t("threadHeading")}</h3>
+          {/* ⚠ ONLY this order's messages, matching the real page exactly.
+              `/food/orders/[id]` renders `order.messages` — the order-scoped
+              relation — while `/food/messages/[id]` renders the whole thread
+              with `showOrderContext`. Handing the full thread to both would
+              show a message about FD-2038 sitting unlabelled inside FD-2041,
+              which is precisely the order-scoping PC-1 kept. */}
           <OrderThread
-            messages={thread.messages}
+            messages={thread.messages.filter((m) => m.order?.id === order.id)}
             viewerUserId={DEMO_SELLER_USER_ID}
             viewerLocale={locale}
             surface="seller"

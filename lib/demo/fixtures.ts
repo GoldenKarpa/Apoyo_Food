@@ -96,6 +96,19 @@ function photo(slot: Slot): DemoPhoto {
 }
 
 /**
+ * The photo the demo substitutes when a visitor attaches one to a message.
+ *
+ * ⚠ Nothing is uploaded and nothing is written. The real composer POSTs to the
+ * media-upload route; the sandbox answers with this instead, and the shell
+ * tells the visitor plainly that their own photo was not kept. Showing a real
+ * attachment is what proves the control works; the notice is what stops the
+ * substitution reading as a bug.
+ */
+export function demoAttachmentPhoto(): DemoPhoto {
+  return photo("story2");
+}
+
+/**
  * The credit line the demo renders. CC BY and CC BY-SA both REQUIRE
  * attribution, so this is a licence obligation, not a nicety — do not drop it,
  * and do not let a redesign hide it behind a toggle.
