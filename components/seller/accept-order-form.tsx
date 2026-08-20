@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { acceptOrder } from "@/lib/actions/order";
+import { useFoodActions } from "@/lib/actions/registry";
 import { SELLER_FORM_IDLE, type SellerFormState } from "@/lib/actions/seller-form-state";
 import { centsToTtdInput } from "@/lib/listing-form";
 
@@ -30,6 +30,8 @@ export function AcceptOrderForm({ orderId, items }: { orderId: string; items: Ac
   const t = useTranslations("seller.orders");
   const tErrors = useTranslations("seller");
   const router = useRouter();
+  // PD-S10 — the real actions in the product, the sandbox's in the demo.
+  const actions = useFoodActions();
 
   const [prices, setPrices] = React.useState<Record<string, string>>(() =>
     Object.fromEntries(items.map((item) => [item.id, item.priceCentsSnapshot !== null ? centsToTtdInput(item.priceCentsSnapshot) : ""])),
@@ -43,7 +45,7 @@ export function AcceptOrderForm({ orderId, items }: { orderId: string; items: Ac
     for (const item of items) formData.set(`price-${item.id}`, prices[item.id] ?? "");
 
     startTransition(async () => {
-      const result = await acceptOrder(orderId, SELLER_FORM_IDLE, formData);
+      const result = await actions.acceptOrder(orderId, SELLER_FORM_IDLE, formData);
       setState(result);
       if (result.status === "ok") router.refresh();
     });

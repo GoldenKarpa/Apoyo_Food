@@ -4,12 +4,10 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
-import { FoodImage } from "@/components/food-image";
 import { SignedOutNotice } from "@/components/seller/signed-out-notice";
-import { ListingActiveToggle } from "@/components/seller/listing-active-toggle";
+import { SellerListingRow } from "@/components/seller/listing-summary-row";
 import { loadSellerWorkspace } from "@/lib/seller";
 import { sellerListingSummaries } from "@/lib/listing";
-import { formatCentsTtd } from "@/lib/money";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("seller.listings");
@@ -53,52 +51,10 @@ export default async function SellerListingsPage() {
         </p>
       ) : (
         <ul className="flex flex-col gap-3">
+          {/* ⚠ `<SellerListingRow>` is extracted (PD-S10) so the demo renders
+              the real row rather than a copy — see that component's note. */}
           {listings.map((listing) => (
-            <li
-              key={listing.id}
-              className="flex flex-wrap items-center gap-4 rounded-card border border-hairline bg-card p-4"
-            >
-              {listing.photos[0] ? (
-                <FoodImage
-                  src={listing.photos[0].pathThumb}
-                  alt={listing.title}
-                  aspect="thumb"
-                  blurDataUrl={listing.photos[0].blurDataUrl}
-                  sizes="64px"
-                  className="h-16 w-16 shrink-0"
-                  surface="seller"
-                />
-              ) : (
-                <div aria-hidden className="h-16 w-16 shrink-0 rounded-image bg-sunken" />
-              )}
-
-              <div className="flex min-w-[160px] flex-1 flex-col gap-1">
-                <Link href={`/food/listings/${listing.id}`} className="font-display text-h3 font-semibold text-ink hover:underline">
-                  {listing.title}
-                </Link>
-                <p className="text-caption text-ink">
-                  {listing.priceMode === "QUOTE"
-                    ? t("quotePrice")
-                    : listing.priceCents != null
-                      ? formatCentsTtd(listing.priceCents)
-                      : "—"}
-                  {" · "}
-                  {t("windowCount", { count: listing._count.availabilityWindows })}
-                </p>
-              </div>
-
-              {listing.takenDownAt ? (
-                <span className="rounded-pill bg-error/10 px-3 py-1 text-caption font-medium text-error">
-                  {t("takenDown")}
-                </span>
-              ) : (
-                <ListingActiveToggle listingId={listing.id} active={listing.active} />
-              )}
-
-              <Button variant="outline" asChild>
-                <Link href={`/food/listings/${listing.id}`}>{t("edit")}</Link>
-              </Button>
-            </li>
+            <SellerListingRow key={listing.id} listing={listing} />
           ))}
         </ul>
       )}

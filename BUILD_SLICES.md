@@ -1638,6 +1638,140 @@ Files modified: `prisma/schema.prisma`, `prisma/verify-schema.ts`, `lib/order.ts
 Cross-repo (Apoyo-Demia, disclosed): `PRE_LAUNCH_CHECKLIST.md` §5 — the ruling's own entry,
 marked built-not-deployed.
 
+### PD-S10 — the provider demo (2026-08-20)
+
+Not a numbered slice: Food's port of the cross-vertical program in
+`Apoyo-Portal/Provider_Demo_Plan.md` (Salon PD-S1..S8, Apparel PD-S9, Food PD-S10). A signed-in
+visitor opens `portal.apoyolime.com/food/demo` and operates a **fictional but fully interactive**
+seller workspace — real requests to accept, a real menu to pause, a real conversation to reply in
+— beside a phone frame showing the same fixtures through the real BUYER components. **No database,
+no migration, no seeded rows** (plan D4/D5); a refresh resets everything.
+
+**Sequenced after PC-1 by the plan's own §4a**, because the client-contact section had to
+demonstrate the persistent thread as it actually ships rather than order-nested chat about to be
+replaced.
+
+**The mechanism question, answered without re-deriving it.** Salon's sandbox patches
+`window.fetch` and answers `/api/salon/provider/*`. That is unavailable here for the same reason
+it was unavailable to Apparel: **every mutating component on Food's seller surface imports a
+`"use server"` action and calls it as a plain async function.** The one `fetch` in
+`<OrderMessageComposer>` is the photo upload, not the send. So Food took Apparel's answer — move
+the seam from the network layer to the **import layer** — as `lib/actions/registry.tsx`:
+`FoodActions`, a TOTAL record of `typeof <the real action>`, defaulting to the real actions and
+overridden only inside the demo. Eleven actions, seven components, one line each. A demo registry
+that forgets a key **does not compile**.
+
+⚠ Named `FoodActions`, not Apparel's `SellerActions`, on purpose: four of the seven components
+behind the seam (`<OrderReasonAction>`, `<OrderCompleteButton>`, `<OrderMessageComposer>`,
+`<ReportMessageSheet>`) render on the BUYER surface too. Nothing about that surface changes — with
+no provider mounted the context value IS the real actions.
+
+**Findings and decisions during the build:**
+
+- ⚠ **`next/link` beats a bubble-phase click handler, and the demo was silently escaping.** The
+  listing rows and `<ThreadList>` navigate by design, so the demo neutralises their anchors from a
+  wrapper rather than threading a `demo` prop through production components. With a plain
+  `onClick` that wrapper runs AFTER Link has already called `router.push()`, so `preventDefault()`
+  cancels the browser's navigation and nothing else. **Caught live in the dev-server log** — real
+  `GET /food/messages/demo-thread-ayanna` and `GET /food/listings/demo-listing-doubles` requests
+  fired from inside the demo, which in production would eject a visitor onto a page that redirects
+  a seller-less session to `/food/setup`. Fixed with `onClickCapture` + `stopPropagation()`, and
+  `verify-demo-browser.mjs` now fails if any request for a real dashboard route is ever made.
+- **The PC-1 gate is IMPORTED, not approximated.** `lib/thread.ts` imports Prisma, so the pure
+  decision half — `decideThreadAccess`, `orderIsActive`, `OPEN_ORDER_STATUSES`,
+  `ENGAGED_ORDER_STATUSES` — was extracted to **`lib/thread-access.ts`** (imports one type,
+  nothing else) and re-exported from `lib/thread.ts`, so every existing caller is untouched and
+  there is exactly ONE definition of the gate. The demo evaluates the real function over fixture
+  orders in the browser. Same split `lib/order-status.ts` and `lib/seller-profile.ts` already use.
+- **Order transitions likewise go through the real `decideOrderTransition`**, so the demo cannot
+  teach a state machine the product does not have: accept/decline vanish once accepted, complete
+  is unreachable from PENDING, and a seller cancellation lands on `CANCELLED_BY_SELLER`.
+- **The fixtures exist to demonstrate the GATE, not just chat.** Ayanna has one COMPLETED order
+  and nothing open — engaged, therefore subject to `postOrderMessaging`. Rafael has an ACCEPTED
+  order still ahead of its fulfilment date. Turn the opt-out off in the demo and Ayanna's composer
+  is REPLACED by the real refusal notice while Rafael's survives, because coordinating a live
+  order is exactly what the opt-out may not silence.
+- **Read receipts got a demonstrable consequence.** `messageReadReceipts` is disclosure-only, so
+  its effect is invisible on the seller's own screen. The buyer phone frame renders the same
+  transcript with `showReadReceipts` bound to the live setting — flip it and the "Read" line
+  disappears from the customer's side, which is the only honest way to show what it does.
+- **Two list rows were EXTRACTED, not copied**: `<SellerOrderRow>` (+ `SELLER_ORDER_ROW_CLASS`)
+  and `<SellerListingRow>`, previously inline in their pages. Only the wrapper differs in the demo
+  — a `<button>` that opens in place rather than a `<Link>` that navigates and would reset the
+  sandbox. `<OrderThread>`, `<ThreadList>` and `<ThreadComposerSection>` were made **isomorphic**
+  (`useTranslations()`/`useLocale()` instead of `await getTranslations()`, no `"use client"`),
+  which next-intl v4 resolves on either side of the boundary — the real pages still server-render
+  them, the demo renders the same files client-side.
+- ⚠ **Photos: MealDB was refused, Wikimedia Commons was used.** The obvious source was
+  `seed-assets/`, but that directory is **gitignored** — it is a download cache, nothing in it has
+  ever been committed — and `prisma/seed-data/photos.ts` says of its MealDB default that it is
+  "fine for a demo, NOT a licence to ship these as real sellers' photos". So
+  `scripts/build-demo-assets.mjs` pins eight Commons files by exact title (search is unusable —
+  that same file records that "pelau" returns the Republic of Palau), **re-verifies each licence
+  against an allow-list at build time and fails the build on anything else**, and writes committed
+  webps plus a manifest carrying the attribution. All eight are CC BY-SA 3.0/4.0, so the demo
+  renders a credit line — a licence obligation, not a footer nicety.
+- **`/api/food/demo-media/[file]` is a separate route from `/api/food/media/*`**, because the
+  latter reads the gitignored `uploads/` tree and `safeStorageKey`'s category allow-list correctly
+  refuses anything else. It must live under `/api/food/*` — nginx proxies nothing else to this app
+  on the portal host (E14) — and the committed manifest IS its traversal guard.
+- **One production seam beyond the registry**: `sellerMediaUrl()` now passes a root-relative src
+  through untouched. Everything this app stores is a bare storage key, so a leading `/` means the
+  caller named a route; without it a demo URL became `/api/food/media//api/food/demo-media/...`.
+  `lib/media/image-loader.ts` already made the matching allowance one layer down.
+- **The demo route is `app/food/demo/`, a sibling of `(dashboard)`, not inside it** — every page
+  in that group calls `loadSellerWorkspace()` and redirects a seller-less session to
+  `/food/setup`, which is precisely the visitor this demo is for. Denial is `notFound()`, never
+  403; a signed-out visitor gets portal's sign-in with a `callbackUrl`.
+- **`getDemoAccessMode()`** joins `lib/ecosystem.ts` beside `getLaunchConfig()` — 30s TTL, no
+  `cache()` wrapper (same reasoning as `getMemberships`), fail-closed to `OFF` on every path
+  including a bare network throw.
+- **No `<OrderThreadPoller>` in the demo.** It exists to `router.refresh()` on a timer for the
+  other party's messages; there is no other party and no database.
+- **Not covered, deliberately**: availability (Food has none at seller level — omitted entirely,
+  not rendered empty), peer view (no roster concept), onboarding (D8), dashboard stats (a demo
+  inventing revenue numbers would be its least honest screen). Fresh Today is informational inside
+  an `inert` wrapper.
+
+**Verification — run with Postgres DOWN, on purpose.** `npm run verify:demo`
+(`scripts/verify-demo-browser.mjs`) — **47 assertions, all passing** through a real browser: the
+guard in all three modes (including that `APPROVED_PROVIDER` reads the ecosystem API and not the
+empty JWT claim), the quote-price accept AND its `priceRequired` refusal, decline with a reason,
+complete, cancel, the pause switch, a real reply, the composer-visibility gate in both directions
+for both customers, the three PC-1 settings, the informational section's `inert`ness, the buyer
+frame, both locales, refresh-resets, no sandbox alarm, no failed request, no console error, and no
+link escaping to a real dashboard route. A demo that works with no database at all is the cleanest
+proof it touches none. `tsc --noEmit` clean, `next lint` clean (zero warnings), `next build` clean
+with `/food/demo` and `/api/food/demo-media/[file]` both present, `vitest` 27/27.
+
+⚠ **Food has no `POST_DEPLOY_CHECKLIST.md`-equivalent readiness doc at all** (`APOYO_BACKLOG.md`
+B1 already tracks this). Unlike Apparel's PT-3 there is no existing checklist to clear before
+switching this demo on for real users — which is worth stating rather than letting the absence
+read as a clean bill of health.
+
+⚠ **Food is deliberately NOT in Apoyo-Demia's `/home` `DEMO_HREF` map yet.** That map is
+hand-maintained (plan R5) and adding a vertical to it is the deliberate act of saying the demo
+exists now. Neither this nor Apparel's is deployed, so both stay out until they are.
+
+Files created: `lib/actions/registry.tsx`, `lib/thread-access.ts`, `lib/demo/access.ts`,
+`lib/demo/fixtures.ts`, `components/demo/demo-sandbox.tsx`, `components/demo/demo-shell.tsx`,
+`components/seller/order-summary-row.tsx`, `components/seller/listing-summary-row.tsx`,
+`app/food/demo/page.tsx`, `app/api/food/demo-media/[file]/route.ts`,
+`scripts/build-demo-assets.mjs`, `scripts/verify-demo-browser.mjs`, `demo-assets/*` (8 webps +
+`manifest.json`).
+
+Files modified: `lib/ecosystem.ts`, `lib/thread.ts`, `lib/media-url.ts`,
+`components/order-thread.tsx`, `components/thread-list.tsx`,
+`components/thread-composer-section.tsx`, `components/order-message-composer.tsx`,
+`components/order-reason-action.tsx`, `components/order-simple-action.tsx`,
+`components/report-message-sheet.tsx`, `components/seller/accept-order-form.tsx`,
+`components/seller/listing-active-toggle.tsx`, `components/seller/message-settings-fields.tsx`,
+`app/food/(dashboard)/orders/page.tsx`, `app/food/(dashboard)/listings/page.tsx`,
+`messages/en.json`, `messages/es.json`, `package.json`, `BUILD_SLICES.md`.
+Cross-repo (Apoyo-Portal, disclosed): `Provider_Demo_Plan.md` — status and §2.3a.
+
+---
+
 ## Phases 4+ (architected in `Apoyo_Food_Architecture.md` Part I — slice when reached)
 
 4 Saved & repeat (collections, order-again recs) · 5 Advanced search & trending materialization · 6 Seller dashboard & insights (k-anonymity floor — the signature feature) · 7 Reviews & portal reputation events · 8 Customer requests board · 9 Verification, geocoding, web-push, ws chat upgrade.

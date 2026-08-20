@@ -339,3 +339,71 @@ export async function setFoodRegistrationEnabled(enabled: boolean): Promise<void
   // Bust the TTL cache so a read immediately after this write is fresh.
   configTtlCache.delete(CONFIG_CACHE_KEY);
 }
+
+/**
+ * PD-S10 — the global provider-demo access toggle
+ * (`Apoyo-Portal/Provider_Demo_Plan.md` §2.1).
+ *
+ * Ported from Salon's PD-S1 reader (commit `cbc2a7c`) by way of Apparel's
+ * PD-S9 copy, rather than re-derived: same endpoint family, same bearer token,
+ * same short TTL, same fail-closed posture — including the bare `try` around
+ * `fetch`, which is load-bearing for exactly the reason both readers above
+ * record (a network-level throw is NOT caught by an `!res.ok` check, and this
+ * runs inside a page render).
+ *
+ * ⚠ ONE GLOBAL VALUE, not a per-vertical map. `/config/launch` next door
+ * returns a map keyed by vertical and this deliberately does not — the user's
+ * 2026-08-19 ruling is one toggle for all three demos. If that ever becomes
+ * per-vertical the response shape changes and this default must change with
+ * it; widen it deliberately, never by tolerating a missing field.
+ *
+ * ⚠ Fails closed to OFF. An unreadable toggle must mean "the demo does not
+ * exist", never "let them in" — the inverse would expose the seller's-eye view
+ * of the product on a portal-web blip.
+ *
+ * ⚠ Deliberately NOT wrapped in React's `cache()`, same as `getMemberships`
+ * and `getLaunchConfig` above and unlike `getProviderRegistrationConfig` —
+ * `cache()` memoizes in a request scope this module cannot invalidate.
+ *
+ * ⚠ Rides Food's single `ECOSYSTEM_SERVICE_TOKEN` (`food-app`), like every
+ * other read in this file. An unregistered or wrong token 401s, which this
+ * reads as OFF — so a demo that 404s for everyone in production is a token
+ * symptom before it is a code symptom.
+ */
+export type DemoAccessMode = "OFF" | "VERIFIED_EMAIL" | "APPROVED_PROVIDER";
+
+const DEMO_TTL_MS = 30_000;
+const DEMO_CACHE_KEY = "demo-access";
+const demoTtlCache = new Map<string, { mode: DemoAccessMode; expiresAt: number }>();
+
+const DEMO_MODES: readonly string[] = ["OFF", "VERIFIED_EMAIL", "APPROVED_PROVIDER"];
+
+export async function getDemoAccessMode(): Promise<DemoAccessMode> {
+  const cached = demoTtlCache.get(DEMO_CACHE_KEY);
+  if (cached && cached.expiresAt > Date.now()) return cached.mode;
+
+  let res: Response;
+  try {
+    res = await fetch(ecosystemUrl("/config/demo"), {
+      headers: ecosystemHeaders(),
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[ecosystem] demo access fetch failed — failing closed", err);
+    return "OFF";
+  }
+  if (!res.ok) {
+    console.error(`[ecosystem] demo access returned ${res.status} — failing closed`);
+    // Deliberately not cached, so the next request retries rather than holding
+    // a failure for the whole TTL.
+    return "OFF";
+  }
+
+  const data = (await res.json()) as { demo?: { mode?: string } };
+  // An unrecognised or absent mode reads as OFF, never as "probably fine".
+  const raw = data.demo?.mode;
+  const mode: DemoAccessMode = DEMO_MODES.includes(raw ?? "") ? (raw as DemoAccessMode) : "OFF";
+
+  demoTtlCache.set(DEMO_CACHE_KEY, { mode, expiresAt: Date.now() + DEMO_TTL_MS });
+  return mode;
+}

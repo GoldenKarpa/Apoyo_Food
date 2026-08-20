@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getLocale, getTranslations } from "next-intl/server";
+import { useLocale, useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 
@@ -22,7 +22,19 @@ export interface ThreadListRow {
  * person actually typed, and a preview is a jog to memory rather than
  * something to read carefully. The thread itself shows both.
  */
-export async function ThreadList({
+/**
+ * ⚠ **Isomorphic on purpose (PD-S10) — no `"use client"`, no `async`.**
+ *
+ * next-intl v4 resolves `useTranslations()` on either side of the RSC boundary
+ * (already this repo's own pattern in `components/ui/*`), so this file server-
+ * renders on the four real conversation surfaces exactly as it did before AND
+ * renders client-side inside `/food/demo`, where the whole transcript lives in
+ * React state and must re-render on every fixture send. An `async` component
+ * cannot do the second thing at all. Do not reintroduce `await
+ * getTranslations()` here — that is the one line that would silently take the
+ * demo's conversation section out of the product.
+ */
+export function ThreadList({
   threads,
   hrefBase,
   emptyMessage,
@@ -32,7 +44,8 @@ export async function ThreadList({
   hrefBase: string;
   emptyMessage: string;
 }) {
-  const [t, locale] = await Promise.all([getTranslations("threads"), getLocale()]);
+  const t = useTranslations("threads");
+  const locale = useLocale();
 
   if (threads.length === 0) {
     return (

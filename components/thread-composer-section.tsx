@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 
 import { OrderMessageComposer, type ComposerTarget } from "@/components/order-message-composer";
 import type { ThreadAccess } from "@/lib/thread";
@@ -26,7 +26,19 @@ import type { ThreadAccess } from "@/lib/thread";
  * inside every send, so a page that wrongly renders a composer produces a
  * `blocked` result, never a written message.
  */
-export async function ThreadComposerSection({
+/**
+ * ⚠ **Isomorphic on purpose (PD-S10) — no `"use client"`, no `async`.**
+ *
+ * next-intl v4 resolves `useTranslations()` on either side of the RSC boundary
+ * (already this repo's own pattern in `components/ui/*`), so this file server-
+ * renders on the four real conversation surfaces exactly as it did before AND
+ * renders client-side inside `/food/demo`, where the whole transcript lives in
+ * React state and must re-render on every fixture send. An `async` component
+ * cannot do the second thing at all. Do not reintroduce `await
+ * getTranslations()` here — that is the one line that would silently take the
+ * demo's conversation section out of the product.
+ */
+export function ThreadComposerSection({
   access,
   target,
   actor,
@@ -35,7 +47,7 @@ export async function ThreadComposerSection({
   target: ComposerTarget;
   actor: "seller" | "client";
 }) {
-  const t = await getTranslations("orderThread.access");
+  const t = useTranslations("orderThread.access");
 
   if (access.canWrite) return <OrderMessageComposer target={target} actor={actor} />;
 

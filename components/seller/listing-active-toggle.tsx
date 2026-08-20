@@ -5,7 +5,7 @@ import { useTransition } from "react";
 import { useTranslations } from "next-intl";
 
 import { Switch } from "@/components/ui/switch";
-import { toggleListingActive } from "@/lib/actions/upsert-listing";
+import { useFoodActions } from "@/lib/actions/registry";
 
 /**
  * The pause switch — independent of `<ListingForm>` on purpose (see that
@@ -16,6 +16,7 @@ import { toggleListingActive } from "@/lib/actions/upsert-listing";
 export function ListingActiveToggle({ listingId, active }: { listingId: string; active: boolean }) {
   const t = useTranslations("seller.listings");
   const router = useRouter();
+  const actions = useFoodActions();
   const [pending, startTransition] = useTransition();
 
   return (
@@ -26,7 +27,7 @@ export function ListingActiveToggle({ listingId, active }: { listingId: string; 
         label={t(active ? "deactivate" : "activate")}
         onCheckedChange={() => {
           startTransition(async () => {
-            await toggleListingActive(listingId);
+            await actions.toggleListingActive(listingId);
             router.refresh();
           });
         }}

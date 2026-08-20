@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 
 import { FoodImage } from "@/components/food-image";
 import { ReportMessageSheet } from "@/components/report-message-sheet";
@@ -24,12 +24,23 @@ export interface OrderThreadMessage {
  * The order thread (Slice 18, architecture E6/F3): "original text prominent,
  * smaller/lighter translation beneath, sender-aligned, cream/green tints".
  *
- * Server Component — `resolveTranslatedText` makes zero network calls (Part
- * E6: translations are computed once at SEND time and never recomputed on
- * read), so rendering the whole thread costs nothing beyond the query that
- * already happened. Only the per-message report trigger is a client island.
+ * `resolveTranslatedText` makes zero network calls (Part E6: translations are
+ * computed once at SEND time and never recomputed on read), so rendering the
+ * whole thread costs nothing beyond the query that already happened. Only the
+ * per-message report trigger is a client island.
+ *
+ * ⚠ **Isomorphic on purpose (PD-S10) — no `"use client"`, no `async`.**
+ *
+ * next-intl v4 resolves `useTranslations()` on either side of the RSC boundary
+ * (already this repo's own pattern in `components/ui/*`), so this file server-
+ * renders on the four real conversation surfaces exactly as it did before AND
+ * renders client-side inside `/food/demo`, where the whole transcript lives in
+ * React state and must re-render on every fixture send. An `async` component
+ * cannot do the second thing at all. Do not reintroduce `await
+ * getTranslations()` here — that is the one line that would silently take the
+ * demo's conversation section out of the product.
  */
-export async function OrderThread({
+export function OrderThread({
   messages,
   viewerUserId,
   viewerLocale,
@@ -57,7 +68,7 @@ export async function OrderThread({
   /** Label which order a message was about — only meaningful where a thread spans several. */
   showOrderContext?: boolean;
 }) {
-  const t = await getTranslations("orderThread");
+  const t = useTranslations("orderThread");
 
   if (messages.length === 0) {
     return <p className="rounded-card border border-dashed border-hairline bg-sunken p-6 text-center text-label text-ink-muted">{t("empty")}</p>;

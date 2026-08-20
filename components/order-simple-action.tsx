@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { completeOrder } from "@/lib/actions/order";
+import { useFoodActions } from "@/lib/actions/registry";
 
 /**
  * `completeOrder`'s trigger — a plain confirm button, no reason field (unlike
@@ -26,6 +26,7 @@ export function OrderCompleteButton({
   errorLabel: string;
 }) {
   const router = useRouter();
+  const actions = useFoodActions();
   const [pending, setPending] = React.useState(false);
   const [error, setError] = React.useState(false);
 
@@ -33,7 +34,7 @@ export function OrderCompleteButton({
     if (!window.confirm(confirmMessage)) return;
     setPending(true);
     setError(false);
-    const result = await completeOrder(orderId);
+    const result = await actions.completeOrder(orderId);
     setPending(false);
     if (!result.ok) {
       setError(true);

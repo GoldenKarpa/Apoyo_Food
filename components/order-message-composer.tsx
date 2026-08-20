@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { FoodImage } from "@/components/food-image";
-import { sendOrderMessage, sendThreadMessage } from "@/lib/actions/order-message";
+import { useFoodActions } from "@/lib/actions/registry";
 import { MAX_MESSAGE_LENGTH } from "@/lib/order-message-form";
 import { mediaUploadUrl } from "@/lib/media-url";
 
@@ -80,6 +80,7 @@ export type ComposerTarget = { kind: "order"; orderId: string } | { kind: "threa
 export function OrderMessageComposer({ target, actor }: { target: ComposerTarget; actor: "seller" | "client" }) {
   const t = useTranslations("orderThread.composer");
   const router = useRouter();
+  const actions = useFoodActions();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [text, setText] = React.useState("");
   const [attachment, setAttachment] = React.useState<string | null>(null);
@@ -108,8 +109,8 @@ export function OrderMessageComposer({ target, actor }: { target: ComposerTarget
     formData.set("attachmentPath", attachment ?? "");
     const result =
       target.kind === "order"
-        ? await sendOrderMessage(target.orderId, actor, formData)
-        : await sendThreadMessage(target.threadId, actor, formData);
+        ? await actions.sendOrderMessage(target.orderId, actor, formData)
+        : await actions.sendThreadMessage(target.threadId, actor, formData);
     setSending(false);
     if (!result.ok) {
       // `blocked` means the seller closed post-order conversation (or the last

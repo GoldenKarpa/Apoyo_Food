@@ -10,11 +10,7 @@ import {
   NOTIFICATION_DELIVERIES,
   type NotificationDelivery,
 } from "@/lib/notification-prefs";
-import {
-  setChatNotificationDelivery,
-  setMessageReadReceipts,
-  setPostOrderMessaging,
-} from "@/lib/actions/message-settings";
+import { useFoodActions } from "@/lib/actions/registry";
 
 /**
  * PC-1 — the seller's conversation settings, on `/food/profile`.
@@ -60,6 +56,7 @@ export function MessageSettingsFields({
 }) {
   const t = useTranslations("seller.messageSettings");
   const router = useRouter();
+  const actions = useFoodActions();
   const [pending, startTransition] = useTransition();
 
   return (
@@ -71,7 +68,7 @@ export function MessageSettingsFields({
           label={t("postOrder.title")}
           onCheckedChange={(next) =>
             startTransition(async () => {
-              await setPostOrderMessaging(next);
+              await actions.setPostOrderMessaging(next);
               router.refresh();
             })
           }
@@ -85,7 +82,7 @@ export function MessageSettingsFields({
           label={t("readReceipts.title")}
           onCheckedChange={(next) =>
             startTransition(async () => {
-              await setMessageReadReceipts(next);
+              await actions.setMessageReadReceipts(next);
               router.refresh();
             })
           }
@@ -109,7 +106,7 @@ export function MessageSettingsFields({
                 disabled={pending}
                 onClick={() =>
                   startTransition(async () => {
-                    await setChatNotificationDelivery(option);
+                    await actions.setChatNotificationDelivery(option);
                     router.refresh();
                   })
                 }

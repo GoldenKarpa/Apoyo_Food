@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { declineOrder, cancelOrder } from "@/lib/actions/order";
+import { useFoodActions, type FoodActions } from "@/lib/actions/registry";
 import type { OrderActor } from "@/lib/order-status";
 
 /**
@@ -27,9 +27,19 @@ export type OrderReasonActionSpec =
   | { kind: "decline"; orderId: string }
   | { kind: "cancel"; orderId: string; actor: OrderActor };
 
-async function runAction(spec: OrderReasonActionSpec, reason: string): Promise<{ ok: boolean }> {
-  if (spec.kind === "decline") return declineOrder(spec.orderId, reason);
-  return cancelOrder(spec.orderId, spec.actor, reason);
+/**
+ * ⚠ Takes the action set rather than importing it, so `<OrderReasonAction>`
+ * runs against the sandbox inside `/food/demo` and against the real Server
+ * Actions everywhere else (PD-S10, `lib/actions/registry.tsx`). It stays a
+ * module-level function — the caller passes what `useFoodActions()` gave it.
+ */
+async function runAction(
+  actions: FoodActions,
+  spec: OrderReasonActionSpec,
+  reason: string,
+): Promise<{ ok: boolean }> {
+  if (spec.kind === "decline") return actions.declineOrder(spec.orderId, reason);
+  return actions.cancelOrder(spec.orderId, spec.actor, reason);
 }
 
 export function OrderReasonAction({
@@ -50,6 +60,7 @@ export function OrderReasonAction({
   errorLabel: string;
 }) {
   const router = useRouter();
+  const actions = useFoodActions();
   const [expanded, setExpanded] = React.useState(false);
   const [reason, setReason] = React.useState("");
   const [pending, setPending] = React.useState(false);
@@ -66,7 +77,7 @@ export function OrderReasonAction({
   async function handleConfirm() {
     setPending(true);
     setError(false);
-    const result = await runAction(spec, reason);
+    const result = await runAction(actions, spec, reason);
     setPending(false);
     if (!result.ok) {
       setError(true);

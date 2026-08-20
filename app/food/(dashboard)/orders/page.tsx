@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import { SignedOutNotice } from "@/components/seller/signed-out-notice";
-import { StatusChip } from "@/components/ui/chip";
+import {
+  SELLER_ORDER_ROW_CLASS,
+  SellerOrderRow,
+} from "@/components/seller/order-summary-row";
 import { loadSellerWorkspace } from "@/lib/seller";
 import { sellerOrderSummaries, type SellerOrderSummary } from "@/lib/order";
-import { ORDER_STATUS_TONE } from "@/lib/order-status-labels";
-import { formatCentsTtd } from "@/lib/money";
-import { formatFulfillmentInstant } from "@/lib/time";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("seller.orders");
@@ -24,8 +24,6 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export default async function SellerOrdersPage() {
   const t = await getTranslations("seller.orders");
-  const ts = await getTranslations("orderStatus");
-  const locale = await getLocale();
   const workspace = await loadSellerWorkspace();
 
   if (workspace.state === "signed-out") return <SignedOutNotice />;
@@ -33,33 +31,15 @@ export default async function SellerOrdersPage() {
 
   const { pending, other } = await sellerOrderSummaries(workspace.seller.id);
 
+  // ⚠ The row itself is `<SellerOrderRow>` (PD-S10) — extracted so the demo
+  // renders the real thing rather than a copy. Only the WRAPPER differs there:
+  // a `<button>` that opens the order in place, because a navigation would
+  // reset the sandbox. See that component's own note.
   function OrderRow({ order }: { order: SellerOrderSummary }) {
-    const item = order.items[0];
     return (
       <li>
-        <Link
-          href={`/food/orders/${order.id}`}
-          className="flex flex-col gap-2 rounded-card border border-hairline bg-card p-4 transition-colors duration-200 ease-soft hover:bg-sunken"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-label font-semibold text-ink">{order.orderNumber}</span>
-            <StatusChip tone={ORDER_STATUS_TONE[order.status]}>{ts(order.status)}</StatusChip>
-          </div>
-          <p className="text-body text-ink">
-            {item ? `${item.quantity}× ${item.titleSnapshot}` : ""}
-            {order.items.length > 1 ? t("moreItems", { count: order.items.length - 1 }) : ""}
-          </p>
-          <div className="flex flex-wrap items-center justify-between gap-2 text-caption text-ink-muted">
-            <span>{formatFulfillmentInstant(order.fulfillmentAt, locale)}</span>
-            {order.subtotalCents !== null && (
-              <span className="font-medium text-terracotta">{formatCentsTtd(order.subtotalCents)}</span>
-            )}
-          </div>
-          {order.status === "PENDING" && (
-            <p className="text-caption text-gold">
-              {t("respondByPrefix")}: {formatFulfillmentInstant(order.respondBy, locale)}
-            </p>
-          )}
+        <Link href={`/food/orders/${order.id}`} className={SELLER_ORDER_ROW_CLASS}>
+          <SellerOrderRow order={order} />
         </Link>
       </li>
     );

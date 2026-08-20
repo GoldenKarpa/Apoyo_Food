@@ -29,8 +29,24 @@ export function mediaUrl(storageKey: string): string {
   return `${BUYER_MEDIA_PREFIX}/${storageKey}`;
 }
 
-/** Read a stored photo from the seller surface (`portal.apoyolime.com/food`). */
+/**
+ * Read a stored photo from the seller surface (`portal.apoyolime.com/food`).
+ *
+ * ⚠ **A src that is ALREADY a root-relative URL is passed through untouched**
+ * (PD-S10). Everything this app stores is a bare storage key
+ * (`listings/<id>-card.webp`), so a leading `/` means the caller is naming a
+ * route rather than a stored object — today that is only the demo's committed
+ * photo set at `/api/food/demo-media/*`, which is repo content and has no
+ * storage key at all. Without this, prefixing would produce
+ * `/api/food/media//api/food/demo-media/...`, which `safeStorageKey` correctly
+ * rejects and which would render every demo photo as a broken image.
+ *
+ * `lib/media/image-loader.ts` already makes the matching allowance one layer
+ * down ("any other root-relative path bypasses storage entirely"); this closes
+ * the same gap on the prefixing side so the two agree.
+ */
 export function sellerMediaUrl(storageKey: string): string {
+  if (storageKey.startsWith("/")) return storageKey;
   return `${SELLER_MEDIA_PREFIX}/${storageKey}`;
 }
 

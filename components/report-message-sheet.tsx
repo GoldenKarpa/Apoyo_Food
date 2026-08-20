@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { reportMessage } from "@/lib/actions/order-message";
+import { useFoodActions } from "@/lib/actions/registry";
 
 const REASONS = ["INAPPROPRIATE", "SUSPECTED_SCAM", "FOOD_SAFETY_CONCERN", "OTHER"] as const;
 
@@ -28,6 +28,7 @@ const REASONS = ["INAPPROPRIATE", "SUSPECTED_SCAM", "FOOD_SAFETY_CONCERN", "OTHE
  */
 export function ReportMessageSheet({ messageId }: { messageId: string }) {
   const t = useTranslations("orderThread.report");
+  const actions = useFoodActions();
   const [reason, setReason] = React.useState<string>("INAPPROPRIATE");
   const [message, setMessage] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
@@ -36,7 +37,7 @@ export function ReportMessageSheet({ messageId }: { messageId: string }) {
 
   async function handleSubmit() {
     setSubmitting(true);
-    const result = await reportMessage(messageId, reason, message);
+    const result = await actions.reportMessage(messageId, reason, message);
     setSubmitting(false);
     if (result.ok) setSubmitted(true);
   }

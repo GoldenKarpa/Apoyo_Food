@@ -1,0 +1,126 @@
+{
+  "note": "PD-S10 demo photo set. Built by scripts/build-demo-assets.mjs from PINNED Wikimedia Commons files. Every entry's licence was re-verified at build time against ALLOWED_LICENCES. Credits are rendered by the demo - do not drop them.",
+  "builtAt": "2026-08-20T08:25:54.525Z",
+  "photos": [
+    {
+      "slot": "doubles",
+      "file": "doubles.webp",
+      "aspect": "meal",
+      "width": 1000,
+      "height": 750,
+      "blurDataUrl": "data:image/jpeg;base64,/9j/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAMABADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAgX/xAAhEAACAQQCAgMAAAAAAAAAAAABAgMABBExBSETUSIzsf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFxEAAwEAAAAAAAAAAAAAAAAAAAEhQf/aAAwDAQACEQMRAD8AEbXt7M8KXDIw2QcflEcddecxzSMVVAQ4z8myeid1OaaW0V5reQo/sAUn5O6+sydNGJC2iTjO/VRRjD//2Q==",
+      "source": {
+        "title": "File:Doubles at Debe Market.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Doubles_at_Debe_Market.jpg"
+      },
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "Kalamazadkhan"
+    },
+    {
+      "slot": "pelau",
+      "file": "pelau.webp",
+      "aspect": "meal",
+      "width": 1000,
+      "height": 750,
+      "blurDataUrl": "data:image/jpeg;base64,/9j/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAMABADASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAwQFBv/EAB8QAAICAgIDAQAAAAAAAAAAAAECAxEABAUSITFRYf/EABQBAQAAAAAAAAAAAAAAAAAAAAH/xAAWEQEBAQAAAAAAAAAAAAAAAAABEQD/2gAMAwEAAhEDEQA/ANHv7B1NN5UQyOPCqBdnE+K5M8gWDJ1KgWf35lO8EsUcIIijRL99RWCNuRJv/9k=",
+      "source": {
+        "title": "File:Dish of pelau, coleslaw, cassava pone, and a mac and cheese pie.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Dish_of_pelau,_coleslaw,_cassava_pone,_and_a_mac_and_cheese_pie.jpg"
+      },
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "K6ka"
+    },
+    {
+      "slot": "roti",
+      "file": "roti.webp",
+      "aspect": "meal",
+      "width": 1000,
+      "height": 750,
+      "blurDataUrl": "data:image/jpeg;base64,/9j/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAMABADASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAABAUG/8QAHxAAAQQCAwEBAAAAAAAAAAAAAQIDBBEAEgUhUSIx/8QAFQEBAQAAAAAAAAAAAAAAAAAAAwT/xAAaEQACAgMAAAAAAAAAAAAAAAAAAQIRAxIx/9oADAMBAAIRAxEAPwBKm2IkZapN7INBIFFRq+skcfPDk4okpDZUfg/mh8Pt5pZcRqXFQ87e6U9EYGHxsVxt59xvdxtVpJPnYyZJLJVDdhsf/9k=",
+      "source": {
+        "title": "File:Dhalpurie Roti, Pumpkin, Channa and Potato, Curry Goat, Trinidad and Tobago.JPG",
+        "page": "https://commons.wikimedia.org/wiki/File:Dhalpurie_Roti,_Pumpkin,_Channa_and_Potato,_Curry_Goat,_Trinidad_and_Tobago.JPG"
+      },
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "artist": "Kalamazadkhan"
+    },
+    {
+      "slot": "blackcake",
+      "file": "blackcake.webp",
+      "aspect": "meal",
+      "width": 1000,
+      "height": 750,
+      "blurDataUrl": "data:image/jpeg;base64,/9j/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAMABADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAgT/xAAjEAABAgUDBQAAAAAAAAAAAAACAQMABBESEwUhMSJBUaHR/8QAFQEBAQAAAAAAAAAAAAAAAAAAAgP/xAAWEQADAAAAAAAAAAAAAAAAAAAAARH/2gAMAwEAAhEDEQA/AIT1J1Jwm2xbx5FEe+1fMXAufINvUIXIqLDGVlWjEwlW0IVqnO3uEcxa6rgtNofNaL9gRFKz/9k=",
+      "source": {
+        "title": "File:Bolo pretu.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Bolo_pretu.jpg"
+      },
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "Dqfn13"
+    },
+    {
+      "slot": "avatar",
+      "file": "avatar.webp",
+      "aspect": "avatar",
+      "width": 480,
+      "height": 480,
+      "blurDataUrl": "data:image/jpeg;base64,/9j/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAQABADASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAABAP/xAAiEAACAQMCBwAAAAAAAAAAAAABAgMAESEEMgUSIiNRsfD/xAAVAQEBAAAAAAAAAAAAAAAAAAADBP/EABkRAQACAwAAAAAAAAAAAAAAAAEAAgMSIf/aAAwDAQACEQMRAD8Aa88oJlknZVXFk+90V+Oyc/bgaSEbnJzUZo2VnIJs24UVoXc2j1OCOotggeLVOXMnImoE/9k=",
+      "source": {
+        "title": "File:MISC Bake & Shark.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:MISC_Bake_%26_Shark.jpg"
+      },
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "Grueslayer"
+    },
+    {
+      "slot": "cover",
+      "file": "cover.webp",
+      "aspect": "cover",
+      "width": 1280,
+      "height": 720,
+      "blurDataUrl": "data:image/jpeg;base64,/9j/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAJABADASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAQMEBv/EACQQAAIBAgMJAAAAAAAAAAAAAAECAwARBCI0BRMVITEyUXGh/8QAFAEBAAAAAAAAAAAAAAAAAAAAAP/EABcRAAMBAAAAAAAAAAAAAAAAAAABERL/2gAMAwEAAhEDEQA/AKX23g0kiCE7tu6y3J5fDehxjBShgkrDITmFh081nW1b0qLTj1TTER//2Q==",
+      "source": {
+        "title": "File:San Fernando, Trinidad & Tobago - Amin's Roti Shop.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:San_Fernando,_Trinidad_%26_Tobago_-_Amin%27s_Roti_Shop.jpg"
+      },
+      "licence": "CC BY-SA 3.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "artist": "Kalamazadkhan"
+    },
+    {
+      "slot": "story1",
+      "file": "story1.webp",
+      "aspect": "story",
+      "width": 720,
+      "height": 900,
+      "blurDataUrl": "data:image/jpeg;base64,/9j/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAUABADASIAAhEBAxEB/8QAGAAAAgMAAAAAAAAAAAAAAAAAAAUBAwT/xAAhEAACAgEEAgMAAAAAAAAAAAABAgADBBESITFBcVGh0f/EABYBAQEBAAAAAAAAAAAAAAAAAAIAA//EABYRAQEBAAAAAAAAAAAAAAAAAAARIf/aAAwDAQACEQMRAD8ApZMzwu70ZnsXJXuk/Uf312Y1THVbEb54IP5FgyrK7RooZD2h5Bmd0oeVuXrG7mQcaljuatSfUIRp/9k=",
+      "source": {
+        "title": "File:Arepas filled with ham and cheese.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Arepas_filled_with_ham_and_cheese.jpg"
+      },
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "Ajsm712"
+    },
+    {
+      "slot": "story2",
+      "file": "story2.webp",
+      "aspect": "story",
+      "width": 720,
+      "height": 900,
+      "blurDataUrl": "data:image/jpeg;base64,/9j/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAUABADASIAAhEBAxEB/8QAGAAAAgMAAAAAAAAAAAAAAAAAAAUCBAb/xAAiEAEAAQQBAwUAAAAAAAAAAAABAgADBBEhBRNRI0FhgZH/xAAWAQEBAQAAAAAAAAAAAAAAAAACAAP/xAAXEQEBAQEAAAAAAAAAAAAAAAAAEQEh/9oADAMBAAIRAxEAPwCs9PyJGyZrzqoPTcs2iJ8G60NwjHGgyTaftL7jkWZt2yIROV9/qs72FDDGe7jEbgSDjSUXMazJfTBfHFFFPE//2Q==",
+      "source": {
+        "title": "File:Arepa filled with queso llanero.jpg",
+        "page": "https://commons.wikimedia.org/wiki/File:Arepa_filled_with_queso_llanero.jpg"
+      },
+      "licence": "CC BY-SA 4.0",
+      "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "Ajsm712"
+    }
+  ]
+}
