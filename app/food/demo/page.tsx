@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
 
 import { DemoShell } from "@/components/demo/demo-shell";
 import { resolveDemoAccess } from "@/lib/demo/access";
-import { portalPageUrl } from "@/lib/links";
 import type { Locale } from "@/i18n/request";
 
 export const metadata: Metadata = { title: "Apoyo Food — demo" };
@@ -27,37 +26,24 @@ export const dynamic = "force-dynamic";
  * guard and its own chrome. `app/food/layout.tsx` is a bare passthrough, so
  * nothing wraps this but what the shell renders itself.
  *
- * ⚠ **Denial is `notFound()`, not a 403.** A 403 tells someone the route exists
- * when the answer is meant to be that it does not — see `lib/demo/access.ts`.
- *
- * ⚠ **The one exception is a signed-out visitor**, who is offered a sign-in.
- * That reveals nothing, since the sign-in door is public anyway. Note it is
- * PORTAL's sign-in via `portalPageUrl()`, not Food's own `/login` — the demo is
- * only ever reachable on `portal.apoyolime.com`, where a relative `/login` is
- * portal-web's page rather than this app's, and where `middleware.ts` 404s
- * every non-`/food` path of ours anyway. `lib/links.ts` documents at length why
- * linking to portal is not the "never guess at another vertical's door"
- * violation it superficially resembles: portal is the ecosystem's identity
- * issuer, not a sibling vertical.
- *
- * ⚠ **Host note.** `/food/*` is served only on `portal.apoyolime.com`;
- * middleware 404s it on `food.apoyolime.com`. Correct for the demo — it is a
- * seller-side surface and its entry point is the portal launchpad.
- *
- * ⚠ **No database, and no query above or below this line.** The whole demo is
- * fixtures (D4/D5). If a future change makes this page read Prisma, the demo
- * has stopped being what it is — and `scripts/verify-demo-browser.mjs` runs
- * with Postgres DOWN precisely so that stops being an opinion.
+ * ⚠ **Denial is `notFound()`, not a 403, and there is NO exception.** A 403
+ * tells someone the route exists when the answer is meant to be that it does
+ * not — and so, it turns out, does a login redirect. Until 2026-08-20 a
+ * signed-out visitor was offered a sign-in "because the login door is public
+ * anyway", which missed that the *choice between two responses* is itself the
+ * disclosure: 404 when the toggle was OFF, a redirect when it was ON, so anyone
+ * with no account could read the toggle by probing. That is R6. Every denial is
+ * now the same 404 — see `lib/demo/access.ts` for the full rationale, including
+ * why moving the session check first would have been the wrong fix and what
+ * this trade costs.
  */
 export default async function FoodDemoPage() {
   const access = await resolveDemoAccess();
 
-  if (!access.allowed) {
-    if (access.signedOut) {
-      redirect(portalPageUrl(`/login?callbackUrl=${encodeURIComponent("/food/demo")}`));
-    }
-    notFound();
-  }
+  // ⚠ ONE response for every denial — off, signed out, unverified, or without
+  // provider standing. R6 (Provider_Demo_Plan.md §2.2, amended 2026-08-20):
+  // anything that differs by mode lets a signed-out visitor read the toggle.
+  if (!access.allowed) notFound();
 
   // Resolved here rather than inside the shell: the shell is a client component
   // and next-intl's async locale read is server-only. It drives both the demo's
